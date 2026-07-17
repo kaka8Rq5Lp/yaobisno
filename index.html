@@ -280,7 +280,7 @@ function loadProducts(){
   if(products.length===0){
     API.getProducts().then(function(server){
       if(server&&server.length>0){products=server;try{localStorage.setItem("yabisno_products",JSON.stringify(server))}catch(e){};renderProducts()}
-      else if(products.length===0){products=mockProducts.slice();try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}}
+      else{products=server||[];try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){};renderProducts()}
     }).catch(function(){
       if(products.length===0){products=mockProducts.slice();try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}}
     });
