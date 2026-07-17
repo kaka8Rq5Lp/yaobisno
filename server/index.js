@@ -208,6 +208,29 @@ app.delete('/api/cart/all/:email', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false }); }
 });
 
+// ─── Admin ─────────────────────────────────────────────────────────
+
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT id,name,email,phone,role,province,municipality,neighborhood FROM users ORDER BY id');
+    res.json(rows);
+  } catch (e) { res.status(500).json([]); }
+});
+
+app.get('/api/admin/chats', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM chats ORDER BY id');
+    res.json(rows);
+  } catch (e) { res.status(500).json([]); }
+});
+
+app.get('/api/admin/cart', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT c.id,c.user_email,c.product_id,c.qty,p.name AS product_name,p.price FROM cart_items c LEFT JOIN products p ON c.product_id=p.id ORDER BY c.id');
+    res.json(rows);
+  } catch (e) { res.status(500).json([]); }
+});
+
 function normalizeProduct(r) {
   return {
     id: r.id,
