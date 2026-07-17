@@ -5,29 +5,22 @@ var pool;
 
 if (rawURL) {
   var dbName = 'test';
-  var opts = {};
   try {
     const u = new URL(rawURL);
     dbName = u.pathname.replace(/^\//, '').split('?')[0] || 'test';
-    opts = {
-      host: u.hostname,
-      port: parseInt(u.port) || 3306,
-      user: decodeURIComponent(u.username),
-      password: decodeURIComponent(u.password),
-    };
   } catch (_) {
-    const m = rawURL.match(/\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/([^?]+)/);
-    if (m) {
-      dbName = m[5];
-      opts = { host: m[3], port: parseInt(m[4]), user: m[1], password: m[2] };
-    }
+    const re = /\/([a-zA-Z_][\w-]*)(?:\?|$)/g;
+    let match, last;
+    while ((match = re.exec(rawURL)) !== null) last = match[1];
+    if (last) dbName = last;
   }
-  pool = mysql.createPool(Object.assign(opts, {
+  pool = mysql.createPool({
+    uri: rawURL,
     database: dbName,
     ssl: { rejectUnauthorized: true },
     waitForConnections: true,
     connectionLimit: 5
-  }));
+  });
 } else {
   pool = mysql.createPool({
     host: process.env.DB_HOST || '127.0.0.1',
