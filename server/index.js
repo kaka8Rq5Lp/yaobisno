@@ -20,7 +20,7 @@ app.post('/api/login', async (req, res) => {
       return res.json({ ok: false, error: 'Email ou password incorretos' });
     const u = rows[0];
     res.json({ ok: true, user: { name: u.name, email: u.email, phone: u.phone, role: u.role } });
-  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 app.post('/api/register', async (req, res) => {
@@ -31,7 +31,7 @@ app.post('/api/register', async (req, res) => {
     await db.query('INSERT INTO users (name,email,phone,password,role) VALUES (?,?,?,?,?)',
       [name, email, phone, password, 'comprador']);
     res.json({ ok: true, user: { name, email, phone, role: 'comprador' } });
-  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 app.post('/api/reset-password', async (req, res) => {
@@ -41,7 +41,7 @@ app.post('/api/reset-password', async (req, res) => {
     if (r.length === 0) return res.json({ ok: false, error: 'Email não encontrado' });
     await db.query('UPDATE users SET password = ? WHERE email = ?', [password, email]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 app.get('/api/user/:email', async (req, res) => {
@@ -49,7 +49,7 @@ app.get('/api/user/:email', async (req, res) => {
     const [rows] = await db.query('SELECT name,email,phone,role,avatar,province,municipality,neighborhood,street,reference FROM users WHERE email = ?', [req.params.email]);
     if (rows.length === 0) return res.json({ ok: false });
     res.json({ ok: true, user: rows[0] });
-  } catch (e) { res.status(500).json({ ok: false }); }
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 app.put('/api/user/address', async (req, res) => {
@@ -58,7 +58,7 @@ app.put('/api/user/address', async (req, res) => {
     await db.query('UPDATE users SET province=?,municipality=?,neighborhood=?,street=?,reference=? WHERE email=?',
       [province || '', municipality || '', neighborhood || '', street || '', reference || '', email]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ ok: false }); }
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 app.post('/api/avatar', async (req, res) => {
@@ -66,7 +66,7 @@ app.post('/api/avatar', async (req, res) => {
     const { email, avatar } = req.body;
     await db.query('UPDATE users SET avatar = ? WHERE email = ?', [avatar, email]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ ok: false }); }
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 // ─── Products ─────────────────────────────────────────────────────
