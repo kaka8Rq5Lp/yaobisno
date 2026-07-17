@@ -32,7 +32,7 @@ img.thumb{width:50px;height:50px;object-fit:cover;border-radius:4px}
 <script>
 async function carregar(tipo, btn) {
   document.querySelectorAll('nav button').forEach(b => b.className='');
-  btn.className='ativo';
+  if (btn) btn.className='ativo';
   const div = document.getElementById('conteudo');
   div.innerHTML = '<div class="msg">A carregar...</div>';
   try {
