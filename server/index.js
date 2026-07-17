@@ -271,7 +271,8 @@ async function initDB() {
     )`);
     console.log('Base de dados inicializada');
   } catch (e) {
-    console.error('Erro ao inicializar BD:', e.message);
+    if (!e.message.includes('command denied'))
+      console.error('Erro ao inicializar BD:', e.message);
   }
 }
 
