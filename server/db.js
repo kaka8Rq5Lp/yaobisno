@@ -4,22 +4,30 @@ const rawURL = process.env.DATABASE_URL;
 var pool;
 
 if (rawURL) {
-  const uri = rawURL.replace(/\?.+$/, '');
-  const parts = uri.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.*)/);
-  if (parts) {
-    pool = mysql.createPool({
-      host: parts[3],
-      port: parseInt(parts[4]),
-      user: parts[1],
-      password: parts[2],
-      database: parts[5],
-      ssl: { rejectUnauthorized: true },
-      waitForConnections: true,
-      connectionLimit: 5
-    });
-  } else {
-    pool = mysql.createPool({ uri: rawURL, ssl: { rejectUnauthorized: true }, connectionLimit: 5 });
+  var dbName = 'test';
+  var opts = {};
+  try {
+    const u = new URL(rawURL);
+    dbName = u.pathname.replace(/^\//, '').split('?')[0] || 'test';
+    opts = {
+      host: u.hostname,
+      port: parseInt(u.port) || 3306,
+      user: decodeURIComponent(u.username),
+      password: decodeURIComponent(u.password),
+    };
+  } catch (_) {
+    const m = rawURL.match(/\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/([^?]+)/);
+    if (m) {
+      dbName = m[5];
+      opts = { host: m[3], port: parseInt(m[4]), user: m[1], password: m[2] };
+    }
   }
+  pool = mysql.createPool(Object.assign(opts, {
+    database: dbName,
+    ssl: { rejectUnauthorized: true },
+    waitForConnections: true,
+    connectionLimit: 5
+  }));
 } else {
   pool = mysql.createPool({
     host: process.env.DB_HOST || '127.0.0.1',
