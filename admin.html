@@ -18,19 +18,19 @@ img.thumb{width:50px;height:50px;object-fit:cover;border-radius:4px}
 </style>
 </head>
 <body>
-<h1>📊 Painel Admin</h1>
+<h1>Painel Admin</h1>
 <nav>
-<button onclick="carregar('users')" class="ativo">Users</button>
-<button onclick="carregar('products')">Produtos</button>
-<button onclick="carregar('chats')">Chats</button>
-<button onclick="carregar('cart')">Carrinho</button>
+<button onclick="carregar('users',this)" class="ativo">Users</button>
+<button onclick="carregar('products',this)">Produtos</button>
+<button onclick="carregar('chats',this)">Chats</button>
+<button onclick="carregar('cart',this)">Carrinho</button>
 </nav>
 <div id="conteudo"><div class="msg">A carregar...</div></div>
 
 <script>
-async function carregar(tipo) {
+async function carregar(tipo, btn) {
   document.querySelectorAll('nav button').forEach(b => b.className='');
-  event.target.className='ativo';
+  btn.className='ativo';
   const div = document.getElementById('conteudo');
   div.innerHTML = '<div class="msg">A carregar...</div>';
   try {
