@@ -224,7 +224,10 @@ function renderUser(){
     if(pn)pn.textContent=u.name||"";
     if(pp)pp.textContent=u.phone?"Telemóvel: "+u.phone:"";
     var av=localStorage.getItem("yabisno_avatar_"+u.email);
-    if(av){if(img){img.src=av;img.classList.remove("hidden")}if(ico)ico.classList.add("hidden")}else{if(img){img.src="";img.classList.add("hidden")}if(ico)ico.classList.remove("hidden")}
+    if(av){if(img){img.src=av;img.classList.remove("hidden")}if(ico)ico.classList.add("hidden")}else{
+      API.getUser(u.email).then(function(r){if(r.ok&&r.user.avatar){localStorage.setItem("yabisno_avatar_"+u.email,r.user.avatar);renderUser();}});
+      if(img){img.src="";img.classList.add("hidden")}if(ico)ico.classList.remove("hidden")
+    }
   }catch(e){}
 }
 

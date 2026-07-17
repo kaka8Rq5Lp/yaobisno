@@ -384,8 +384,11 @@ function renderUser(){
     var hn=byId("headerUserName");if(hn)hn.textContent=u.name||"Perfil";
     var l=byId("profileLink");if(!l)return;
     var av=localStorage.getItem("yabisno_avatar_"+u.email);
-    if(av)l.innerHTML='<img src="'+av+'" class="w-8 h-8 rounded-full object-cover border border-orange/20"> <span class="font-bold text-sm hidden sm:block">'+esc(u.name)+'</span>';
-    else l.innerHTML='<i class="fa-solid fa-circle-user text-2xl text-orange"></i> <span class="font-bold text-sm hidden sm:block">'+esc(u.name)+'</span>';
+    if(av){l.innerHTML='<img src="'+av+'" class="w-8 h-8 rounded-full object-cover border border-orange/20"> <span class="font-bold text-sm hidden sm:block">'+esc(u.name)+'</span>';}
+    else{
+      API.getUser(u.email).then(function(r){if(r.ok&&r.user.avatar){localStorage.setItem("yabisno_avatar_"+u.email,r.user.avatar);renderUser();}});
+      l.innerHTML='<i class="fa-solid fa-circle-user text-2xl text-orange"></i> <span class="font-bold text-sm hidden sm:block">'+esc(u.name)+'</span>';
+    }
   }catch(e){}
 }
 
