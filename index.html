@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="pt" class="scroll-smooth">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FF5F1F">
+<title>Ya o bisno — Compra e venda em Angola</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
+<script src="api.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--orange:#FF5F1F;--dark:#1A1A1A;--gray:#F5F5F5;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;outline:none}
+button{-webkit-appearance:none;appearance:none;font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipulation;background:none;border:none;padding:0;color:inherit;line-height:1}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;border-radius:0.75rem;color:#4b5563;font-size:1.125rem;transition:background .2s;background:none;border:none;touch-action:manipulation;cursor:pointer}
+.icon-btn:hover{background:#f3f4f6}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#fff;color:#1A1A1A;-webkit-font-smoothing:antialiased}
+.text-orange{color:#FF5F1F}.bg-orange{background-color:#FF5F1F}.border-orange{border-color:#FF5F1F}
+.btn-primary{background:#FF5F1F;color:#fff;border:none;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;text-decoration:none;touch-action:manipulation}
+.btn-primary:hover{box-shadow:0 8px 25px rgba(255,95,31,.35)}
+.btn-primary:active{transform:scale(.96)}
+.btn-outline{background:transparent;color:#FF5F1F;border:2px solid #FF5F1F;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;touch-action:manipulation}
+.btn-outline:hover{background:#FF5F1F;color:#fff}
+.card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;transition:all .3s;overflow:hidden}
+.card:hover{border-color:#FF5F1F;box-shadow:0 12px 40px rgba(255,95,31,.1);transform:translateY(-4px)}
+.badge-orange{background:#FF5F1F;color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:999px}
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
+.modal-panel{width:100%;max-width:460px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin-bottom:0}
+.modal.hidden{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(30px); opacity:0}to{transform:translateY(0); opacity:1}}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
+@media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
+input[type="text"],input[type="email"],input[type="password"],input[type="tel"],input[type="number"],select{border:2px solid #e5e7eb;border-radius:12px;padding-top:.85rem;padding-bottom:.85rem;width:100%;font-size:1rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:#FF5F1F!important;box-shadow:0 0 0 4px rgba(255,95,31,.1)!important}
+header{padding-top:0}
+.gradient-hero{background:linear-gradient(135deg,#FFF8F4,#FFF0E8,#FFE8D8)}
+.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.scrollbar-hide::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body>
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-orange/10">
+  <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative">
+    <a href="index.html" class="block w-20 sm:w-32 z-10 shrink-0 overflow-hidden">
+      <img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="max-sm:w-20 max-sm:h-8 sm:w-full sm:h-12" style="object-fit:contain;object-position:left">
+    </a>
+    <div class="hidden md:flex gap-3 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <a href="#como-funciona" class="btn-primary text-sm px-5 py-2.5 min-w-[140px] text-center justify-center">Como funciona</a>
+      <a href="#produtos" class="btn-primary text-sm px-5 py-2.5 min-w-[140px] text-center justify-center">Produtos</a>
+    </div>
+    <div class="flex items-center gap-2 z-10">
+      <button id="loginBtn" class="btn-primary text-sm px-5">Entrar</button>
+      <button id="menuBtn" class="icon-btn md:hidden"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </div>
+</header>
+
+<div id="mobileMenu" class="fixed inset-0 z-50 bg-white hidden">
+  <div class="p-6" style="padding-top:1.5rem">
+    <div class="flex justify-end mb-6">
+      <button id="closeMenu" class="text-2xl text-gray-600 p-2"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <nav class="flex flex-col gap-3">
+      <a href="#como-funciona" class="btn-primary w-full py-3.5 text-center link-close-menu">Como funciona</a>
+      <a href="#produtos" class="btn-primary w-full py-3.5 text-center link-close-menu">Produtos</a>
+      <button id="loginBtnMobile" class="btn-primary w-full py-3.5 mt-4 text-center">Entrar</button>
+    </nav>
+  </div>
+</div>
+
+<main style="padding-top:4rem;min-height:calc(var(--vh,1vh)*100)">
+
+  <section class="py-20 md:py-28 gradient-hero w-full">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col items-center text-center">
+      <div class="inline-flex items-center gap-2 bg-orange-100 text-orange text-xs font-bold px-4 py-1.5 rounded-full mb-6">
+        <i class="fa-solid fa-bolt"></i> O marketplace mais rápido de Angola
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
+        Vende o que não usas.<br>
+        <span class="text-orange">Compra o que precisas.</span>
+      </h1>
+      <p class="text-gray-500 mt-4 max-w-xl text-lg">O marketplace angolano mais rápido para comprar e vender perto de ti.</p>
+      <a href="#produtos" class="btn-primary px-10 py-3.5 mt-8 text-base font-bold shadow-lg shadow-orange/20">
+        Começar a bisnar <i class="fa-solid fa-arrow-right"></i>
+      </a>
+      <div class="mt-8 flex items-center justify-center gap-8 text-sm text-gray-400 flex-wrap">
+        <span><i class="fa-solid fa-camera mr-2 text-orange"></i> Publicação grátis</span>
+        <span><i class="fa-solid fa-shield-halved mr-2 text-orange"></i> Compra segura</span>
+        <span><i class="fa-solid fa-bolt mr-2 text-orange"></i> Venda rápida</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="produtos" class="py-16 md:py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="mb-8">
+        <h2 class="text-3xl md:text-4xl font-bold">Produtos em destaque</h2>
+        <p id="resultCount" class="text-gray-500 text-sm mt-1.5"></p>
+      </div>
+      <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+    </div>
+  </section>
+
+  <section id="como-funciona" class="py-16 md:py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Como funciona</h2>
+        <p class="text-gray-500 text-lg">Três passos simples para começares a vender ou comprar.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card p-8 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-5">
+            <i class="fa-solid fa-camera text-2xl text-orange"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-2">1. Fotografa</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Tira fotos do teu produto com o telemóvel.</p>
+        </div>
+        <div class="card p-8 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-5">
+            <i class="fa-solid fa-cloud-arrow-up text-2xl text-orange"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-2">2. Publica grátis</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Publica o teu anúncio em segundos sem pagar nada.</p>
+        </div>
+        <div class="card p-8 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-5">
+            <i class="fa-solid fa-coins text-2xl text-orange"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-2">3. Recebe o dinheiro</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Combina e recebe o pagamento rápido e seguro.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-16 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-center relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 25% 25%,white 1px,transparent 1px);background-size:40px 40px"></div>
+    <div class="max-w-2xl mx-auto px-4 relative">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Pronto para bisnar?</h2>
+      <p class="text-orange-100 mb-8 text-lg">Junta-te a milhares de angolanos que já compram e vendem no Ya o bisno.</p>
+      <button id="ctaFinalBtn" class="bg-white text-orange font-bold px-10 py-4 rounded-xl text-lg inline-flex items-center gap-3 shadow-xl hover:shadow-2xl transition-all hover:scale-105 cursor-pointer border-0">
+        Quero vender agora <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<div id="loginModal" class="modal hidden">
+  <div class="modal-panel">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold">Entrar</h3>
+      <button id="closeLogin" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="loginForm" class="space-y-4" onsubmit="return handleLogin(event)">
+      <div id="loginFields">
+        <input id="loginEmail" type="email" placeholder="O teu email" required>
+        <div class="relative">
+          <input id="loginPassword" type="password" placeholder="Palavra-passe" required>
+          <button type="button" onclick="togglePass('loginPassword','eyeIconLogin')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange p-1">
+            <i id="eyeIconLogin" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <div id="loginRegisterFields" class="space-y-4 hidden">
+        <input id="regName" type="text" placeholder="Nome completo">
+        <input id="regPhone" type="tel" placeholder="Telemovel (ex: 9XX XXX XXX)">
+        <div class="relative">
+          <input id="regPasswordConfirm" type="password" placeholder="Confirmar palavra-passe">
+          <button type="button" onclick="togglePass('regPasswordConfirm','eyeIconConfirm')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange p-1">
+            <i id="eyeIconConfirm" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <div id="resetPwdFields" class="space-y-4 hidden">
+        <input id="resetEmail" type="email" placeholder="O teu email" readonly class="bg-gray-50 cursor-not-allowed">
+        <div class="relative">
+          <input id="resetNewPwd" type="password" placeholder="Nova palavra-passe">
+          <button type="button" onclick="togglePass('resetNewPwd','eyeIconReset')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange p-1">
+            <i id="eyeIconReset" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+        <div class="relative">
+          <input id="resetNewPwdConfirm" type="password" placeholder="Confirmar nova palavra-passe">
+          <button type="button" onclick="togglePass('resetNewPwdConfirm','eyeIconResetConfirm')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange p-1">
+            <i id="eyeIconResetConfirm" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <button type="submit" id="loginSubmitBtn" class="btn-primary w-full py-3.5 text-base">Entrar</button>
+      <div id="loginToggleArea">
+        <p class="text-sm text-gray-400 text-center">
+          <span id="loginToggleText">Ainda não tens conta?</span>
+          <a href="#" id="loginToggleLink" class="text-orange font-medium hover:underline">Criar conta</a>
+        </p>
+        <p class="text-xs text-gray-400 text-center mt-1">
+          <a href="#" id="forgotPwdLink" class="text-gray-500 hover:text-orange hover:underline">Esqueceu-se da password?</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer class="bg-white border-t border-orange/10 text-gray-600 py-8">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-6">
+      <div class="col-span-2 md:col-span-1">
+        <a href="index.html"><img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="h-8 mb-2"></a>
+        <p class="text-sm text-gray-400">Bisno fácil, dinheiro rápido.</p>
+      </div>
+      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Descobrir</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#como-funciona" class="text-gray-500 hover:text-orange transition">Como funciona</a></li>
+          <li><a href="#produtos" class="text-gray-500 hover:text-orange transition">Anúncios</a></li>
+        </ul>
+      </div>
+      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Ajuda</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Central de ajuda em breve')">Central de ajuda</a></li>
+          <li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Denúncia enviada')">Reportar</a></li>
+        </ul>
+      </div>
+      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Contato</h5>
+        <ul class="space-y-2 text-sm">
+          <li><a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-whatsapp mr-2"></i>WhatsApp</a></li>
+          <li><a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-instagram mr-2"></i>Instagram</a></li>
+          <li><a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-facebook mr-2"></i>Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-gray-100 pt-6 text-sm text-center flex flex-col sm:flex-row justify-between gap-3">
+      <p class="text-gray-400">&copy; 2026 Ya o bisno</p>
+      <div class="flex gap-4 justify-center">
+        <span class="text-gray-400"><i class="fa-solid fa-shield-halved mr-1 text-orange"></i> 5% Proteção</span>
+        <span class="text-gray-400"><i class="fa-solid fa-check mr-1 text-green-400"></i> 0% Taxa</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div id="toastContainer"></div>
+
+<script>
+var products = [];
+var isRegisterMode = false;
+var isResetMode = false;
+
+var mockProducts = [
+  {id:1,name:"Ténis Nike Air Max 90",price:45000,location:"Luanda",category:"Moda",images:["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800","https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800"],isNew:true,negotiable:false},
+  {id:2,name:"iPhone 13 Pro Max 256GB",price:350000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800","https://images.unsplash.com/photo-1574944985070-8f3ebc00b6b2?w=800"],isNew:true,negotiable:true},
+  {id:3,name:"Sofá 3 Lugares em Couro",price:120000,location:"Benguela",category:"Casa",images:["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800","https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800"],isNew:false,negotiable:true},
+  {id:4,name:"MacBook Air M1 2021",price:280000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800","https://images.unsplash.com/photo-1537495329792-41ae41ad3bf0?w=800"],isNew:false,negotiable:true},
+  {id:5,name:"Vestido de Festa Afro",price:15000,location:"Huíla",category:"Moda",images:["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800","https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800"],isNew:true,negotiable:false},
+  {id:6,name:"Bicicleta de Montanha",price:75000,location:"Huambo",category:"Desporto",images:["https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800","https://images.unsplash.com/photo-1576435728678-68d0fbf94da8?w=800"],isNew:false,negotiable:true},
+  {id:7,name:"PlayStation 5 Slim",price:200000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800","https://images.unsplash.com/photo-1607016284316-e1d1489002ff?w=800"],isNew:true,negotiable:false},
+  {id:8,name:"Mesa de Escritório Executiva",price:40000,location:"Benguela",category:"Casa",images:["https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=800","https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800"],isNew:false,negotiable:true}
+];
+
+(function(){
+  try{
+    if(typeof localStorage==="undefined"){}
+    if(localStorage.getItem("yabisno_user")){window.location.replace("main.html");return;}
+  }catch(e){}
+  initPage();
+})();
+
+function initPage(){
+  loadProducts();
+  bindUI();
+  renderProducts();
+}
+
+function loadProducts(){
+  try{products=JSON.parse(localStorage.getItem("yabisno_products"))||[]}catch(e){products=[]}
+  if(products.length===0){
+    API.getProducts().then(function(server){
+      if(server&&server.length>0){products=server;try{localStorage.setItem("yabisno_products",JSON.stringify(server))}catch(e){};renderProducts()}
+      else if(products.length===0){products=mockProducts.slice();try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}}
+    }).catch(function(){
+      if(products.length===0){products=mockProducts.slice();try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}}
+    });
+  }
+}
+
+function saveProducts(){
+  try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
+}
+
+function bindUI(){
+  try{
+    var el;
+    el=byId("loginBtn");if(el)el.onclick=function(){openModal("loginModal")};
+    el=byId("menuBtn");if(el)el.onclick=function(){var m=byId("mobileMenu");if(m)m.classList.remove("hidden");document.body.style.overflow="hidden"};
+    el=byId("closeMenu");if(el)el.onclick=closeMobile;
+    el=byId("loginBtnMobile");if(el)el.onclick=function(){closeMobile();openModal("loginModal")};
+    el=byId("ctaFinalBtn");if(el)el.onclick=function(){openModal("loginModal")};
+    el=byId("closeLogin");if(el)el.onclick=function(){resetLoginForm();closeModal("loginModal")};
+    el=byId("loginModal");if(el)el.onclick=function(e){if(e.target===this){resetLoginForm();closeModal("loginModal")}};
+    document.querySelectorAll("a[href^='#']").forEach(function(a){
+      if(a.id==="loginToggleLink"||a.id==="forgotPwdLink")return;
+      a.onclick=function(e){
+        e.preventDefault();
+        closeMobile();
+        var h=a.getAttribute("href");
+        if(h==="#")return;
+        var t=document.querySelector(h);
+        if(t)setTimeout(function(){t.scrollIntoView({behavior:"smooth"})},250);
+      };
+    });
+    el=byId("loginToggleLink");if(el)el.onclick=function(e){e.preventDefault();toggleLoginMode()};
+    el=byId("forgotPwdLink");if(el)el.onclick=function(e){e.preventDefault();toggleResetMode()};
+  }catch(e){try{console.error("bindUI:",e)}catch(ex){}}
+}
+
+function closeMobile(){
+  var m=byId("mobileMenu");if(m)m.classList.add("hidden");
+  document.body.style.overflow="";
+}
+
+function renderProducts(){
+  var grid=byId("productsGrid"),count=byId("resultCount");
+  if(!grid)return;
+  if(products.length===0){
+    grid.innerHTML='<div class="col-span-full card p-12 text-center"><i class="fa-solid fa-inbox text-5xl mb-4 text-gray-200"></i><p class="text-gray-400">Nenhum produto encontrado</p></div>';
+    if(count)count.textContent="0 produtos";
+    return;
+  }
+  var h="";
+  for(var i=0;i<Math.min(products.length,8);i++)h+=cardHTML(products[i]);
+  grid.innerHTML=h;
+  if(count)count.textContent=products.length+" produto"+(products.length!==1?"s":"");
+}
+
+function cardHTML(p){
+  var imgs=p.images||[];
+  var src=imgs.length>0?imgs[0]:imgPH(p.name);
+  var more=imgs.length>1?'<span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur"><i class="fa-solid fa-images mr-1"></i>'+imgs.length+'</span>':'';
+  return '<div class="card">'+
+    '<div class="relative" style="padding-bottom:75%;background:#f8f8f8;overflow:hidden">'+
+    '<img src="'+esc(src)+'" alt="'+esc(p.name)+'" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="imgFallback(this)">'+
+    (p.isNew?'<span class="badge-orange absolute top-3 left-3">NOVO</span>':'')+more+
+    '</div>'+
+    '<div class="p-4">'+
+    '<h3 class="card-name font-semibold mb-1.5">'+esc(p.name)+'</h3>'+
+    '<div class="flex items-center gap-1 text-sm text-gray-400 mb-2">'+
+    '<i class="fa-solid fa-location-dot text-xs"></i><span>'+esc(p.location)+'</span>'+
+    (p.negotiable?'<span class="ml-auto text-xs text-orange font-medium"><i class="fa-solid fa-handshake mr-1"></i>Negociável</span>':'')+
+    '</div>'+
+    '<div class="text-xl font-extrabold text-orange mb-3">'+fmt(p.price)+'</div>'+
+    '<button onclick="openModal(\'loginModal\');toast(\'Faz login para comprar\')" class="btn-primary w-full py-3 rounded-xl font-semibold text-sm">'+
+    '<i class="fa-solid fa-bag-shopping mr-1"></i>Comprar</button>'+
+    '</div></div>';
+}
+
+function toggleLoginMode(){
+  isRegisterMode=!isRegisterMode;isResetMode=false;
+  var rf=byId("loginRegisterFields"),rs=byId("resetPwdFields"),sb=byId("loginSubmitBtn"),tt=byId("loginToggleText"),tl=byId("loginToggleLink"),fp=byId("forgotPwdLink"),lf=byId("loginFields"),ta=byId("loginToggleArea");
+  if(rf)rf.classList.toggle("hidden",!isRegisterMode);
+  if(rs)rs.classList.add("hidden");
+  if(lf)lf.classList.remove("hidden");
+  if(ta)ta.classList.remove("hidden");
+  if(sb)sb.textContent=isRegisterMode?"Criar conta":"Entrar";
+  if(tt)tt.textContent=isRegisterMode?"Já tens conta?":"Ainda não tens conta?";
+  if(tl)tl.textContent=isRegisterMode?"Entrar":"Criar conta";
+  if(fp)fp.classList.toggle("hidden",isRegisterMode);
+}
+function toggleResetMode(){
+  isResetMode=!isResetMode;isRegisterMode=false;
+  var rf=byId("loginRegisterFields"),rs=byId("resetPwdFields"),sb=byId("loginSubmitBtn"),tt=byId("loginToggleText"),tl=byId("loginToggleLink"),fp=byId("forgotPwdLink"),le=byId("loginEmail"),re=byId("resetEmail"),lf=byId("loginFields"),ta=byId("loginToggleArea");
+  if(rf)rf.classList.add("hidden");
+  if(rs)rs.classList.toggle("hidden",!isResetMode);
+  if(lf)lf.classList.toggle("hidden",isResetMode);
+  if(ta)ta.classList.toggle("hidden",isResetMode);
+  if(sb){sb.textContent=isResetMode?"Redefinir password":"Entrar"}
+  if(tt)tt.textContent=isResetMode?"":"Ainda não tens conta?";
+  if(tl)tl.textContent=isResetMode?"Voltar ao login":"Criar conta";
+  if(fp)fp.classList.toggle("hidden",isResetMode);
+  if(isResetMode&&le&&re){re.value=le.value}
+  if(!isResetMode&&le)le.value="";
+  document.querySelectorAll("#loginForm input").forEach(function(i){i.disabled=false});
+}
+
+function togglePass(inputId,iconId){
+  var inp=byId(inputId),ico=byId(iconId);
+  if(!inp||!ico)return;
+  if(inp.type==="password"){inp.type="text";ico.classList.replace("fa-eye","fa-eye-slash")}
+  else{inp.type="password";ico.classList.replace("fa-eye-slash","fa-eye")}
+}
+function resetLoginForm(){
+  if(isRegisterMode)toggleLoginMode();
+  if(isResetMode)toggleResetMode();
+  isRegisterMode=false;isResetMode=false;
+}
+
+function handleLogin(e){
+  if(e)e.preventDefault();
+  try{
+  if(isRegisterMode){
+    var rn=byId("regName"),le=byId("loginEmail"),rp=byId("regPhone"),lp=byId("loginPassword"),rc=byId("regPasswordConfirm");
+    if(!rn||!le||!rp||!lp||!rc)return false;
+    var name=rn.value.trim(),email=le.value.trim().toLowerCase(),phone=rp.value.trim(),pwd=lp.value.trim(),pwdC=rc.value.trim();
+    if(!name||!email||!phone||!pwd){toast("Preenche todos os campos");return false;}
+    if(pwd.length<8||!/[A-Za-z]/.test(pwd)||!/\d/.test(pwd)){toast("Mínimo 8 caracteres, letras e números");return false;}
+    if(pwd!==pwdC){toast("Palavra-passe não coincide");return false;}
+    API.register(name,email,phone,pwd).then(function(r){
+      if(!r.ok){toast(r.error||"Erro ao registar");return}
+      localStorage.setItem("yabisno_user",JSON.stringify(r.user));
+      closeModal("loginModal");window.location.href="main.html";
+    });
+    return false;
+  }
+  if(isResetMode){
+    var re=byId("resetEmail"),rn=byId("resetNewPwd"),rc=byId("resetNewPwdConfirm");
+    if(!re||!rn||!rc)return false;
+    var email=re.value.trim().toLowerCase(),pwd=rn.value.trim(),pwdC=rc.value.trim();
+    if(!email||!pwd){toast("Preenche todos os campos");return false;}
+    if(pwd.length<8||!/[A-Za-z]/.test(pwd)||!/\d/.test(pwd)){toast("Mínimo 8 caracteres, letras e números");return false;}
+    if(pwd!==pwdC){toast("Palavra-passe não coincide");return false;}
+    API.resetPassword(email,pwd).then(function(r){
+      if(!r.ok){toast(r.error||"Erro");return}
+      toast("Password alterada! Faz login.");
+      toggleResetMode();
+    });
+    return false;
+  }
+  var le2=byId("loginEmail"),lp2=byId("loginPassword");
+  if(!le2||!lp2)return false;
+  var email=le2.value.trim().toLowerCase(),pwd=lp2.value.trim();
+  if(!email||!pwd){toast("Introduz o email e a palavra-passe");return false;}
+  API.login(email,pwd).then(function(r){
+    if(!r.ok){toast(r.error||"Email ou password incorretos");return}
+    localStorage.setItem("yabisno_user",JSON.stringify(r.user));
+    window.location.href="main.html";
+  });
+  return false;
+  }catch(e){toast("Erro ao processar");return false}
+}
+
+function fmt(v){return Number(v).toLocaleString("pt-PT")+" Kz"}
+function imgFallback(el){try{var n=el.closest('.card').querySelector('.card-name');if(n)el.src=imgPH(n.textContent)}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]})}
+function imgPH(n){var c=['#FF5F1F','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f8f8f8"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}
+function byId(id){return document.getElementById(id)}
+function openModal(id){var el=byId(id);if(el)el.classList.remove("hidden")}
+function closeModal(id){var el=byId(id);if(el)el.classList.add("hidden")}
+function toast(m){
+  var c=byId("toastContainer");
+  if(!c)return;
+  var el=document.createElement("div");el.className="toast";el.textContent=m;
+  c.appendChild(el);
+  setTimeout(function(){el.style.transition="opacity .3s";el.style.opacity="0";setTimeout(function(){el.remove()},300)},2500);
+}
+</script>
+</body>
+</html>

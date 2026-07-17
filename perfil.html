@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FF5F1F">
+<title>Ya o bisno — Meu Perfil</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
+<script src="api.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--orange:#FF5F1F;--dark:#1A1A1A;--gray:#F5F5F5;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;outline:none}
+button{-webkit-appearance:none;appearance:none;font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipulation;background:none;border:none;padding:0;color:inherit;line-height:1}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;border-radius:0.75rem;color:#4b5563;font-size:1.125rem;transition:background .2s;background:none;border:none;touch-action:manipulation;cursor:pointer}
+.icon-btn:hover{background:#f3f4f6}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#f8f9fa;color:#1A1A1A;-webkit-font-smoothing:antialiased}
+.text-orange{color:#FF5F1F}.bg-orange{background-color:#FF5F1F}.border-orange{border-color:#FF5F1F}
+.btn-primary{background:#FF5F1F;color:#fff;border:none;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;font-size:.875rem;text-decoration:none;touch-action:manipulation}
+.btn-primary:hover{box-shadow:0 8px 25px rgba(255,95,31,.35)}
+.btn-primary:active{transform:scale(.96)}
+.btn-outline{background:transparent;color:#FF5F1F;border:2px solid #FF5F1F;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;font-size:.875rem;touch-action:manipulation}
+.btn-outline:hover{background:#FF5F1F;color:#fff}
+.card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;transition:all .3s;overflow:hidden}
+.card-img-wrap{position:relative;width:100%;padding-bottom:75%;background:#f0f0f0;overflow:hidden;border-radius:.5rem}
+.card-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
+.modal-panel{width:100%;max-width:480px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin-bottom:0}
+.modal.hidden{display:none}
+.modal-panel.no-pad{padding:0}
+.modal-panel.no-pad.chat-panel{height:55vh;max-height:70vh;min-height:250px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
+@media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
+input[type="text"],input[type="number"],select{border:2px solid #e5e7eb;border-radius:12px;padding-top:.85rem;padding-bottom:.85rem;width:100%;font-size:1rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:#FF5F1F!important;box-shadow:0 0 0 4px rgba(255,95,31,.1)!important}
+header{padding-top:0}
+.chat-msg{padding:.35rem .65rem;border-radius:10px;max-width:75%;word-wrap:break-word;font-size:.875rem}
+.chat-msg.sent{background:#FF5F1F;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.chat-msg.received{background:#F5F5F5;color:#1A1A1A;margin-right:auto;border-bottom-left-radius:4px}
+.chat-msg .time{font-size:.65rem;opacity:.7;margin-top:.15rem;display:block}
+.chat-input{border:2px solid #FF5F1F;border-radius:999px;padding:.55rem 1rem;width:100%;transition:all .2s}
+.chat-input:focus{outline:none;border-color:#FF5F1F;box-shadow:0 0 0 4px rgba(255,95,31,.12)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:20px;padding-right:40px}
+</style>
+</head>
+<body>
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-orange/10">
+  <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative">
+    <a href="main.html" class="block w-20 sm:w-32 z-10 shrink-0 overflow-hidden">
+      <img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="max-sm:w-20 max-sm:h-8 sm:w-full sm:h-12" style="object-fit:contain;object-position:left">
+    </a>
+    <a href="#como-funciona" class="hidden md:inline-flex btn-primary text-sm px-5 py-2.5 min-w-[140px] text-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">Como funciona</a>
+    <div class="flex items-center gap-2 z-10">
+      <a href="main.html" class="btn-primary px-4 py-2.5 text-sm"><i class="fa-solid fa-arrow-left mr-1"></i><span>Marketplace</span></a>
+      <button onclick="sair()" class="btn-primary px-4 py-2.5 text-sm" style="background:#ef4444;"><i class="fa-solid fa-right-from-bracket mr-1"></i><span>Sair</span></button>
+    </div>
+  </div>
+</header>
+
+<main style="padding-top:4rem;min-height:calc(var(--vh,1vh)*100)" class="pb-12 bg-gray-50">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6">
+
+    <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm mb-6 flex flex-col sm:flex-row items-center gap-6 mt-6 border border-gray-100">
+      <label for="profilePicInput" class="cursor-pointer group relative shrink-0">
+        <div id="picContainer" class="w-24 h-24 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-orange transition">
+          <i id="userIcon" class="fa-solid fa-user text-4xl text-gray-400"></i>
+          <img id="userAvatar" src="" class="hidden w-full h-full object-cover" onerror="this.classList.add('hidden');byId('userIcon').classList.remove('hidden')">
+        </div>
+        <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+          <i class="fa-solid fa-camera text-white text-lg"></i>
+        </div>
+        <input id="profilePicInput" type="file" accept="image/*" class="hidden">
+      </label>
+      <div class="text-center sm:text-left flex-1">
+        <h1 id="profileName" class="text-2xl font-bold"></h1>
+        <p id="profilePhone" class="text-sm text-gray-400 mt-1"></p>
+        <div class="flex gap-3 mt-3 justify-center sm:justify-start">
+          <span class="text-xs bg-orange-100 text-orange px-3 py-1.5 rounded-full font-medium" id="productCount">0 produtos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-5 text-center shadow-sm border border-gray-100"><div class="text-2xl font-bold text-orange" id="statTotal">0</div><div class="text-xs text-gray-400 mt-1">Total produtos</div></div>
+      <div class="bg-white rounded-xl p-5 text-center shadow-sm border border-gray-100"><div class="text-2xl font-bold text-green-500" id="statNovos">0</div><div class="text-xs text-gray-400 mt-1">Produtos novos</div></div>
+      <div class="bg-white rounded-xl p-5 text-center shadow-sm border border-gray-100"><div class="text-2xl font-bold text-blue-500" id="statNegociavel">0</div><div class="text-xs text-gray-400 mt-1">Negociáveis</div></div>
+      <div class="bg-white rounded-xl p-5 text-center shadow-sm border border-gray-100"><div class="text-2xl font-bold text-purple-500" id="statChats">0</div><div class="text-xs text-gray-400 mt-1">Conversas</div></div>
+    </div>
+
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-bold">Meus Produtos</h2>
+      <button id="publishBtn" class="btn-primary px-5 py-2.5 text-sm"><i class="fa-solid fa-plus"></i> Novo produto</button>
+    </div>
+    <div id="userProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    <h2 class="text-xl font-bold mt-12 mb-6">Conversas</h2>
+    <div id="chatsList" class="space-y-3"></div>
+
+    <section id="como-funciona" class="mt-16 mb-6 scroll-mt-24">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl font-bold mb-3">Como funciona</h2>
+        <p class="text-gray-500">Três passos simples para começares a vender ou comprar.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="card p-6 sm:p-8 text-center bg-white">
+          <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-camera text-2xl text-orange"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-2">1. Fotografa</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Tira fotos do teu produto com o telemóvel.</p>
+        </div>
+        <div class="card p-6 sm:p-8 text-center bg-white">
+          <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-cloud-arrow-up text-2xl text-orange"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-2">2. Publica grátis</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Publica o teu anúncio em segundos sem pagar nada.</p>
+        </div>
+        <div class="card p-6 sm:p-8 text-center bg-white">
+          <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-coins text-2xl text-orange"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-2">3. Recebe o dinheiro</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Combina e recebe o pagamento rápido e seguro.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div id="publishModal" class="modal hidden">
+  <div class="modal-panel">
+    <div class="flex items-center justify-between mb-6"><h3 class="text-xl font-bold">Publicar produto</h3><button id="closePublish" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button></div>
+    <form id="publishForm" class="space-y-4">
+      <input id="pub-name" type="text" placeholder="Nome do produto" required>
+      <input id="pub-price" type="number" placeholder="Preço (Kz)" required>
+      <input id="pub-location" type="text" placeholder="Localização (ex: Luanda, Benguela)" required>
+      <input id="pub-image" type="file" accept="image/*" multiple class="text-sm py-3">
+      <div id="pub-image-preview" class="flex gap-2 flex-wrap"></div>
+      <select id="pub-category" required><option value="">Categoria</option><option>Moda</option><option>Eletronicos</option><option>Casa</option><option>Desporto</option><option>Carros</option><option>Perfumes e Cosmeticos</option><option>Imoveis</option></select>
+      <div class="flex gap-4"><label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-new" type="checkbox" class="w-4 h-4 accent-orange"><span>Produto novo</span></label><label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-neg" type="checkbox" class="w-4 h-4 accent-orange"><span>Aceito negociação</span></label></div>
+      <div class="flex gap-3 pt-2"><button type="button" id="cancelPublish" class="btn-outline flex-1 py-3 rounded-xl">Cancelar</button><button type="submit" class="btn-primary flex-1 py-3">Publicar grátis</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="chatModal" class="modal hidden">
+  <div class="modal-panel no-pad chat-panel" style="max-width:520px;display:flex;flex-direction:column">
+    <div class="flex items-center justify-between p-4 border-b border-gray-100 shrink-0"><div><h3 id="chatTitle" class="font-bold text-lg"></h3><p id="chatSubtitle" class="text-xs text-gray-400"></p></div><button onclick="closeModal('chatModal')" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button></div>
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-3 space-y-3" style="min-height:0;-webkit-overflow-scrolling:touch"></div>
+    <div class="p-3 border-t border-gray-100 flex gap-2 shrink-0"><input id="chatInput" type="text" placeholder="Escreve a tua mensagem..." class="chat-input" onkeydown="if(event.key==='Enter')sendMsg()"><button onclick="sendMsg()" class="btn-primary px-4 py-2 rounded-full"><i class="fa-solid fa-paper-plane"></i></button></div>
+  </div>
+</div>
+
+<footer class="bg-white border-t border-orange/10 text-gray-600 py-8">
+  <div class="max-w-7xl mx-auto px-4"><div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-6"><div class="col-span-2 md:col-span-1"><a href="perfil.html"><img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="h-8 mb-2"></a><p class="text-sm text-gray-400">Bisno fácil, dinheiro rápido.</p></div><div><h5 class="text-gray-800 font-bold mb-3 text-sm">Descobrir</h5><ul class="space-y-2 text-sm"><li><a href="main.html" class="text-gray-500 hover:text-orange transition">Marketplace</a></li></ul></div><div><h5 class="text-gray-800 font-bold mb-3 text-sm">Ajuda</h5><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Central de ajuda em breve')">Ajuda</a></li><li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Denúncia enviada')">Reportar</a></li></ul></div><div><h5 class="text-gray-800 font-bold mb-3 text-sm">Contato</h5><ul class="space-y-2 text-sm"><li><a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-whatsapp mr-2"></i>WhatsApp</a></li><li><a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-instagram mr-2"></i>Instagram</a></li><li><a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-facebook mr-2"></i>Facebook</a></li></ul></div></div><div class="border-t border-gray-100 pt-6 text-sm text-center flex flex-col sm:flex-row justify-between gap-3"><p class="text-gray-400">&copy; 2026 Ya o bisno</p><div class="flex gap-4 justify-center"><span class="text-gray-400"><i class="fa-solid fa-shield-halved mr-1 text-orange"></i> 5% Proteção</span><span class="text-gray-400"><i class="fa-solid fa-check mr-1 text-green-400"></i> 0% Taxa</span></div></div></div>
+</footer>
+
+<div id="toastContainer"></div>
+
+<script>
+var products=[],chats={},activeChatProductId=null,activeChatBuyerEmail=null,editingProductId=null;
+
+(function(){
+  try{
+    if(typeof localStorage==="undefined"){}
+    if(!localStorage.getItem("yabisno_user")){window.location.replace("index.html");return}
+  }catch(e){window.location.replace("index.html");return}
+  loadLocal();renderUser();renderProducts();renderChats();bindAll();
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(u){
+    API.getProducts().then(function(server){
+      if(server&&server.length>0){products=server;try{localStorage.setItem("yabisno_products",JSON.stringify(server))}catch(e){};renderProducts()}
+    }).catch(function(){});
+    API.getChats(u.email).then(function(server){
+      if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats()}
+    }).catch(function(){});
+  }
+  setInterval(function(){try{var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u&&u.email){API.getChats(u.email).then(function(server){if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats();var m=byId("chatModal");if(activeChatProductId&&m&&!m.classList.contains("hidden")){var k=activeChatProductId+"_"+activeChatBuyerEmail;renderChat(k);markRead(k)}}}).catch(function(){})}}catch(e){}},3000);
+  try{window.addEventListener("storage",function(){try{loadLocal();var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u&&u.email){API.getChats(u.email).then(function(server){if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats();var m=byId("chatModal");if(activeChatProductId&&m&&!m.classList.contains("hidden")){var k=activeChatProductId+"_"+activeChatBuyerEmail;renderChat(k);markRead(k)}}}).catch(function(){})}}catch(e){}})}catch(e){}
+})();
+
+function loadLocal(){
+  try{
+    products=JSON.parse(localStorage.getItem("yabisno_products"))||[];
+    chats=JSON.parse(localStorage.getItem("yabisno_chats"))||{};
+  }catch(e){products=[];chats={}}
+}
+function byId(id){return document.getElementById(id)}
+
+function bindAll(){
+  try{
+    var el;
+    el=byId("publishBtn");if(el)el.onclick=function(){editingProductId=null;var f=byId("publishForm"),p=byId("pub-image-preview");if(f)f.reset();if(p)p.innerHTML="";openModal("publishModal")};
+    el=byId("closePublish");if(el)el.onclick=function(){closeModal("publishModal")};
+    el=byId("cancelPublish");if(el)el.onclick=function(){editingProductId=null;closeModal("publishModal")};
+    el=byId("publishModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("publishModal")};
+    el=byId("publishForm");if(el)el.onsubmit=handlePublish;
+    el=byId("pub-image");if(el)el.onchange=function(){
+      var p=byId("pub-image-preview");if(!p)return;p.innerHTML="";
+      for(var i=0;i<Math.min(this.files.length,10);i++)(function(f){
+        var r=new FileReader();r.onload=function(e){
+          var d=document.createElement("div");d.className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shrink-0";
+          d.innerHTML='<img src="'+e.target.result+'" class="w-full h-full object-cover">';p.appendChild(d)
+        };r.readAsDataURL(f)
+      })(this.files[i])
+    };
+    el=byId("chatModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("chatModal")};
+    el=byId("profilePicInput");if(el)el.onchange=handlePic;
+  }catch(e){try{console.error("bindAll:",e)}catch(ex){}}
+}
+
+function renderUser(){
+  try{
+    var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u)return;
+    var pn=byId("profileName"),pp=byId("profilePhone"),img=byId("userAvatar"),ico=byId("userIcon");
+    if(pn)pn.textContent=u.name||"";
+    if(pp)pp.textContent=u.phone?"Telemóvel: "+u.phone:"";
+    var av=localStorage.getItem("yabisno_avatar_"+u.email);
+    if(av){if(img){img.src=av;img.classList.remove("hidden")}if(ico)ico.classList.add("hidden")}else{if(img){img.src="";img.classList.add("hidden")}if(ico)ico.classList.remove("hidden")}
+  }catch(e){}
+}
+
+function handlePic(e){
+  if(!e.target.files||!e.target.files[0])return;
+  var file=e.target.files[0],img=new Image(),url=URL.createObjectURL(file);
+  img.onload=function(){
+    URL.revokeObjectURL(url);
+    var c=document.createElement("canvas"),MAX=120,w=img.width,h=img.height;
+    if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX}}
+    c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+    var data=c.toDataURL("image/jpeg",0.4);
+    try{
+      var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u)return;
+      for(var k in localStorage){if(k.indexOf("yabisno_avatar_")===0&&k!=="yabisno_avatar_"+u.email)localStorage.removeItem(k)}
+      localStorage.setItem("yabisno_avatar_"+u.email,data);
+      renderUser();toast("Foto atualizada!");
+      API.saveAvatar(u.email,data);
+    }catch(err){toast("Não foi possível guardar. Tenta uma foto mais pequena.")}
+  };img.src=url;
+}
+
+function renderProducts(){
+  try{
+    var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u)return;
+    var mine=products.filter(function(p){return(p.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase()}),g=byId("userProductsGrid");if(!g)return;
+    byId("statTotal").textContent=mine.length;
+    byId("statNovos").textContent=mine.filter(function(p){return p.isNew}).length;
+    byId("statNegociavel").textContent=mine.filter(function(p){return p.negotiable}).length;
+    byId("productCount").textContent=mine.length+" produto"+(mine.length!==1?"s":"");
+    if(mine.length===0){g.innerHTML='<div class="col-span-full card p-12 text-center"><i class="fa-solid fa-box-open text-5xl mb-4 text-gray-200"></i><p class="text-gray-400 mb-4">Ainda não publicaste produtos.</p><a href="main.html" class="btn-primary px-6 py-3 inline-block rounded-xl text-sm">Publicar</a></div>';return}
+    var h="";
+    for(var i=0;i<mine.length;i++){
+      var p=mine[i],imgs=p.images||[],src=imgs.length>0?imgs[0]:imgPH(p.name);
+      var more=imgs.length>1?'<span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur"><i class="fa-solid fa-images mr-1"></i>'+imgs.length+'</span>':'';
+      var thumbs='';
+      if(imgs.length>1){thumbs='<div class="flex gap-1 mt-1 overflow-x-auto">';for(var ti=0;ti<imgs.length;ti++)thumbs+='<img src="'+esc(imgs[ti])+'" class="w-10 h-10 rounded object-cover shrink-0 cursor-pointer border-2 border-transparent hover:border-orange transition" onclick="var m=this.closest(\'.card\').querySelector(\'.main-img\');m.src=this.src;this.closest(\'.card\').querySelectorAll(\'.thumb\').forEach(function(t){t.style.borderColor=\'transparent\'});this.style.borderColor=\'#FF5F1F\'">';thumbs+='</div>'}
+      h+='<div class="card p-4"><div class="card-img-wrap"><img src="'+esc(src)+'" class="main-img absolute inset-0 w-full h-full object-contain" onerror="imgFallback(this)">'+more+'</div>'+thumbs+'<h3 class="card-name font-bold mt-2">'+esc(p.name)+'</h3><p class="text-sm text-gray-400"><i class="fa-solid fa-location-dot mr-1"></i>'+esc(p.location)+'</p><p class="text-orange font-bold text-xl mt-1">'+fmt(p.price)+'</p><div class="flex flex-wrap gap-2 mt-4"><button onclick="edit('+p.id+')" class="text-sm bg-gray-100 px-4 py-2.5 rounded-lg hover:bg-gray-200 font-medium">Editar</button><button onclick="del('+p.id+')" class="text-sm bg-red-100 text-red-600 px-4 py-2.5 rounded-lg hover:bg-red-200 font-medium">Apagar</button><button onclick="viewChat('+p.id+')" class="text-sm bg-orange-100 text-orange px-4 py-2.5 rounded-lg hover:bg-orange-200 font-medium"><i class="fa-solid fa-comment mr-1"></i>Chat</button></div></div>'
+    }
+    g.innerHTML=h
+  }catch(e){}
+}
+
+function del(id){if(!confirm("Apagar este produto?"))return;products=products.filter(function(p){return p.id!==id});try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}renderProducts();toast("Apagado!")}
+function edit(id){
+  var p=products.find(function(x){return x.id===id});if(!p)return;
+  var pn=byId("pub-name"),pp=byId("pub-price"),pl=byId("pub-location"),pc=byId("pub-category"),pnew=byId("pub-new"),pneg=byId("pub-neg");
+  if(pn)pn.value=p.name||"";if(pp)pp.value=p.price||"";if(pl)pl.value=p.location||"";if(pc)pc.value=p.category||"";
+  if(pnew)pnew.checked=!!p.isNew;if(pneg)pneg.checked=!!p.negotiable;editingProductId=p.id;openModal("publishModal")
+}
+
+function handlePublish(e){
+  if(e)e.preventDefault();
+  try{
+  var pn=byId("pub-name"),pp=byId("pub-price"),pl=byId("pub-location"),pc=byId("pub-category"),pnew=byId("pub-new"),pneg=byId("pub-neg"),pi=byId("pub-image");
+  if(!pn||!pp||!pl||!pc){toast("Erro no formulário");return}
+  var name=pn.value.trim(),price=parseFloat(pp.value)||0;
+  var loc=pl.value.trim(),cat=pc.value||"Outros";
+  var inew=pnew?pnew.checked:false,neg=pneg?pneg.checked:false;
+  if(!name||!price||!loc){toast("Preenche os campos");return}
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u){toast("Precisas estar logado");return}
+  var files=pi?pi.files:null;
+  function fin(imgs){
+    if(editingProductId){
+      var idx=products.findIndex(function(p){return p.id===editingProductId});
+      if(idx>-1){products[idx].name=name;products[idx].price=price;products[idx].location=loc;products[idx].category=cat;if(imgs&&imgs.length>0)products[idx].images=imgs;products[idx].isNew=inew;products[idx].negotiable=neg;toast("Atualizado!")}
+      API.updateProduct(editingProductId,{name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg});
+      editingProductId=null
+    }else{
+      var mx=0;for(var i=0;i<products.length;i++){if(products[i].id>mx)mx=products[i].id}
+      var p={id:Date.now(),name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name};
+      products.unshift(p);
+      API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name});
+      toast("Produto publicado!")
+    }
+    try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
+    renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pv=byId("pub-image-preview");if(pf)pf.reset();if(pv)pv.innerHTML=""
+  }
+  if(files&&files.length>0){
+    var loaded=[],toLoad=Math.min(files.length,10),cnt=0;
+    for(var fi=0;fi<toLoad;fi++)(function(f){
+      var r=new FileReader();r.onload=function(ev){
+        var img=new Image();img.onload=function(){
+          var c=document.createElement("canvas"),MAX=800,w=img.width,h=img.height;
+          if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX}else{w=Math.round(w*MAX/h);h=MAX}}
+          c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+          loaded.push(c.toDataURL("image/jpeg",0.5));cnt++;if(cnt>=toLoad)fin(loaded)
+        };img.src=ev.target.result
+      };r.onerror=function(){cnt++;if(cnt>=toLoad)fin(loaded)};r.readAsDataURL(f)
+    })(files[fi])
+  }else if(editingProductId){var ex=products.find(function(p){return p.id===editingProductId});fin(ex?ex.images||[imgPH(ex.name)]:[imgPH(name)])}
+  else{fin([imgPH(name)])}
+  }catch(e){try{console.error("handlePublish:",e)}catch(ex){}toast("Erro ao publicar")}
+}
+
+function renderChats(){
+  var c=byId("chatsList");if(!c)return;
+  try{
+    var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u)return;
+    var keys=Object.keys(chats),cnt=0,html="";
+    for(var i=0;i<keys.length;i++){
+      var parts=keys[i].split('_'),pid=parseInt(parts[0]),buyerEmail=parts.slice(1).join('_');
+      var msgs=chats[keys[i]];if(!msgs||msgs.length===0)continue;
+      var prod=products.find(function(p){return p.id===pid});
+      var isMine=prod&&(prod.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase();
+      var hasMe=msgs.some(function(m){return m.from===u.email});
+      var hasOther=msgs.some(function(m){return m.from!==u.email});
+      if(!isMine&&!hasMe)continue;if(isMine&&!hasOther&&!hasMe)continue;
+      cnt++;var pName=prod?prod.name:"Produto #"+pid;
+      var buyerName=buyerEmail.split('@')[0];
+      var displayName=isMine?pName+" — "+buyerName:pName;
+      var last=msgs[msgs.length-1],t=new Date(last.timestamp).toLocaleString("pt-PT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+      var unread=msgs.filter(function(m){return m.from!==u.email&&!m.read}).length;
+      html+='<div class="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md transition border '+(unread>0?'border-orange':'border-transparent')+'" onclick="viewChat(\''+keys[i]+'\')"><div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-comment text-orange"></i></div><div class="flex-1 min-w-0"><div class="font-bold text-sm">'+esc(displayName)+'</div><div class="text-sm '+(unread>0?'text-black font-medium':'text-gray-400')+' truncate">'+esc(last.text)+'</div></div><div class="text-right shrink-0"><div class="text-xs text-gray-400">'+t+'</div>'+(unread>0?'<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold mt-1 inline-block">'+unread+' nova'+(unread>1?'s':'')+'</span>':'')+'</div></div>'
+    }
+    byId("statChats").textContent=cnt;
+    if(!html)html='<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-comments text-4xl mb-3"></i><p>Nenhuma conversa ativa</p></div>';
+    c.innerHTML=html
+  }catch(e){}
+}
+
+function viewChat(key){
+  var parts=key.split('_'),pid=parseInt(parts[0]),buyerEmail=parts.slice(1).join('_');
+  activeChatProductId=pid;activeChatBuyerEmail=buyerEmail;
+  var prod=products.find(function(p){return p.id===pid});
+  var pn=prod?prod.name:"Produto";
+  var buyerName=buyerEmail.split('@')[0];
+  var isSeller=prod&&(prod.ownerEmail||"").toLowerCase()===(JSON.parse(localStorage.getItem("yabisno_user")||"{}").email||"").toLowerCase();
+  byId("chatTitle").textContent=pn;byId("chatSubtitle").textContent=isSeller?"Chat com "+buyerName+" sobre "+pn:"Chat sobre "+pn;
+  renderChat(key);markRead(key);openModal("chatModal")
+}
+function renderChat(key){
+  var c=byId("chatMessages"),u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!c||!u)return;var msgs=chats[key]||[],h="";
+  for(var i=0;i<msgs.length;i++){var m=msgs[i],sent=m.from===u.email,tt=new Date(m.timestamp).toLocaleString("pt-PT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});h+='<div class="chat-msg '+(sent?"sent":"received")+'"><div>'+esc(m.text)+'</div><span class="time">'+(sent?"":esc(m.from.split("@")[0])+" • ")+tt+'</span></div>'}
+  c.innerHTML=h;c.scrollTop=c.scrollHeight
+}
+function markRead(key){
+  var msgs=chats[key]||[],u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u)return;var ch=false;
+  for(var i=0;i<msgs.length;i++){if(msgs[i].from!==u.email&&!msgs[i].read){msgs[i].read=true;ch=true}}
+  if(ch){try{localStorage.setItem("yabisno_chats",JSON.stringify(chats))}catch(e){}renderChats();var parts=key.split('_'),pid=parseInt(parts[0]),buyerEmail=parts.slice(1).join('_');API.markChatRead(pid,buyerEmail,u.email)}
+}
+function sendMsg(){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u){toast("Faz login");return}if(!activeChatProductId)return;
+  var inp=byId("chatInput");if(!inp)return;
+  var t=inp.value.trim();if(!t)return;
+  var key=activeChatProductId+"_"+activeChatBuyerEmail;
+  if(!chats[key])chats[key]=[];
+  chats[key].push({from:u.email,text:t,timestamp:Date.now(),read:false});
+  inp.value="";try{localStorage.setItem("yabisno_chats",JSON.stringify(chats))}catch(e){}renderChat(key);
+  API.sendChat(activeChatProductId, activeChatBuyerEmail, u.email, t);
+}
+
+function sair(){
+  try{localStorage.removeItem("yabisno_user")}catch(e){}window.location.href="index.html"
+}
+function imgFallback(el){try{var n=el.closest('.card').querySelector('.card-name');if(n)el.src=imgPH(n.textContent)}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]})}
+function fmt(v){return Number(v).toLocaleString("pt-PT")+" Kz"}
+function imgPH(n){var c=['#FF5F1F','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f8f8f8"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}
+function openModal(id){var el=byId(id);if(el)el.classList.remove("hidden")}
+function closeModal(id){var el=byId(id);if(el)el.classList.add("hidden")}
+function toast(m){
+  var c=byId("toastContainer");if(!c)return;
+  var el=document.createElement("div");el.className="toast";el.textContent=m;
+  c.appendChild(el);setTimeout(function(){el.style.transition="opacity .3s";el.style.opacity="0";setTimeout(function(){el.remove()},300)},2500)
+}
+</script>
+</body>
+</html>

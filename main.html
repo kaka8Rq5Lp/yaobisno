@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FF5F1F">
+<title>Ya o bisno — Marketplace</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
+<script src="api.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--orange:#FF5F1F;--dark:#1A1A1A;--gray:#F5F5F5;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;outline:none}
+button{-webkit-appearance:none;appearance:none;font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipulation;background:none;border:none;padding:0;color:inherit;line-height:1}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;border-radius:0.75rem;color:#4b5563;font-size:1.125rem;transition:background .2s;background:none;border:none;touch-action:manipulation;cursor:pointer;overflow:hidden}
+.icon-btn:hover{background:#f3f4f6}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#fff;color:#1A1A1A;-webkit-font-smoothing:antialiased}
+.text-orange{color:#FF5F1F}.bg-orange{background-color:#FF5F1F}.border-orange{border-color:#FF5F1F}
+.btn-primary{background:#FF5F1F;color:#fff;border:none;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;font-size:.875rem;text-decoration:none;touch-action:manipulation}
+.btn-primary:hover{box-shadow:0 8px 25px rgba(255,95,31,.35)}
+.btn-primary:active{transform:scale(.96)}
+.btn-outline{background:transparent;color:#FF5F1F;border:2px solid #FF5F1F;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;font-size:.875rem;touch-action:manipulation}
+.btn-outline:hover{background:#FF5F1F;color:#fff}
+#checkoutForm input,#checkoutForm select{font-size:.875rem!important;padding-top:.65rem!important;padding-bottom:.65rem!important}
+.card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;transition:all .3s;overflow:hidden}
+.card:hover{border-color:#FF5F1F;box-shadow:0 12px 40px rgba(255,95,31,.1);transform:translateY(-4px)}
+.product-img-wrap{position:relative;width:100%;padding-bottom:75%;background:#f8f8f8;overflow:hidden}
+.product-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.badge-orange{background:#FF5F1F;color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:999px}
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
+.modal-panel{width:100%;max-width:480px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin-bottom:0}
+.modal.hidden{display:none}
+.modal-panel.no-pad{padding:0}
+.modal-panel.no-pad.chat-panel{height:55vh;max-height:70vh;min-height:250px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
+@media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
+input[type="text"],input[type="email"],input[type="password"],input[type="tel"],input[type="number"],select{border:2px solid #e5e7eb;border-radius:12px;padding-top:.85rem;padding-bottom:.85rem;width:100%;font-size:1rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:#FF5F1F!important;box-shadow:0 0 0 4px rgba(255,95,31,.1)!important}
+header{padding-top:0}
+.cart-sidebar{position:fixed;top:0;right:0;height:100%;width:100%;max-width:420px;background:#fff;box-shadow:-10px 0 60px rgba(0,0,0,.15);z-index:70;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.cart-sidebar.open{transform:translateX(0)}
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:65;display:none}
+.cart-overlay.open{display:block;animation:fadeIn .2s ease}
+.filter-btn{transition:all .2s;cursor:pointer;border:2px solid #FF5F1F;color:#FF5F1F;background:transparent;font-weight:600;min-height:40px;touch-action:manipulation}
+.filter-btn:hover{background:rgba(255,95,31,.08)}
+.filter-btn.active{background:#FF5F1F!important;color:#fff!important}
+.category-btn{transition:all .2s;cursor:pointer;min-height:40px;touch-action:manipulation}
+.category-btn:hover{border-color:#FF5F1F!important}
+.category-btn.selected{border-color:#FF5F1F;background:#FF5F1F;color:#fff;font-weight:700}
+.qty-btn{border:2px solid #FF5F1F;border-radius:8px;padding:.35rem .7rem;background:#fff;color:#FF5F1F;font-weight:600;cursor:pointer;min-height:38px;transition:all .15s}
+.del-btn{border:2px solid #ef4444;border-radius:8px;padding:.35rem .7rem;background:#fff;color:#ef4444;font-weight:600;cursor:pointer;min-height:38px}
+.chat-msg{padding:.35rem .65rem;border-radius:10px;max-width:75%;word-wrap:break-word;font-size:.875rem}
+.chat-msg.sent{background:#FF5F1F;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.chat-msg.received{background:#F5F5F5;color:#1A1A1A;margin-right:auto;border-bottom-left-radius:4px}
+.chat-msg .time{font-size:.65rem;opacity:.7;margin-top:.15rem;display:block}
+.chat-input{border:2px solid #FF5F1F;border-radius:999px;padding:.55rem 1rem;width:100%;transition:all .2s}
+.chat-input:focus{outline:none;border-color:#FF5F1F;box-shadow:0 0 0 4px rgba(255,95,31,.12)}
+.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.scrollbar-hide::-webkit-scrollbar{display:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:20px;padding-right:40px}
+</style>
+</head>
+<body>
+
+<div id="cartOverlay" class="cart-overlay"></div>
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-orange/10">
+  <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
+    <a href="index.html" class="block w-20 sm:w-32 shrink-0 overflow-hidden">
+      <img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="max-sm:w-20 max-sm:h-8 sm:w-full sm:h-12" style="object-fit:contain;object-position:left">
+    </a>
+    <div class="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-nowrap" style="-webkit-overflow-scrolling:touch">
+      <button id="searchToggle" class="icon-btn sm:hidden flex-shrink-0" title="Pesquisar"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button id="msgBtn" class="icon-btn relative flex-shrink-0" title="Notificações">
+        <i class="fa-solid fa-bell"></i>
+        <span id="msgCount" class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] w-[18px] h-[18px] rounded-full items-center justify-center hidden font-bold">0</span>
+      </button>
+      <button id="cartBtn" class="icon-btn relative flex-shrink-0" title="Cesto">
+        <i class="fa-solid fa-basket-shopping"></i>
+        <span id="cartCount" class="absolute -top-0.5 -right-0.5 bg-orange text-white text-[10px] w-[18px] h-[18px] rounded-full items-center justify-center hidden font-bold">0</span>
+      </button>
+      <a href="perfil.html" id="profileLink" class="flex items-center gap-1.5 text-sm font-medium text-gray-700 px-2 py-1.5 rounded-xl hover:bg-gray-100 flex-shrink-0" style="min-height:44px">
+        <i class="fa-solid fa-circle-user text-2xl text-orange"></i>
+        <span id="headerUserName" class="font-bold text-sm">Perfil</span>
+      </a>
+      <button id="logoutBtn" class="icon-btn flex-shrink-0" style="color:#9ca3af" title="Sair"><i class="fa-solid fa-right-from-bracket text-lg"></i></button>
+      <button id="publishBtn" class="btn-primary px-2 sm:px-4 py-2 text-sm whitespace-nowrap flex-shrink-0"><i class="fa-solid fa-plus"></i> Vender</button>
+    </div>
+  </div>
+  <div id="mobileSearchBar" class="sm:hidden hidden px-4 pb-3 relative">
+    <i class="fa-solid fa-magnifying-glass absolute left-7 top-1/2 -translate-y-1/2 text-orange text-sm pointer-events-none"></i>
+    <input id="searchInputMobile" type="text" placeholder="Pesquisar produtos..." class="border-2 border-gray-200 rounded-full px-4 pl-9 py-3 w-full text-sm">
+  </div>
+</header>
+
+<main style="padding-top:4rem;min-height:calc(var(--vh,1vh)*100)">
+
+  <section class="py-5 bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="max-w-lg mx-auto mb-4 relative hidden sm:block">
+        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-orange pointer-events-none"></i>
+        <input id="searchInput" type="text" placeholder="Pesquisar produtos..." class="border-2 border-gray-200 rounded-full px-4 pl-10 py-3 w-full text-sm input-fix">
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-start sm:justify-center">
+        <button class="category-btn selected px-4 py-2.5 rounded-xl border-2 text-sm shrink-0 font-bold border-orange text-white bg-orange" data-cat="">Todas</button>
+        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Moda">Moda</button>
+        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Eletronicos">Eletrônicos</button>
+        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Casa">Casa</button>
+        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Carros">Carros</button>
+        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Desporto">Desporto</button>
+        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Perfumes e Cosmeticos">Perfumes</button>
+        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Imoveis">Imóveis</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-8 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-2xl font-bold">Produtos</h2>
+          <p id="resultCount" class="text-gray-500 text-sm mt-1"></p>
+        </div>
+        <button class="filter-btn px-4 py-2 rounded-full text-sm" data-filter="negociavel">Negociável</button>
+      </div>
+      <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+    </div>
+  </section>
+
+</main>
+
+<aside id="cartSidebar" class="cart-sidebar">
+  <div class="p-5 border-b border-gray-100 flex items-center justify-between shrink-0">
+    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-basket-shopping text-orange"></i> Cesto</h2>
+    <button id="closeCart" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div id="cartItems" class="flex-1 overflow-y-auto p-5 space-y-4" style="-webkit-overflow-scrolling:touch"></div>
+  <div class="p-5 border-t border-gray-100 space-y-4 shrink-0">
+    <div class="flex justify-between text-lg"><span class="text-gray-500">Total</span><span id="cartTotal" class="font-bold text-2xl text-orange">0 Kz</span></div>
+    <button id="checkoutBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg"><i class="fa-brands fa-whatsapp"></i> Finalizar no WhatsApp</button>
+  </div>
+</aside>
+
+<div id="checkoutModal" class="modal hidden">
+  <div class="modal-panel">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold"><i class="fa-brands fa-whatsapp mr-2 text-orange"></i>Finalizar compra</h3>
+      <button onclick="closeModal('checkoutModal')" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="checkoutSummary" class="mb-4 p-3 bg-gray-50 rounded-xl text-sm space-y-1"></div>
+    <form id="checkoutForm" class="space-y-3" onsubmit="return handleCheckout(event)">
+      <p class="text-sm font-bold">Morada de entrega</p>
+      <select id="chkProvince" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm bg-white" style="-webkit-appearance:none;appearance:none">
+        <option value="">Província *</option>
+        <option>Bengo</option><option>Benguela</option><option>Bié</option><option>Cabinda</option>
+        <option>Cuando Cubango</option><option>Cuanza Norte</option><option>Cuanza Sul</option>
+        <option>Cunene</option><option>Huambo</option><option>Huíla</option><option>Luanda</option>
+        <option>Lunda Norte</option><option>Lunda Sul</option><option>Malanje</option>
+        <option>Moxico</option><option>Namibe</option><option>Uíge</option><option>Zaire</option>
+      </select>
+      <input id="chkMunicipality" type="text" required placeholder="Município *" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm">
+      <input id="chkNeighborhood" type="text" required placeholder="Bairro *" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm">
+      <input id="chkStreet" type="text" required placeholder="Rua / Número *" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm">
+      <input id="chkReference" type="text" placeholder="Ponto de referência (opcional)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm">
+      <button type="submit" class="btn-primary w-full py-4 rounded-xl font-bold text-base"><i class="fa-brands fa-whatsapp"></i> Finalizar no WhatsApp</button>
+    </form>
+  </div>
+</div>
+
+<div id="productModal" class="modal hidden">
+  <div class="modal-panel">
+    <div class="flex items-center justify-between mb-3">
+      <h3 id="modalProductTitle" class="text-lg font-bold"></h3>
+      <button onclick="closeModal('productModal')" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="relative rounded-xl overflow-hidden mb-3" style="padding-bottom:66%;background:#f8f8f8">
+      <img id="modalProductImage" src="" class="absolute inset-0 w-full h-full object-contain">
+      <button id="modalGalleryPrev" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full w-9 h-9 flex items-center justify-center shadow hidden"><i class="fa-solid fa-chevron-left text-sm text-gray-700"></i></button>
+      <button id="modalGalleryNext" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full w-9 h-9 flex items-center justify-center shadow hidden"><i class="fa-solid fa-chevron-right text-sm text-gray-700"></i></button>
+      <div id="modalGalleryDots" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5"></div>
+    </div>
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+      <i class="fa-solid fa-location-dot"></i><span id="modalProductLocation"></span>
+      <span id="modalProductOwner" class="ml-auto text-orange font-medium text-xs"><i class="fa-solid fa-user mr-1"></i></span>
+    </div>
+    <div class="text-2xl font-extrabold text-orange mb-2" id="modalProductPrice"></div>
+    <div class="flex gap-2 mb-2">
+      <span id="modalProductBadge" class="badge-orange hidden"></span>
+      <span id="modalProductNegotiable" class="text-xs text-orange font-medium hidden"><i class="fa-solid fa-handshake mr-1"></i>Negociável</span>
+    </div>
+    <p class="text-xs text-gray-400 mb-3"><i class="fa-solid fa-shield-halved mr-1"></i>Proteção (5%): <span id="modalProductProtection"></span></p>
+    <div class="flex gap-2">
+      <button id="modalBuyBtn" class="btn-primary flex-1 py-2.5 rounded-xl text-xs"><i class="fa-solid fa-bag-shopping mr-1"></i>Comprar</button>
+      <button id="modalChatBtn" class="btn-outline flex-1 py-2.5 rounded-xl text-xs"><i class="fa-solid fa-comment mr-1"></i>Falar</button>
+    </div>
+    <div id="contactSellerArea" class="mt-3 border-t border-gray-100 pt-3">
+      <p class="text-xs font-bold mb-1.5"><i class="fa-solid fa-paper-plane mr-1 text-orange"></i>Enviar mensagem</p>
+      <div class="flex gap-2">
+        <input id="detailMsgInput" type="text" placeholder="Olá, ainda está disponível?" class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs">
+        <button id="detailSendMsg" class="btn-primary px-4 py-2 rounded-xl text-xs"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="chatModal" class="modal hidden">
+  <div class="modal-panel no-pad chat-panel" style="max-width:520px;display:flex;flex-direction:column">
+    <div class="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
+      <div><h3 id="chatTitle" class="font-bold text-lg"></h3><p id="chatSubtitle" class="text-xs text-gray-400"></p></div>
+      <button onclick="closeModal('chatModal')" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-3 space-y-3" style="min-height:0;-webkit-overflow-scrolling:touch"></div>
+    <div class="p-3 border-t border-gray-100 flex gap-2 shrink-0">
+      <input id="chatInput" type="text" placeholder="Escreve a tua mensagem..." class="chat-input" onkeydown="if(event.key==='Enter')sendMsg()">
+      <button onclick="sendMsg()" class="btn-primary px-4 py-2 rounded-full"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<div id="publishModal" class="modal hidden">
+  <div class="modal-panel">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold">Publicar produto</h3>
+      <button id="closePublish" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="publishForm" class="space-y-4">
+      <input id="pub-name" type="text" placeholder="Nome do produto" required>
+      <input id="pub-price" type="number" placeholder="Preço (Kz)" required>
+      <input id="pub-location" type="text" placeholder="Localização (ex: Luanda, Benguela)" required>
+      <input id="pub-image" type="file" accept="image/*" multiple class="text-sm py-3">
+      <div id="pub-image-preview" class="flex gap-2 flex-wrap"></div>
+      <select id="pub-category" required><option value="">Categoria</option><option>Moda</option><option>Eletronicos</option><option>Casa</option><option>Desporto</option><option>Carros</option><option>Perfumes e Cosmeticos</option><option>Imoveis</option></select>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-new" type="checkbox" class="w-4 h-4 accent-orange"><span>Produto novo</span></label>
+        <label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-neg" type="checkbox" class="w-4 h-4 accent-orange"><span>Aceito negociação</span></label>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="cancelPublish" class="btn-outline flex-1 py-3 rounded-xl">Cancelar</button>
+        <button type="submit" class="btn-primary flex-1 py-3">Publicar grátis</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer class="bg-white border-t border-orange/10 text-gray-600 py-8">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-6">
+      <div class="col-span-2 md:col-span-1"><a href="main.html"><img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="h-8 mb-2"></a><p class="text-sm text-gray-400">Bisno fácil, dinheiro rápido.</p></div>
+      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Descobrir</h5><ul class="space-y-2 text-sm"><li><a href="#produtos" class="text-gray-500 hover:text-orange transition">Anúncios</a></li></ul></div>
+      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Ajuda</h5><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Central de ajuda em breve')">Ajuda</a></li><li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Denúncia enviada')">Reportar</a></li></ul></div>
+      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Contato</h5><ul class="space-y-2 text-sm"><li><a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-whatsapp mr-2"></i>WhatsApp</a></li><li><a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-instagram mr-2"></i>Instagram</a></li><li><a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-facebook mr-2"></i>Facebook</a></li></ul></div>
+    </div>
+    <div class="border-t border-gray-100 pt-6 text-sm text-center flex flex-col sm:flex-row justify-between gap-3"><p class="text-gray-400">&copy; 2026 Ya o bisno</p><div class="flex gap-4 justify-center"><span class="text-gray-400"><i class="fa-solid fa-shield-halved mr-1 text-orange"></i> 5% Proteção</span><span class="text-gray-400"><i class="fa-solid fa-check mr-1 text-green-400"></i> 0% Taxa</span></div></div>
+  </div>
+</footer>
+
+<div id="toastContainer"></div>
+
+<script>
+var products=[],cart=[],chats={},currentFilter="",searchQuery="",activeChatProductId=null,editingProductId=null;
+
+var mockProducts=[
+  {id:1,name:"Ténis Nike Air Max 90",price:45000,location:"Luanda",category:"Moda",images:["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800","https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800"],isNew:true,negotiable:false,ownerEmail:"demo@yaobisno.com",owner_name:"Nildo"},
+  {id:2,name:"iPhone 13 Pro Max 256GB",price:350000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800","https://images.unsplash.com/photo-1574944985070-8f3ebc00b6b2?w=800"],isNew:true,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"Nildo"},
+  {id:3,name:"Sofá 3 Lugares em Couro",price:120000,location:"Benguela",category:"Casa",images:["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800","https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800"],isNew:false,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"João"},
+  {id:4,name:"MacBook Air M1 2021",price:280000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800","https://images.unsplash.com/photo-1537495329792-41ae41ad3bf0?w=800"],isNew:false,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"João"},
+  {id:5,name:"Vestido de Festa Afro",price:15000,location:"Huíla",category:"Moda",images:["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800","https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800"],isNew:true,negotiable:false,ownerEmail:"demo@yaobisno.com",owner_name:"Nildo"},
+  {id:6,name:"Bicicleta de Montanha",price:75000,location:"Huambo",category:"Desporto",images:["https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800","https://images.unsplash.com/photo-1576435728678-68d0fbf94da8?w=800"],isNew:false,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"João"},
+  {id:7,name:"PlayStation 5 Slim",price:200000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800","https://images.unsplash.com/photo-1607016284316-e1d1489002ff?w=800"],isNew:true,negotiable:false,ownerEmail:"demo@yaobisno.com",owner_name:"Nildo"},
+  {id:8,name:"Mesa de Escritório Executiva",price:40000,location:"Benguela",category:"Casa",images:["https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=800","https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800"],isNew:false,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"João"}
+];
+
+(function(){
+  try{
+    if(typeof localStorage==="undefined"){window.location.replace("index.html");return}
+    if(!localStorage.getItem("yabisno_user")){window.location.replace("index.html");return}
+  }catch(e){window.location.replace("index.html");return}
+  loadFromApi();
+})();
+
+function loadFromApi(){
+  loadLocal();
+  bindAll();renderUser();renderProducts();updateCart();
+  API.getProducts().then(function(server){
+    if(server&&server.length>0){products=server;try{localStorage.setItem("yabisno_products",JSON.stringify(server))}catch(e){};renderProducts()}
+    else if(products.length===0){products=mockProducts.slice();syncLocal()}
+  }).catch(function(){
+    if(products.length===0){products=mockProducts.slice();syncLocal()}
+  });
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(u){
+    API.getChats(u.email).then(function(server){
+      if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};updateBadge()}
+    }).catch(function(){});
+    API.getCart(u.email).then(function(server){
+      if(server&&server.length>0){cart=server;try{localStorage.setItem("yabisno_cart",JSON.stringify(server))}catch(e){};updateCart()}
+    }).catch(function(){});
+  }
+}
+
+function loadLocal(){
+  try{
+    products=JSON.parse(localStorage.getItem("yabisno_products"))||[];
+    cart=JSON.parse(localStorage.getItem("yabisno_cart"))||[];
+    chats=JSON.parse(localStorage.getItem("yabisno_chats"))||{};
+  }catch(e){products=[];cart=[];chats={}}
+}
+function syncLocal(){
+  try{
+    localStorage.setItem("yabisno_products",JSON.stringify(products));
+    localStorage.setItem("yabisno_cart",JSON.stringify(cart));
+    localStorage.setItem("yabisno_chats",JSON.stringify(chats));
+  }catch(e){}
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u)return;
+  if(u.email)API.getCart(u.email).then(function(c){if(c){cart=c;updateCart()}}).catch(function(){});
+}
+function byId(id){return document.getElementById(id)}
+
+function bindAll(){
+  try{
+    var el=byId("searchInput");if(el)el.oninput=function(){searchQuery=this.value;var m=byId("searchInputMobile");if(m)m.value=this.value;renderProducts()};
+    el=byId("searchInputMobile");if(el)el.oninput=function(){searchQuery=this.value;var d=byId("searchInput");if(d)d.value=this.value;renderProducts()};
+    el=byId("searchToggle");if(el)el.onclick=function(){var b=byId("mobileSearchBar");if(b){b.classList.toggle("hidden");if(!b.classList.contains("hidden"))setTimeout(function(){var m=byId("searchInputMobile");if(m)m.focus()},100)}};
+    el=byId("publishBtn");if(el)el.onclick=function(){editingProductId=null;var f=byId("publishForm"),p=byId("pub-image-preview");if(f)f.reset();if(p)p.innerHTML="";openModal("publishModal")};
+    el=byId("closePublish");if(el)el.onclick=function(){closeModal("publishModal")};
+    el=byId("cancelPublish");if(el)el.onclick=function(){editingProductId=null;closeModal("publishModal")};
+    el=byId("publishModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("publishModal")};
+    el=byId("publishForm");if(el)el.onsubmit=handlePublish;
+    el=byId("pub-image");if(el)el.onchange=function(){
+      var p=byId("pub-image-preview");if(!p)return;p.innerHTML="";
+      for(var i=0;i<Math.min(this.files.length,10);i++)(function(f){
+        var r=new FileReader();r.onload=function(e){
+          var d=document.createElement("div");d.className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shrink-0";
+          d.innerHTML='<img src="'+e.target.result+'" class="w-full h-full object-cover">';p.appendChild(d)
+        };r.readAsDataURL(f)
+      })(this.files[i])
+    };
+    el=byId("cartBtn");if(el)el.onclick=toggleCart;
+    el=byId("closeCart");if(el)el.onclick=toggleCart;
+    el=byId("cartOverlay");if(el)el.onclick=toggleCart;
+    el=byId("checkoutBtn");if(el)el.onclick=checkout;
+    el=byId("chatModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("chatModal")};
+    el=byId("productModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("productModal")};
+    el=byId("logoutBtn");if(el)el.onclick=function(){try{localStorage.removeItem("yabisno_user")}catch(e){}window.location.href="index.html"};
+    el=byId("modalBuyBtn");if(el)el.onclick=function(){var id=parseInt(this.dataset.productId);if(id){addCart(id);closeModal("productModal")}};
+    el=byId("modalChatBtn");if(el)el.onclick=function(){var id=parseInt(this.dataset.productId);if(id){closeModal("productModal");openChat(id)}};
+    document.querySelectorAll(".filter-btn").forEach(function(b){
+      b.onclick=function(){
+        if(b.classList.contains("active")){b.classList.remove("active");currentFilter="";renderProducts();return}
+        document.querySelectorAll(".filter-btn").forEach(function(x){x.classList.remove("active")});
+        b.classList.add("active");currentFilter=b.dataset.filter;renderProducts()
+      }
+    });
+    document.querySelectorAll(".category-btn").forEach(function(b){
+      b.onclick=function(){
+        document.querySelectorAll(".category-btn").forEach(function(x){
+          x.classList.remove("selected","border-orange","text-white","font-bold");
+          x.className=x.className.replace(/\s*(selected|border-orange|text-white|font-bold)/g,"").trim();
+          x.className+=" border-gray-200 text-gray-600 font-medium"
+        });
+        b.className=b.className.replace(/\s*(border-gray-200|text-gray-600|font-medium)/g,"").trim();
+        b.className+=" selected border-orange text-white font-bold";
+        searchQuery=b.dataset.cat;var si=byId("searchInput"),sm=byId("searchInputMobile");if(si)si.value=searchQuery;if(sm)sm.value=searchQuery;renderProducts()
+      }
+    });
+    el=byId("detailSendMsg");if(el)el.onclick=sendFromDetail;
+    el=byId("detailMsgInput");if(el)el.onkeydown=function(e){if(e.key==="Enter")sendFromDetail()};
+    el=byId("msgBtn");if(el)el.onclick=function(){window.location.href="perfil.html"};
+    setInterval(function(){try{loadLocal();syncLocal();updateBadge();var m=byId("chatModal");if(activeChatProductId&&m&&m.classList.contains("hidden")===false){renderChat(activeChatProductId);markRead(activeChatProductId)}}catch(e){}},3000);
+    try{window.addEventListener("storage",function(){try{loadLocal();updateBadge();var m=byId("chatModal");if(activeChatProductId&&m&&m.classList.contains("hidden")===false){renderChat(activeChatProductId);markRead(activeChatProductId)}}catch(e){}})}catch(e){}
+    bindGal();
+  }catch(e){try{console.error("bindAll:",e)}catch(ex){}}
+}
+
+function renderUser(){
+  try{
+    var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u)return;
+    var hn=byId("headerUserName");if(hn)hn.textContent=u.name||"Perfil";
+    var l=byId("profileLink");if(!l)return;
+    var av=localStorage.getItem("yabisno_avatar_"+u.email);
+    if(av)l.innerHTML='<img src="'+av+'" class="w-8 h-8 rounded-full object-cover border border-orange/20"> <span class="font-bold text-sm hidden sm:block">'+esc(u.name)+'</span>';
+    else l.innerHTML='<i class="fa-solid fa-circle-user text-2xl text-orange"></i> <span class="font-bold text-sm hidden sm:block">'+esc(u.name)+'</span>';
+  }catch(e){}
+}
+
+function renderProducts(){
+  var f=products.slice();
+  if(currentFilter==="negociavel")f=f.filter(function(p){return p.negotiable});
+  if(searchQuery){var q=searchQuery.toLowerCase();f=f.filter(function(p){return p.name.toLowerCase().includes(q)||p.location.toLowerCase().includes(q)||(p.category||"").toLowerCase().includes(q)})}
+  var g=byId("productsGrid"),c=byId("resultCount");if(!g)return;
+  if(f.length===0){g.innerHTML='<div class="col-span-full card p-12 text-center"><i class="fa-solid fa-inbox text-5xl mb-4 text-gray-200"></i><p class="text-gray-400">Nenhum produto encontrado</p></div>';if(c)c.textContent="0 produtos";return}
+  var h="";for(var i=0;i<f.length;i++)h+=cardHTML(f[i]);
+  g.innerHTML=h;if(c)c.textContent=f.length+" produto"+(f.length!==1?"s":"");
+  attachEvts();
+}
+
+function cardHTML(p){
+  var inCart=cart.find(function(i){return i.id===p.id});
+  var imgs=p.images||[],src=imgs.length>0?imgs[0]:imgPH(p.name);
+  var more=imgs.length>1?'<span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur"><i class="fa-solid fa-images mr-1"></i>'+imgs.length+'</span>':'';
+  return '<div class="card product-card" data-id="'+p.id+'">'+
+    '<div class="product-img-wrap"><img src="'+esc(src)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="imgFallback(this)">'+(p.isNew?'<span class="badge-orange absolute top-3 left-3">NOVO</span>':'')+more+'</div>'+
+    '<div class="p-3"><h3 class="card-name font-semibold mb-1 text-sm">'+esc(p.name)+'</h3>'+
+    '<div class="flex items-center gap-1 text-xs text-gray-400 mb-2"><i class="fa-solid fa-location-dot"></i><span>'+esc(p.location)+'</span>'+
+    (p.negotiable?'<span class="ml-auto text-orange font-medium"><i class="fa-solid fa-handshake mr-1"></i>Negoc.</span>':'')+'</div>'+
+    '<div class="text-lg font-extrabold text-orange mb-2">'+fmt(p.price)+'</div>'+
+    '<div class="flex gap-2"><button class="add-cart flex-1 '+(inCart?"bg-green-500 text-white":"btn-primary")+' py-2.5 rounded-lg font-semibold text-xs" data-id="'+p.id+'">'+(inCart?"✓ Adicionado":"Comprar")+'</button>'+
+    '<button class="chat-btn flex-1 btn-outline py-2.5 rounded-lg font-semibold text-xs" data-id="'+p.id+'">Chat</button></div></div></div>';
+}
+
+function attachEvts(){
+  document.querySelectorAll(".product-card").forEach(function(e){
+    e.onclick=function(ev){
+      if(ev.target.closest(".add-cart")||ev.target.closest(".chat-btn"))return;
+      var id=parseInt(e.dataset.id);if(id)openProduct(id)
+    }
+  });
+  document.querySelectorAll(".add-cart").forEach(function(b){
+    b.onclick=function(e){e.stopPropagation();addCart(parseInt(b.dataset.id))}
+  });
+  document.querySelectorAll(".chat-btn").forEach(function(b){
+    b.onclick=function(e){e.stopPropagation();openChat(parseInt(b.dataset.id))}
+  });
+}
+
+var galIdx=0,galImgs=[];
+function bindGal(){
+  try{
+    el=byId("modalGalleryPrev");if(el)el.onclick=function(e){e.stopPropagation();if(galImgs.length<2)return;galIdx=(galIdx-1+galImgs.length)%galImgs.length;updGal()};
+    el=byId("modalGalleryNext");if(el)el.onclick=function(e){e.stopPropagation();if(galImgs.length<2)return;galIdx=(galIdx+1)%galImgs.length;updGal()};
+  }catch(e){}
+}
+
+function openProduct(id){
+  var p=products.find(function(x){return x.id===id});if(!p)return;
+  galImgs=p.images||[imgPH(p.name)];galIdx=0;
+  var t=byId("modalProductTitle"),l=byId("modalProductLocation"),o=byId("modalProductOwner"),pr=byId("modalProductPrice"),pt=byId("modalProductProtection");
+  if(t)t.textContent=p.name;if(l)l.textContent=p.location;
+  if(o)o.innerHTML='<i class="fa-solid fa-user mr-1"></i>'+esc(p.owner_name||(p.ownerEmail||"").split("@")[0]||"Vendedor");
+  if(pr)pr.textContent=fmt(p.price);if(pt)pt.textContent=fmt(Math.round(p.price*0.05));
+  updGal();
+  var b=byId("modalProductBadge"),n=byId("modalProductNegotiable");
+  if(b){if(p.isNew){b.textContent="NOVO";b.classList.remove("hidden")}else{b.classList.add("hidden")}}
+  if(n){if(p.negotiable){n.classList.remove("hidden")}else{n.classList.add("hidden")}}
+  var mb=byId("modalBuyBtn"),mc=byId("modalChatBtn");if(mb)mb.dataset.productId=id;if(mc)mc.dataset.productId=id;openModal("productModal");
+}
+function updGal(){
+  var img=byId("modalProductImage"),prev=byId("modalGalleryPrev"),next=byId("modalGalleryNext"),dots=byId("modalGalleryDots");
+  img.style.opacity="0";
+  setTimeout(function(){img.src=galImgs[galIdx];img.style.opacity="1"},150);
+  if(galImgs.length>1){
+    prev.classList.remove("hidden");next.classList.remove("hidden");var d="";
+    for(var i=0;i<galImgs.length;i++)d+='<span class="block rounded-full '+(i===galIdx?"bg-orange w-2.5 h-2.5":"bg-gray-300 w-1.5 h-1.5")+'"></span>';
+    dots.innerHTML=d
+  }else{prev.classList.add("hidden");next.classList.add("hidden");dots.innerHTML=""}
+}
+
+
+function chatKey(id){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  return id + "_" + (u ? u.email : '');
+}
+
+function openChat(id){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u){toast("Faz login primeiro");return}
+  var p=products.find(function(x){return x.id===id});if(!p)return;
+  activeChatProductId=id;byId("chatTitle").textContent=p.name;byId("chatSubtitle").textContent="Chat sobre "+esc(p.name);
+  renderChat(id);markRead(id);openModal("chatModal");
+}
+function renderChat(id){
+  var c=byId("chatMessages"),u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!c||!u)return;
+  var k=chatKey(id),msgs=chats[k]||[];
+  if(msgs.length===0){c.innerHTML='<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-comments text-4xl mb-3"></i><p>Nenhuma mensagem ainda.</p></div>';return}
+  var h="";
+  for(var i=0;i<msgs.length;i++){
+    var m=msgs[i],sent=m.from===u.email;
+    var t=new Date(m.timestamp).toLocaleString("pt-PT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+    h+='<div class="chat-msg '+(sent?"sent":"received")+'"><div>'+esc(m.text)+'</div><span class="time">'+(sent?"":esc(m.from.split("@")[0])+" • ")+t+'</span></div>'
+  }
+  c.innerHTML=h;c.scrollTop=c.scrollHeight;
+}
+function markRead(id){
+  var k=chatKey(id),msgs=chats[k]||[],u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u)return;var ch=false;
+  for(var i=0;i<msgs.length;i++){if(msgs[i].from!==u.email&&!msgs[i].read){msgs[i].read=true;ch=true}}
+  if(ch){syncLocal();API.markChatRead(id, u.email)}
+}
+function sendMsg(){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u){toast("Faz login");return}
+  if(!activeChatProductId)return;
+  var inp=byId("chatInput");if(!inp)return;
+  var t=inp.value.trim();if(!t)return;
+  var k=chatKey(activeChatProductId);
+  if(!chats[k])chats[k]=[];
+  chats[k].push({from:u.email,text:t,timestamp:Date.now(),read:false});
+  inp.value="";syncLocal();renderChat(activeChatProductId);
+  API.sendChat(activeChatProductId, u.email, u.email, t);
+}
+function sendFromDetail(){
+  var mb=byId("modalBuyBtn"),di=byId("detailMsgInput");
+  if(!mb||!di)return;
+  var pid=parseInt(mb.dataset.productId),txt=di.value.trim();
+  if(!txt||!pid)return;var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u){toast("Faz login primeiro");return}
+  var k=chatKey(pid);
+  if(!chats[k])chats[k]=[];chats[k].push({from:u.email,text:txt,timestamp:Date.now(),read:false});
+  syncLocal();di.value="";toast("Mensagem enviada!");
+  API.sendChat(pid, u.email, u.email, txt);
+}
+
+function addCart(id){
+  var p=products.find(function(x){return x.id===id});if(!p)return;
+  var e=cart.find(function(x){return x.id===id});
+  if(e)e.qty+=1;else cart.push({id:p.id,name:p.name,price:p.price,qty:1});
+  syncLocal();updateCart();renderProducts();toast("Adicionado ao cesto");
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(u)API.addToCart(u.email,id);
+}
+function updateCart(){
+  var el=byId("cartItems"),ce=byId("cartCount"),te=byId("cartTotal"),count=0;
+  for(var i=0;i<cart.length;i++)count+=cart[i].qty;
+  if(ce){if(count>0){ce.textContent=count>9?"9+":count;ce.classList.remove("hidden");ce.classList.add("flex")}else{ce.classList.add("hidden");ce.classList.remove("flex")}}
+  if(!el)return;
+  if(cart.length===0){if(el)el.innerHTML='<div class="p-6 text-center text-gray-400">Cesto vazio</div>';if(te)te.textContent="0 Kz";return}
+  var h="";for(var i=0;i<cart.length;i++){
+    var it=cart[i];
+    h+='<div class="flex items-center gap-3 border-b border-gray-100 pb-4"><div class="flex-1 min-w-0"><div class="font-semibold text-sm truncate">'+esc(it.name)+'</div><div class="text-sm text-gray-400">'+it.qty+' x '+fmt(it.price)+'</div></div><div class="text-right shrink-0"><div class="font-bold text-orange">'+fmt(it.price*it.qty)+'</div><div class="flex gap-1.5 mt-2 justify-end"><button class="qty-btn" onclick="chgQty('+it.id+',-1)">-</button><button class="qty-btn" onclick="chgQty('+it.id+',1)">+</button><button class="del-btn" onclick="rmCart('+it.id+')"><i class="fa-solid fa-trash"></i></button></div></div></div>'
+  }
+  el.innerHTML=h;var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;if(te)te.textContent=fmt(t);
+}
+function chgQty(id,d){
+  var it=cart.find(function(x){return x.id===id});if(!it)return;
+  it.qty+=d;if(it.qty<=0)rmCart(id);syncLocal();updateCart();renderProducts();
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(u&&it.qty>0)API.changeCartQty(u.email,id,d);
+}
+function rmCart(id){cart=cart.filter(function(x){return x.id!==id});syncLocal();updateCart();renderProducts();var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u)API.removeFromCart(u.email,id)}
+function toggleCart(){try{var s=byId("cartSidebar"),o=byId("cartOverlay");if(s)s.classList.toggle("open");if(o)o.classList.toggle("open")}catch(e){}}
+
+function handlePublish(e){
+  e.preventDefault();
+  try{
+  var elN=byId("pub-name"),elP=byId("pub-price"),elL=byId("pub-location"),elC=byId("pub-category"),elNew=byId("pub-new"),elNeg=byId("pub-neg");
+  if(!elN||!elP||!elL||!elC)return;
+  var name=elN.value.trim(),price=parseFloat(elP.value)||0;
+  var loc=elL.value.trim(),cat=elC.value||"Outros";
+  var inew=elNew?elNew.checked:false,neg=elNeg?elNeg.checked:false;
+  if(!name||!price||!loc){toast("Preenche os campos");return}
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u){toast("Precisas estar logado");return}
+  var files=byId("pub-image").files;
+  function fin(imgs){
+    if(editingProductId){
+      var idx=products.findIndex(function(p){return p.id===editingProductId});
+      if(idx>-1){products[idx].name=name;products[idx].price=price;products[idx].location=loc;products[idx].category=cat;if(imgs&&imgs.length>0)products[idx].images=imgs;products[idx].isNew=inew;products[idx].negotiable=neg;toast("Atualizado!")}
+      API.updateProduct(editingProductId,{name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg});
+      editingProductId=null
+    }else{
+      var mx=0;for(var i=0;i<products.length;i++){if(products[i].id>mx)mx=products[i].id}
+      var p={id:Date.now(),name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name};
+      products.unshift(p);
+      API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name});
+      searchQuery="";currentFilter="";document.querySelectorAll(".filter-btn").forEach(function(x){x.classList.remove("active")});
+      var si=byId("searchInput"),sm=byId("searchInputMobile");if(si)si.value="";if(sm)sm.value="";
+      toast("Produto publicado!")
+    }
+      syncLocal();renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pp=byId("pub-image-preview");if(pf)pf.reset();if(pp)pp.innerHTML=""
+  }
+  if(files&&files.length>0){
+    var loaded=[],toLoad=Math.min(files.length,10),cnt=0;
+    for(var fi=0;fi<toLoad;fi++)(function(f){
+      var r=new FileReader();r.onload=function(ev){
+        var img=new Image();img.onload=function(){
+          var c=document.createElement("canvas"),MAX=800,w=img.width,h=img.height;
+          if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX}else{w=Math.round(w*MAX/h);h=MAX}}
+          c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+          loaded.push(c.toDataURL("image/jpeg",0.5));cnt++;if(cnt>=toLoad)fin(loaded)
+        };img.src=ev.target.result
+      };r.onerror=function(){cnt++;if(cnt>=toLoad)fin(loaded)};r.readAsDataURL(f)
+    })(files[fi])
+  }else if(editingProductId){var ex=products.find(function(p){return p.id===editingProductId});fin(ex?ex.images||[imgPH(ex.name)]:[imgPH(name)])}
+  else{fin([imgPH(name)])}
+  }catch(e){try{console.error("handlePublish:",e)}catch(ex){}toast("Erro ao publicar")}
+}
+
+function checkout(){
+  if(cart.length===0){toast("Cesto vazio");return}
+  var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
+  var tx="";for(var i=0;i<cart.length;i++)tx+='<div class="flex justify-between"><span>'+cart[i].qty+'x '+esc(cart[i].name)+'</span><span class="font-medium">'+fmt(cart[i].price*cart[i].qty)+'</span></div>';
+  byId("checkoutSummary").innerHTML='<div class="font-bold mb-1">Resumo</div>'+tx+'<div class="border-t border-gray-200 pt-1 mt-1 flex justify-between font-bold"><span>Total</span><span class="text-orange">'+fmt(t)+'</span></div>';
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(u&&u.email)API.getUser(u.email).then(function(r){
+    if(r.ok&&r.user){
+      var a=r.user;
+      if(a.province){byId("chkProvince").value=a.province}
+      if(a.municipality){byId("chkMunicipality").value=a.municipality}
+      if(a.neighborhood){byId("chkNeighborhood").value=a.neighborhood}
+      if(a.street){byId("chkStreet").value=a.street}
+      if(a.reference){byId("chkReference").value=a.reference}
+    }
+  });
+  openModal("checkoutModal");
+}
+
+function handleCheckout(e){
+  e.preventDefault();
+  var province=byId("chkProvince").value.trim(),municipality=byId("chkMunicipality").value.trim(),neighborhood=byId("chkNeighborhood").value.trim(),street=byId("chkStreet").value.trim(),reference=byId("chkReference").value.trim();
+  if(!province||!municipality||!neighborhood||!street){toast("Preenche todos os campos obrigatórios");return false}
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u){toast("Faz login primeiro");return false}
+  API.saveAddress(u.email,province,municipality,neighborhood,street,reference);
+  var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
+  var tx="";for(var i=0;i<cart.length;i++)tx+=cart[i].qty+"x "+cart[i].name+" ("+fmt(cart[i].price*cart[i].qty)+"), ";
+  var endereco="Província: "+province+"\nMunicípio: "+municipality+"\nBairro: "+neighborhood+"\nRua: "+street+(reference?"\nReferência: "+reference:"");
+  var msg="Olá! Quero finalizar a compra no Ya o bisno.\n\n—— ITENS ——\n"+tx+"\nTotal: "+fmt(t)+"\nProteção (5%): "+fmt(Math.round(t*0.05))+"\n\n—— MORADA DE ENTREGA ——\n"+endereco+"\n\n—— COMPRADOR ——\nNome: "+u.name+"\nTel: "+u.phone+"\nEmail: "+u.email;
+  closeModal("checkoutModal");
+  try{window.open("https://wa.me/351920488724?text="+encodeURIComponent(msg),"_blank")}catch(ex){toast("Abre o WhatsApp para finalizar")}
+  cart=[];syncLocal();updateCart();API.clearCart(u.email);
+  return false;
+}
+
+function updateBadge(){
+  var b=byId("msgCount");if(!b)return;
+  try{
+    var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u){b.classList.add("hidden");b.classList.remove("flex");return}
+    var chts=JSON.parse(localStorage.getItem("yabisno_chats"))||{},prods=JSON.parse(localStorage.getItem("yabisno_products"))||[];
+    var myIds=prods.filter(function(p){return(p.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase()}).map(function(p){return p.id});
+    var c=0;Object.keys(chts).forEach(function(pid){
+      var msgs=chts[pid]||[],isMy=myIds.indexOf(parseInt(pid))!==-1,hasMe=msgs.some(function(m){return m.from===u.email});
+      if(isMy||hasMe)msgs.forEach(function(m){if(!m.read&&m.from!==u.email)c++})
+    });
+    if(c>0){b.textContent=c>9?"9+":c;b.classList.remove("hidden");b.classList.add("flex")}else{b.classList.add("hidden");b.classList.remove("flex")}
+  }catch(e){b.classList.add("hidden")}
+}
+
+function imgFallback(el){try{var n=el.closest('.card').querySelector('.card-name');if(n)el.src=imgPH(n.textContent)}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]})}
+function fmt(v){return Number(v).toLocaleString("pt-PT")+" Kz"}
+function imgPH(n){var c=['#FF5F1F','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f8f8f8"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}
+function openModal(id){var el=byId(id);if(el)el.classList.remove("hidden")}
+function closeModal(id){var el=byId(id);if(el)el.classList.add("hidden")}
+function toast(m){
+  var c=byId("toastContainer");if(!c)return;
+  var el=document.createElement("div");el.className="toast";el.textContent=m;
+  c.appendChild(el);setTimeout(function(){el.style.transition="opacity .3s";el.style.opacity="0";setTimeout(function(){el.remove()},300)},2500)
+}
+</script>
+</body>
+</html>
