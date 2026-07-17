@@ -1,6 +1,6 @@
 var API = (function(){
-  var API_URL = '{{API_URL}}'; /* COLOCA AQUI o URL do backend depois de fazer deploy */
-  var base = API_URL !== '{{API_URL}}' ? API_URL : 'http://'+(location.host||'localhost:3000');
+  var API_URL = 'https://yaobisno.onrender.com'; /* muda para o URL do teu backend */
+  var base = API_URL || 'http://'+(location.host||'localhost:3000');
 
   function api(path, opts){
     opts = opts || {};
