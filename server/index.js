@@ -210,6 +210,13 @@ app.delete('/api/cart/all/:email', async (req, res) => {
 
 // ─── Admin ─────────────────────────────────────────────────────────
 
+app.get('/api/admin/products', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM products ORDER BY id');
+    res.json(rows.map(r => ({ ...r, images: '___' })));
+  } catch (e) { res.status(500).json([]); }
+});
+
 app.get('/api/admin/users', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT id,name,email,phone,role,province,municipality,neighborhood FROM users ORDER BY id');
