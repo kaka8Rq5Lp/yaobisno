@@ -20,7 +20,7 @@ app.post('/api/login', async (req, res) => {
       return res.json({ ok: false, error: 'Email ou password incorretos' });
     const u = rows[0];
     res.json({ ok: true, user: { name: u.name, email: u.email, phone: u.phone, role: u.role } });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
 app.post('/api/register', async (req, res) => {
@@ -31,7 +31,7 @@ app.post('/api/register', async (req, res) => {
     await db.query('INSERT INTO users (name,email,phone,password,role) VALUES (?,?,?,?,?)',
       [name, email, phone, password, 'comprador']);
     res.json({ ok: true, user: { name, email, phone, role: 'comprador' } });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
 app.post('/api/reset-password', async (req, res) => {
@@ -41,7 +41,7 @@ app.post('/api/reset-password', async (req, res) => {
     if (r.length === 0) return res.json({ ok: false, error: 'Email não encontrado' });
     await db.query('UPDATE users SET password = ? WHERE email = ?', [password, email]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
 app.get('/api/user/:email', async (req, res) => {
