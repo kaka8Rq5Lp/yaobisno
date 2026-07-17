@@ -15,6 +15,8 @@ th{background:#f8f8f8;font-weight:600;white-space:nowrap}
 tr:hover{background:#fef9f4}
 .msg{text-align:center;padding:40px;color:#999}
 img.thumb{width:50px;height:50px;object-fit:cover;border-radius:4px}
+.btn-del{background:#e74c3c;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px}
+.btn-del:hover{background:#c0392b}
 </style>
 </head>
 <body>
@@ -39,20 +41,36 @@ async function carregar(tipo, btn) {
     if (!dados.length) { div.innerHTML = '<div class="msg">Nenhum registo encontrado</div>'; return; }
     let html = '<table><thead><tr>';
     for (const chave of Object.keys(dados[0])) html += '<th>' + chave + '</th>';
+    if (tipo === 'users' || tipo === 'products') html += '<th>Acoes</th>';
     html += '</tr></thead><tbody>';
     for (const item of dados) {
       html += '<tr>';
-      for (const val of Object.values(item)) {
+      for (const [chave, val] of Object.entries(item)) {
         const v = String(val ?? '');
         if (typeof val === 'string' && val.startsWith('data:image')) html += '<td><img class="thumb" src="' + val + '"></td>';
         else html += '<td>' + v.substring(0, 100) + (v.length > 100 ? '...' : '') + '</td>';
       }
+      if (tipo === 'users') html += '<td><button class="btn-del" onclick="eliminarUser(\'' + item.email + '\')">X</button></td>';
+      if (tipo === 'products') html += '<td><button class="btn-del" onclick="eliminarProd(\'' + item.id + '\')">X</button></td>';
       html += '</tr>';
     }
     html += '</tbody></table>';
     div.innerHTML = html;
   } catch(e) { div.innerHTML = '<div class="msg">Erro ao carregar dados</div>'; }
 }
+
+async function eliminarUser(email) {
+  if (!confirm('Eliminar user ' + email + ' e todos os seus dados?')) return;
+  await fetch('/api/admin/user/' + encodeURIComponent(email), { method:'DELETE' });
+  carregar('users', document.querySelector('nav button'));
+}
+
+async function eliminarProd(id) {
+  if (!confirm('Eliminar produto #' + id + '?')) return;
+  await fetch('/api/admin/product/' + id, { method:'DELETE' });
+  carregar('products', document.querySelectorAll('nav button')[1]);
+}
+
 carregar('users');
 </script>
 </body>

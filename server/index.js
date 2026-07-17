@@ -210,6 +210,25 @@ app.delete('/api/cart/all/:email', async (req, res) => {
 
 // ─── Admin ─────────────────────────────────────────────────────────
 
+app.delete('/api/admin/user/:email', async (req, res) => {
+  try {
+    await db.query('DELETE FROM cart_items WHERE user_email=?', [req.params.email]);
+    await db.query('DELETE FROM chats WHERE user_email=? OR from_email=?', [req.params.email, req.params.email]);
+    await db.query('DELETE FROM products WHERE owner_email=?', [req.params.email]);
+    await db.query('DELETE FROM users WHERE email=?', [req.params.email]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ ok: false }); }
+});
+
+app.delete('/api/admin/product/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM cart_items WHERE product_id=?', [req.params.id]);
+    await db.query('DELETE FROM chats WHERE product_id=?', [req.params.id]);
+    await db.query('DELETE FROM products WHERE id=?', [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ ok: false }); }
+});
+
 app.get('/api/admin/products', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM products ORDER BY id');
