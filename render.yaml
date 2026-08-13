@@ -9,5 +9,27 @@ services:
     envVars:
       - key: PORT
         value: 3000
+      - key: JWT_SECRET
+        generateValue: true
       - key: DATABASE_URL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: PAY_URL
+        sync: false
+      - key: PAY_BEARER_TOKEN
+        sync: false
+      - key: PAY_POS_ID
+        sync: false
+      - key: PAY_CALLBACK_BASE
         sync: false

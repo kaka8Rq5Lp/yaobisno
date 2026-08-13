@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#FF5F1F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ya o bisno">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Ya o bisno — Compra e venda em Angola</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
@@ -12,32 +18,62 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-:root{--orange:#FF5F1F;--dark:#1A1A1A;--gray:#F5F5F5;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+:root{--orange:#FF6B00;--orange2:#FF7A1A;--dark:#1A1A1A;--gray:#F5F5F5;--bg:#f0f0f3;--shadow:#d1d1d9;--light:#ffffff;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;outline:none}
 button{font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipulation;background:none;border:none;padding:0;color:inherit;line-height:1}
 .icon-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;border-radius:0.75rem;color:#4b5563;font-size:1.125rem;transition:background .2s;background:none;border:none;touch-action:manipulation;cursor:pointer}
 .icon-btn:hover{background:#f3f4f6}
-body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#fff;color:#1A1A1A;-webkit-font-smoothing:antialiased}
-.text-orange{color:#FF5F1F}.bg-orange{background-color:#FF5F1F}.border-orange{border-color:#FF5F1F}
-.btn-primary{background:#FF5F1F;color:#fff;border:none;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;text-decoration:none;touch-action:manipulation}
-.btn-primary:hover{box-shadow:0 8px 25px rgba(255,95,31,.35)}
-.btn-primary:active{transform:scale(.96)}
-.btn-outline{background:transparent;color:#FF5F1F;border:2px solid #FF5F1F;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;touch-action:manipulation}
-.btn-outline:hover{background:#FF5F1F;color:#fff}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:var(--bg);color:#1A1A1A;-webkit-font-smoothing:antialiased}
+.text-orange{color:#FF6B00}.bg-orange{background-color:#FF6B00}.border-orange{border-color:#FF6B00}
+.btn-primary{background:linear-gradient(145deg,#FF7A1A,#FF6B00);color:#fff;border:none;border-radius:14px;font-weight:700;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;text-decoration:none;touch-action:manipulation;box-shadow:0 6px 16px rgba(255,107,0,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(255,107,0,.45)}
+.btn-primary:active{transform:scale(.96);box-shadow:inset 3px 3px 6px rgba(0,0,0,.18),inset -3px -3px 6px rgba(255,255,255,.4)}
+.btn-outline{background:transparent;color:#FF6B00;border:2px solid #FF6B00;border-radius:14px;font-weight:700;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;touch-action:manipulation}
+.btn-outline:hover{background:#FF6B00;color:#fff}
+.product-img-wrap{position:relative;width:100%;padding-bottom:75%;background:#fff;overflow:hidden;border-radius:16px}
+.product-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;transition:all .3s;overflow:hidden}
-.card:hover{border-color:#FF5F1F;box-shadow:0 12px 40px rgba(255,95,31,.1);transform:translateY(-4px)}
-.badge-orange{background:#FF5F1F;color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:999px}
+.card:hover{border-color:#FF6B00;box-shadow:0 12px 40px rgba(255,107,0,.1);transform:translateY(-4px)}
+#productsGrid .card{border:none;border-radius:20px;padding:12px;background:var(--bg);box-shadow:10px 10px 20px var(--shadow),-10px -10px 20px var(--light);border:1px solid rgba(255,255,255,.6);transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s cubic-bezier(.4,0,.2,1)}
+#productsGrid .card:hover{transform:translateY(-6px);box-shadow:14px 14px 28px var(--shadow),-14px -14px 28px var(--light);border-color:transparent}
+#productsGrid .card .text-orange{color:var(--orange)!important;font-weight:800!important;font-size:16px!important}
+#productsGrid .card .btn-primary{font-size:.85rem!important;border-radius:12px!important;box-shadow:0 4px 12px rgba(255,107,0,.35)!important}
+.badge-orange{background:linear-gradient(135deg,#FF7A1A,#FF6B00);color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:999px;box-shadow:0 4px 10px rgba(255,107,0,.4)}
 .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
 .modal-panel{width:100%;max-width:460px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin-bottom:0}
 .modal.hidden{display:none}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(30px); opacity:0}to{transform:translateY(0); opacity:1}}
-.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;padding-bottom:calc(.75rem + var(--safe-bottom));border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
 @media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
 input[type="text"],input[type="email"],input[type="password"],input[type="tel"],input[type="number"],select{border:2px solid #e5e7eb;border-radius:12px;padding-top:.85rem;padding-bottom:.85rem;width:100%;font-size:1rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
-input:focus,select:focus{border-color:#FF5F1F!important;box-shadow:0 0 0 4px rgba(255,95,31,.1)!important}
+input:focus,select:focus{border-color:#FF6B00!important;box-shadow:0 0 0 4px rgba(255,107,0,.1)!important}
 header{padding-top:0}
-.gradient-hero{background:linear-gradient(135deg,#FFF8F4,#FFF0E8,#FFE8D8)}
+.gradient-hero{background:linear-gradient(135deg,#FFF8F4,#FFF0E8,#FFE8D8);position:relative;overflow:hidden}
+.gradient-hero::before{content:"";position:absolute;top:-90px;right:-90px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,0,.16),transparent 70%)}
+.gradient-hero::after{content:"";position:absolute;bottom:-110px;left:-110px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,0,.12),transparent 70%)}
+.neo-footer{background:var(--bg);border-top:1px solid rgba(255,255,255,.8)}
+.neo-footer-inner{max-width:1280px;margin:0 auto;padding:3rem 1rem 1.5rem}
+.neo-footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:2.5rem}
+@media(max-width:900px){.neo-footer-grid{grid-template-columns:1fr 1fr;gap:2rem}}
+@media(max-width:520px){.neo-footer-grid{grid-template-columns:1fr;gap:1.75rem}}
+.neo-f-logo{display:block;width:128px;margin-bottom:.9rem}
+.neo-f-logo img{width:128px;height:48px;object-fit:contain;object-position:left}
+.neo-f-tagline{color:#6b7280;font-size:.85rem;line-height:1.6;max-width:260px}
+.neo-f-badges{display:flex;gap:.75rem;margin-top:1.1rem;flex-wrap:wrap}
+.neo-f-badge{display:inline-flex;align-items:center;gap:.45rem;background:var(--bg);color:#4b5563;font-size:.72rem;font-weight:700;padding:.55rem .85rem;border-radius:999px;box-shadow:4px 4px 8px var(--shadow),-4px -4px 8px var(--light)}
+.neo-f-badge i{color:var(--orange)}
+.neo-f-title{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#9ca3af;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.neo-f-title::after{content:"";flex:0 0 18px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--orange),transparent)}
+.neo-f-links{display:flex;flex-direction:column;gap:.6rem}
+.neo-f-link{display:inline-flex;align-items:center;gap:.6rem;color:#4b5563;text-decoration:none;font-size:.9rem;font-weight:500;transition:all .25s cubic-bezier(.4,0,.2,1)}
+.neo-f-link:hover{color:var(--orange);transform:translateX(4px)}
+.neo-f-link i{width:32px;height:32px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--bg);color:#6b7280;font-size:.85rem;box-shadow:3px 3px 6px var(--shadow),-3px -3px 6px var(--light);transition:all .25s cubic-bezier(.4,0,.2,1)}
+.neo-f-link:hover i{color:#fff;background:linear-gradient(145deg,var(--orange2),var(--orange));box-shadow:0 4px 12px rgba(255,107,0,.35)}
+.neo-f-bottom{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid rgba(209,209,217,.6);display:flex;flex-direction:column;gap:.75rem;align-items:center;text-align:center}
+@media(min-width:640px){.neo-f-bottom{flex-direction:row;justify-content:space-between;text-align:left}}
+.neo-f-copy{color:#9ca3af;font-size:.8rem;font-weight:600}
+.neo-f-copy b{color:#6b7280}
 .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .scrollbar-hide::-webkit-scrollbar{display:none}
 </style>
@@ -49,10 +85,6 @@ header{padding-top:0}
     <a href="index.html" class="block w-20 sm:w-32 z-10 shrink-0 overflow-hidden">
       <img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="max-sm:w-20 max-sm:h-8 sm:w-full sm:h-12" style="object-fit:contain;object-position:left">
     </a>
-    <div class="hidden md:flex gap-3 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-      <a href="#como-funciona" class="btn-primary text-sm px-5 py-2.5 min-w-[140px] text-center justify-center">Como funciona</a>
-      <a href="#produtos" class="btn-primary text-sm px-5 py-2.5 min-w-[140px] text-center justify-center">Produtos</a>
-    </div>
     <div class="flex items-center gap-2 z-10">
       <button id="loginBtn" class="btn-primary text-sm px-5">Entrar</button>
       <button id="menuBtn" class="icon-btn md:hidden"><i class="fa-solid fa-bars"></i></button>
@@ -85,9 +117,14 @@ header{padding-top:0}
         <span class="text-orange">Compra o que precisas.</span>
       </h1>
       <p class="text-gray-500 mt-4 max-w-xl text-lg">O marketplace angolano mais rápido para comprar e vender perto de ti.</p>
-      <a href="#produtos" class="btn-primary px-10 py-3.5 mt-8 text-base font-bold shadow-lg shadow-orange/20">
-        Começar a bisnar <i class="fa-solid fa-arrow-right"></i>
-      </a>
+      <div class="mt-8 flex items-center justify-center gap-4 flex-wrap">
+        <a href="#produtos" class="btn-primary px-10 py-3.5 text-base font-bold shadow-lg shadow-orange/20">
+          Começar a bisnar <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <a href="#como-funciona" class="btn-outline px-10 py-3.5 text-base font-bold">
+          <i class="fa-solid fa-circle-info mr-1"></i>Como funciona
+        </a>
+      </div>
       <div class="mt-8 flex items-center justify-center gap-8 text-sm text-gray-400 flex-wrap">
         <span><i class="fa-solid fa-camera mr-2 text-orange"></i> Publicação grátis</span>
         <span><i class="fa-solid fa-shield-halved mr-2 text-orange"></i> Compra segura</span>
@@ -96,13 +133,16 @@ header{padding-top:0}
     </div>
   </section>
 
-  <section id="produtos" class="py-16 md:py-24 bg-white">
+  <section id="produtos" class="py-16 md:py-24" style="background:var(--bg)">
     <div class="max-w-7xl mx-auto px-4">
-      <div class="mb-8">
-        <h2 class="text-3xl md:text-4xl font-bold">Produtos em destaque</h2>
-        <p id="resultCount" class="text-gray-500 text-sm mt-1.5"></p>
+      <div class="mb-8 flex items-end justify-between">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-bold">Produtos em destaque</h2>
+          <p class="text-gray-600 text-sm mt-1.5 font-semibold">Encontra as melhores ofertas perto de ti.</p>
+        </div>
+        <a href="#como-funciona" class="hidden sm:inline-flex items-center gap-2 text-orange font-bold text-sm hover:underline"><i class="fa-solid fa-arrow-down"></i> Como funciona</a>
       </div>
-      <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+      <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
     </div>
   </section>
 
@@ -157,7 +197,7 @@ header{padding-top:0}
       <h3 class="text-xl font-bold">Entrar</h3>
       <button id="closeLogin" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <form id="loginForm" class="space-y-4" onsubmit="return handleLogin(event)">
+    <form id="loginForm" class="space-y-4" onsubmit="return handleLogin(event)" novalidate>
       <div id="loginFields">
         <input id="loginEmail" type="email" placeholder="O teu email" required>
         <div class="relative">
@@ -178,19 +218,19 @@ header{padding-top:0}
         </div>
       </div>
       <div id="resetPwdFields" class="space-y-4 hidden">
-        <input id="resetEmail" type="email" placeholder="O teu email" readonly class="bg-gray-50 cursor-not-allowed">
-        <div class="relative">
-          <input id="resetNewPwd" type="password" placeholder="Nova palavra-passe">
-          <button type="button" onclick="togglePass('resetNewPwd','eyeIconReset')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange p-1">
-            <i id="eyeIconReset" class="fa-solid fa-eye"></i>
-          </button>
+        <input id="resetEmail" type="email" placeholder="Email da tua conta" class="bg-gray-50">
+      </div>
+      <div id="verifyFields" class="space-y-4 hidden text-center">
+        <div class="w-14 h-14 mx-auto rounded-full bg-orange-100 flex items-center justify-center"><i class="fa-solid fa-envelope-open-text text-2xl text-orange"></i></div>
+        <div>
+          <h4 class="font-bold text-lg">Código de recuperação</h4>
+          <p class="text-sm text-gray-400 mt-1">Enviamos um código de 6 dígitos para <span id="verifyEmailText" class="text-gray-600 font-medium">o teu email</span>. Insere-o abaixo.</p>
         </div>
-        <div class="relative">
-          <input id="resetNewPwdConfirm" type="password" placeholder="Confirmar nova palavra-passe">
-          <button type="button" onclick="togglePass('resetNewPwdConfirm','eyeIconResetConfirm')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange p-1">
-            <i id="eyeIconResetConfirm" class="fa-solid fa-eye"></i>
-          </button>
-        </div>
+        <input id="verifyCode" type="text" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" class="text-center tracking-[0.5em] font-bold text-xl" onkeydown="if(event.key==='Enter'){event.preventDefault();verifyCodeSubmit()}">
+        <input id="resetNewPwdVerify" type="password" placeholder="Nova palavra-passe (min 8, letras e números)" class="hidden" onkeydown="if(event.key==='Enter'){event.preventDefault();verifyCodeSubmit()}">
+        <button type="button" id="verifyCodeBtn" onclick="verifyCodeSubmit()" class="btn-primary w-full py-3.5 text-base">Verificar código</button>
+        <p class="text-xs text-gray-400 text-center">Não recebeste? <a href="#" id="verifyResend" onclick="resendCode(event)" class="text-orange font-medium hover:underline">Reenviar código</a></p>
+        <p class="text-xs text-gray-400 text-center"><a href="#" onclick="toggleResetMode();return false" class="text-gray-500 hover:text-orange hover:underline">Voltar</a></p>
       </div>
       <button type="submit" id="loginSubmitBtn" class="btn-primary w-full py-3.5 text-base">Entrar</button>
       <div id="loginToggleArea">
@@ -206,39 +246,42 @@ header{padding-top:0}
   </div>
 </div>
 
-<footer class="bg-white border-t border-orange/10 text-gray-600 py-8">
-  <div class="max-w-7xl mx-auto px-4">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-6">
-      <div class="col-span-2 md:col-span-1">
-        <a href="index.html"><img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="h-8 mb-2"></a>
-        <p class="text-sm text-gray-400">Bisno fácil, dinheiro rápido.</p>
+<footer class="neo-footer">
+  <div class="neo-footer-inner">
+    <div class="neo-footer-grid">
+      <div>
+        <a href="index.html" class="neo-f-logo"><img src="ya_o_bisno_transp.png" alt="Ya o bisno"></a>
+        <p class="neo-f-tagline">Bisno fácil, dinheiro rápido. Compra e venda em Angola de forma simples, rápida e segura.</p>
+        <div class="neo-f-badges">
+          <span class="neo-f-badge"><i class="fa-solid fa-shield-halved"></i> 5% Proteção</span>
+          <span class="neo-f-badge"><i class="fa-solid fa-check"></i> 0% Taxa</span>
+        </div>
       </div>
-      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Descobrir</h5>
-        <ul class="space-y-2 text-sm">
-          <li><a href="#como-funciona" class="text-gray-500 hover:text-orange transition">Como funciona</a></li>
-          <li><a href="#produtos" class="text-gray-500 hover:text-orange transition">Anúncios</a></li>
-        </ul>
+      <div>
+        <h5 class="neo-f-title">Descobrir</h5>
+        <div class="neo-f-links">
+          <a href="#produtos" class="neo-f-link"><i class="fa-solid fa-tags"></i>Anúncios</a>
+        </div>
       </div>
-      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Ajuda</h5>
-        <ul class="space-y-2 text-sm">
-          <li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Central de ajuda em breve')">Central de ajuda</a></li>
-          <li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Denúncia enviada')">Reportar</a></li>
-        </ul>
+      <div>
+        <h5 class="neo-f-title">Ajuda</h5>
+        <div class="neo-f-links">
+          <a href="#" class="neo-f-link" onclick="toast('Central de ajuda em breve')"><i class="fa-solid fa-circle-question"></i>Ajuda</a>
+          <a href="#" class="neo-f-link" onclick="toast('Denúncia enviada')"><i class="fa-solid fa-flag"></i>Reportar</a>
+        </div>
       </div>
-      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Contato</h5>
-        <ul class="space-y-2 text-sm">
-          <li><a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-whatsapp mr-2"></i>WhatsApp</a></li>
-          <li><a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-instagram mr-2"></i>Instagram</a></li>
-          <li><a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-facebook mr-2"></i>Facebook</a></li>
-        </ul>
+      <div>
+        <h5 class="neo-f-title">Contato</h5>
+        <div class="neo-f-links">
+          <a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>
+          <a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-instagram"></i>Instagram</a>
+          <a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-facebook"></i>Facebook</a>
+        </div>
       </div>
     </div>
-    <div class="border-t border-gray-100 pt-6 text-sm text-center flex flex-col sm:flex-row justify-between gap-3">
-      <p class="text-gray-400">&copy; 2026 Ya o bisno</p>
-      <div class="flex gap-4 justify-center">
-        <span class="text-gray-400"><i class="fa-solid fa-shield-halved mr-1 text-orange"></i> 5% Proteção</span>
-        <span class="text-gray-400"><i class="fa-solid fa-check mr-1 text-green-400"></i> 0% Taxa</span>
-      </div>
+    <div class="neo-f-bottom">
+      <p class="neo-f-copy">&copy; 2026 <b>Ya o bisno</b> — Todos os direitos reservados</p>
+      <p class="neo-f-copy"><i class="fa-solid fa-bolt" style="color:var(--orange)"></i> Feito com <i class="fa-solid fa-heart" style="color:var(--orange)"></i> para Angola</p>
     </div>
   </div>
 </footer>
@@ -249,17 +292,7 @@ header{padding-top:0}
 var products = [];
 var isRegisterMode = false;
 var isResetMode = false;
-
-var mockProducts = [
-  {id:1,name:"Ténis Nike Air Max 90",price:45000,location:"Luanda",category:"Moda",images:["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800","https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800"],isNew:true,negotiable:false},
-  {id:2,name:"iPhone 13 Pro Max 256GB",price:350000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800","https://images.unsplash.com/photo-1574944985070-8f3ebc00b6b2?w=800"],isNew:true,negotiable:true},
-  {id:3,name:"Sofá 3 Lugares em Couro",price:120000,location:"Benguela",category:"Casa",images:["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800","https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800"],isNew:false,negotiable:true},
-  {id:4,name:"MacBook Air M1 2021",price:280000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800","https://images.unsplash.com/photo-1537495329792-41ae41ad3bf0?w=800"],isNew:false,negotiable:true},
-  {id:5,name:"Vestido de Festa Afro",price:15000,location:"Huíla",category:"Moda",images:["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800","https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800"],isNew:true,negotiable:false},
-  {id:6,name:"Bicicleta de Montanha",price:75000,location:"Huambo",category:"Desporto",images:["https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800","https://images.unsplash.com/photo-1576435728678-68d0fbf94da8?w=800"],isNew:false,negotiable:true},
-  {id:7,name:"PlayStation 5 Slim",price:200000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800","https://images.unsplash.com/photo-1607016284316-e1d1489002ff?w=800"],isNew:true,negotiable:false},
-  {id:8,name:"Mesa de Escritório Executiva",price:40000,location:"Benguela",category:"Casa",images:["https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=800","https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800"],isNew:false,negotiable:true}
-];
+var pendingEmail = "";
 
 (function(){
   try{
@@ -277,14 +310,14 @@ function initPage(){
 
 function loadProducts(){
   try{products=JSON.parse(localStorage.getItem("yabisno_products"))||[]}catch(e){products=[]}
-  if(products.length===0){
-    API.getProducts().then(function(server){
-      if(server&&server.length>0){products=server;try{localStorage.setItem("yabisno_products",JSON.stringify(server))}catch(e){};renderProducts()}
-      else{products=server||[];try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){};renderProducts()}
-    }).catch(function(){
-      if(products.length===0){products=mockProducts.slice();try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}}
-    });
-  }
+  API.getProducts().then(function(server){
+    if(server&&server.length>0){products=server;try{localStorage.setItem("yabisno_products",JSON.stringify(server))}catch(e){}}
+    else{products=server||[];try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}}
+    renderProducts();
+  }).catch(function(){
+    if(products.length===0)products=[];
+    renderProducts();
+  });
 }
 
 function saveProducts(){
@@ -303,6 +336,7 @@ function bindUI(){
     el=byId("loginModal");if(el)el.onclick=function(e){if(e.target===this){resetLoginForm();closeModal("loginModal")}};
     document.querySelectorAll("a[href^='#']").forEach(function(a){
       if(a.id==="loginToggleLink"||a.id==="forgotPwdLink")return;
+      if(a.getAttribute("onclick"))return;
       a.onclick=function(e){
         e.preventDefault();
         closeMobile();
@@ -326,7 +360,7 @@ function renderProducts(){
   var grid=byId("productsGrid"),count=byId("resultCount");
   if(!grid)return;
   if(products.length===0){
-    grid.innerHTML='<div class="col-span-full card p-12 text-center"><i class="fa-solid fa-inbox text-5xl mb-4 text-gray-200"></i><p class="text-gray-400">Nenhum produto encontrado</p></div>';
+    grid.innerHTML='<div class="col-span-full card p-12 text-center"><i class="fa-solid fa-inbox text-5xl mb-4 text-gray-200"></i><p class="text-gray-500">Nenhum produto encontrado</p></div>';
     if(count)count.textContent="0 produtos";
     return;
   }
@@ -341,14 +375,14 @@ function cardHTML(p){
   var src=imgs.length>0?imgs[0]:imgPH(p.name);
   var more=imgs.length>1?'<span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur"><i class="fa-solid fa-images mr-1"></i>'+imgs.length+'</span>':'';
   return '<div class="card">'+
-    '<div class="relative" style="padding-bottom:75%;background:#f8f8f8;overflow:hidden">'+
-    '<img src="'+esc(src)+'" alt="'+esc(p.name)+'" class="absolute inset-0 w-full h-full object-cover" loading="lazy" onerror="imgFallback(this)">'+
+    '<div class="product-img-wrap">'+
+    '<img src="'+esc(src)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="imgFallback(this)">'+
     (p.isNew?'<span class="badge-orange absolute top-3 left-3">NOVO</span>':'')+more+
     '</div>'+
     '<div class="p-4">'+
     '<h3 class="card-name font-semibold mb-1.5">'+esc(p.name)+'</h3>'+
-    '<div class="flex items-center gap-1 text-sm text-gray-400 mb-2">'+
-    '<i class="fa-solid fa-location-dot text-xs"></i><span>'+esc(p.location)+'</span>'+
+    '<div class="flex items-center gap-1 text-sm text-gray-500 mb-2">'+
+    '<i class="fa-solid fa-location-dot text-xs text-orange"></i><span>'+esc(safeLocal(p.location))+'</span>'+
     (p.negotiable?'<span class="ml-auto text-xs text-orange font-medium"><i class="fa-solid fa-handshake mr-1"></i>Negociável</span>':'')+
     '</div>'+
     '<div class="text-xl font-extrabold text-orange mb-3">'+fmt(p.price)+'</div>'+
@@ -357,9 +391,34 @@ function cardHTML(p){
     '</div></div>';
 }
 
+function verifyCodeSubmit(){
+  var code=byId("verifyCode");if(!code||!code.value.trim()){toast("Introduz o código");return}
+  if(!pendingEmail){toast("Preenche o email primeiro");return}
+  if(isResetMode){
+    var pwd=byId("resetNewPwdVerify").value.trim();
+    if(!pwd){toast("Introduz a nova palavra-passe");return}
+    if(pwd.length<8||!/[A-Za-z]/.test(pwd)||!/\d/.test(pwd)){toast("Mínimo 8 caracteres, letras e números");return}
+    API.resetPassword(pendingEmail,code.value.trim(),pwd).then(function(r){
+      if(!r.ok){toast(r.error||"Erro a redefinir");return}
+      toast("Password alterada! Faz login.");
+      resetLoginForm();
+    });
+    return;
+  }
+}
+function resendCode(e){
+  if(e)e.preventDefault();
+  if(!pendingEmail){toast("Preenche o email primeiro");return}
+  API.forgotPassword(pendingEmail).then(function(r){
+    toast(r.ok ? (r.throttled ? "Muitos pedidos. Tenta de novo em 15 minutos." : "Código reenviado! Verifica o teu email") : "Erro ao reenviar");
+  });
+}
+
 function toggleLoginMode(){
-  isRegisterMode=!isRegisterMode;isResetMode=false;
-  var rf=byId("loginRegisterFields"),rs=byId("resetPwdFields"),sb=byId("loginSubmitBtn"),tt=byId("loginToggleText"),tl=byId("loginToggleLink"),fp=byId("forgotPwdLink"),lf=byId("loginFields"),ta=byId("loginToggleArea");
+  isRegisterMode=!isRegisterMode;isResetMode=false;submitting=false;
+  var sb2=byId("loginSubmitBtn");if(sb2){sb2.disabled=false}
+  var rf=byId("loginRegisterFields"),rs=byId("resetPwdFields"),sb=byId("loginSubmitBtn"),tt=byId("loginToggleText"),tl=byId("loginToggleLink"),fp=byId("forgotPwdLink"),lf=byId("loginFields"),ta=byId("loginToggleArea"),vf=byId("verifyFields");
+  if(vf)vf.classList.add("hidden");
   if(rf)rf.classList.toggle("hidden",!isRegisterMode);
   if(rs)rs.classList.add("hidden");
   if(lf)lf.classList.remove("hidden");
@@ -370,17 +429,22 @@ function toggleLoginMode(){
   if(fp)fp.classList.toggle("hidden",isRegisterMode);
 }
 function toggleResetMode(){
-  isResetMode=!isResetMode;isRegisterMode=false;
-  var rf=byId("loginRegisterFields"),rs=byId("resetPwdFields"),sb=byId("loginSubmitBtn"),tt=byId("loginToggleText"),tl=byId("loginToggleLink"),fp=byId("forgotPwdLink"),le=byId("loginEmail"),re=byId("resetEmail"),lf=byId("loginFields"),ta=byId("loginToggleArea");
+  isResetMode=!isResetMode;isRegisterMode=false;submitting=false;
+  var sb2=byId("loginSubmitBtn");if(sb2){sb2.disabled=false}
+  var rf=byId("loginRegisterFields"),rs=byId("resetPwdFields"),sb=byId("loginSubmitBtn"),tt=byId("loginToggleText"),tl=byId("loginToggleLink"),fp=byId("forgotPwdLink"),le=byId("loginEmail"),re=byId("resetEmail"),lf=byId("loginFields"),ta=byId("loginToggleArea"),vf=byId("verifyFields"),rpw=byId("resetNewPwdVerify"),vbt=byId("verifyCodeBtn"),vc=byId("verifyCode");
+  if(vf)vf.classList.add("hidden");
+  if(rpw)rpw.classList.add("hidden");
+  if(vc)vc.value="";
+  if(vbt)vbt.textContent="Verificar código";
   if(rf)rf.classList.add("hidden");
   if(rs)rs.classList.toggle("hidden",!isResetMode);
   if(lf)lf.classList.toggle("hidden",isResetMode);
   if(ta)ta.classList.toggle("hidden",isResetMode);
-  if(sb){sb.textContent=isResetMode?"Redefinir password":"Entrar"}
+  if(sb){sb.textContent=isResetMode?"Enviar código":"Entrar"}
   if(tt)tt.textContent=isResetMode?"":"Ainda não tens conta?";
   if(tl)tl.textContent=isResetMode?"Voltar ao login":"Criar conta";
   if(fp)fp.classList.toggle("hidden",isResetMode);
-  if(isResetMode&&le&&re){re.value=le.value}
+  if(isResetMode&&le&&re&&!re.value.trim()){re.value=le.value}
   if(!isResetMode&&le)le.value="";
   document.querySelectorAll("#loginForm input").forEach(function(i){i.disabled=false});
 }
@@ -394,11 +458,21 @@ function togglePass(inputId,iconId){
 function resetLoginForm(){
   if(isRegisterMode)toggleLoginMode();
   if(isResetMode)toggleResetMode();
-  isRegisterMode=false;isResetMode=false;
+  isRegisterMode=false;isResetMode=false;submitting=false;
+  pendingEmail="";
+  var sb=byId("loginSubmitBtn"),vf=byId("verifyFields"),lf=byId("loginFields"),rf=byId("loginRegisterFields"),ta=byId("loginToggleArea");
+  if(sb)sb.disabled=false;
+  if(vf)vf.classList.add("hidden");
+  if(lf)lf.classList.remove("hidden");
+  if(rf)rf.classList.remove("hidden");
+  if(ta)ta.classList.remove("hidden");
+  if(sb)sb.classList.remove("hidden");
 }
 
+var submitting = false;
 function handleLogin(e){
   if(e)e.preventDefault();
+  if(submitting)return false;
   try{
   if(isRegisterMode){
     var rn=byId("regName"),le=byId("loginEmail"),rp=byId("regPhone"),lp=byId("loginPassword"),rc=byId("regPasswordConfirm");
@@ -407,7 +481,12 @@ function handleLogin(e){
     if(!name||!email||!phone||!pwd){toast("Preenche todos os campos");return false;}
     if(pwd.length<8||!/[A-Za-z]/.test(pwd)||!/\d/.test(pwd)){toast("Mínimo 8 caracteres, letras e números");return false;}
     if(pwd!==pwdC){toast("Palavra-passe não coincide");return false;}
+    submitting=true;
+    var sbR=byId("loginSubmitBtn");
+    if(sbR){sbR.disabled=true;sbR.textContent="A criar conta..."}
     API.register(name,email,phone,pwd).then(function(r){
+      submitting=false;
+      if(sbR){sbR.disabled=false;sbR.textContent="Criar conta"}
       if(!r.ok){toast(r.error||"Erro ao registar");return}
       localStorage.setItem("yabisno_user",JSON.stringify(r.user));
       closeModal("loginModal");window.location.href="main.html";
@@ -415,16 +494,34 @@ function handleLogin(e){
     return false;
   }
   if(isResetMode){
-    var re=byId("resetEmail"),rn=byId("resetNewPwd"),rc=byId("resetNewPwdConfirm");
-    if(!re||!rn||!rc)return false;
-    var email=re.value.trim().toLowerCase(),pwd=rn.value.trim(),pwdC=rc.value.trim();
-    if(!email||!pwd){toast("Preenche todos os campos");return false;}
-    if(pwd.length<8||!/[A-Za-z]/.test(pwd)||!/\d/.test(pwd)){toast("Mínimo 8 caracteres, letras e números");return false;}
-    if(pwd!==pwdC){toast("Palavra-passe não coincide");return false;}
-    API.resetPassword(email,pwd).then(function(r){
+    var vf2=byId("verifyFields");
+    if(vf2&&!vf2.classList.contains("hidden")){
+      // já estamos no ecrã de código — Enter não pode reenviar código nem trocar o formulário
+      verifyCodeSubmit();
+      return false;
+    }
+    var re=byId("resetEmail");
+    if(!re)return false;
+    var email=re.value.trim().toLowerCase();
+    if(!email){toast("Introduz o teu email");return false;}
+    pendingEmail=email;
+    submitting=true;
+    var sb=byId("loginSubmitBtn");
+    if(sb){sb.disabled=true;sb.textContent="A enviar código..."}
+    API.forgotPassword(email).then(function(r){
+      submitting=false;
+      if(sb){sb.disabled=false;sb.textContent="Enviar código"}
       if(!r.ok){toast(r.error||"Erro");return}
-      toast("Password alterada! Faz login.");
-      toggleResetMode();
+      var vf=byId("verifyFields"),lf=byId("loginFields"),rs=byId("resetPwdFields"),ta=byId("loginToggleArea"),vt=byId("verifyEmailText"),rpw=byId("resetNewPwdVerify"),vbt=byId("verifyCodeBtn");
+      if(vf)vf.classList.remove("hidden");
+      if(lf)lf.classList.add("hidden");
+      if(rs)rs.classList.add("hidden");
+      if(ta)ta.classList.add("hidden");
+      if(sb)sb.classList.add("hidden");
+      if(vt)vt.textContent=email;
+      if(rpw)rpw.classList.remove("hidden");
+      if(vbt)vbt.textContent="Mudar palavra-passe";
+      toast(r.throttled ? "Muitos pedidos. Tenta de novo em 15 minutos." : "Código enviado! Verifica o teu email (ou o console do servidor)");
     });
     return false;
   }
@@ -432,16 +529,30 @@ function handleLogin(e){
   if(!le2||!lp2)return false;
   var email=le2.value.trim().toLowerCase(),pwd=lp2.value.trim();
   if(!email||!pwd){toast("Introduz o email e a palavra-passe");return false;}
+  submitting=true;
+  var sbL=byId("loginSubmitBtn");
+  if(sbL){sbL.disabled=true;sbL.textContent="A entrar..."}
   API.login(email,pwd).then(function(r){
+    submitting=false;
+    if(sbL){sbL.disabled=false;sbL.textContent="Entrar"}
     if(!r.ok){toast(r.error||"Email ou password incorretos");return}
     localStorage.setItem("yabisno_user",JSON.stringify(r.user));
     window.location.href="main.html";
   });
   return false;
-  }catch(e){toast("Erro ao processar");return false}
+  }catch(e){submitting=false;toast("Erro ao processar");return false}
 }
 
 function fmt(v){return Number(v).toLocaleString("pt-PT")+" Kz"}
+function safeLocal(loc){
+  if(loc==null||loc==="")return "Luanda";
+  if(typeof loc==="string")return loc;
+  if(typeof loc==="object"){
+    var a=(loc.city||loc.cidade||loc.municipality||""),b=(loc.bairro||loc.neighborhood||loc.provincia||"");
+    return (a+" • "+b).replace(/^• | • $/g,"").trim()||"Luanda";
+  }
+  return String(loc);
+}
 function imgFallback(el){try{var n=el.closest('.card').querySelector('.card-name');if(n)el.src=imgPH(n.textContent)}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"']/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]})}
 function imgPH(n){var c=['#FF5F1F','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f8f8f8"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}

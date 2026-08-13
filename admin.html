@@ -2,13 +2,25 @@
 <html lang="pt">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin - Ya o bisno</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="api.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,sans-serif;background:#f5f5f5;padding:20px;color:#333}
-h1{font-size:24px;margin-bottom:20px}
-nav{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-nav button{padding:10px 20px;border:none;border-radius:8px;background:#ddd;cursor:pointer;font-size:14px}
-nav button.ativo{background:#e67e22;color:#fff}
+body{font-family:'Inter',system-ui,sans-serif;background:#f5f5f5;min-height:100vh;color:#333}
+.header{background:#111317;color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.header h1 i{color:#FF6B00}
+.header .user{font-size:13px;color:#aaa}
+.container{padding:24px;max-width:1200px;margin:auto}
+.nav{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.nav button{padding:10px 20px;border:none;border-radius:8px;background:#ddd;cursor:pointer;font-size:14px;font-weight:600}
+.nav button.ativo{background:#FF6B00;color:#fff}
+.nav button.logout{background:#e74c3c;color:#fff;margin-left:auto}
+.card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:#fff;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.stat .num{font-size:28px;font-weight:800;color:#FF6B00}
+.stat .lbl{font-size:12px;color:#999;margin-top:4px}
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
 th,td{padding:10px 12px;text-align:left;font-size:13px;border-bottom:1px solid #eee}
 th{background:#f8f8f8;font-weight:600;white-space:nowrap}
@@ -17,61 +29,237 @@ tr:hover{background:#fef9f4}
 img.thumb{width:50px;height:50px;object-fit:cover;border-radius:4px}
 .btn-del{background:#e74c3c;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px}
 .btn-del:hover{background:#c0392b}
+.btn-logout{background:transparent;color:#fff;border:1px solid #555;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px}
+.btn-logout:hover{background:#222}
+
+/* login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+.login-card h2{margin-bottom:4px;font-size:20px}
+.login-card p{color:#999;font-size:13px;margin-bottom:20px}
+.login-card input{width:100%;padding:14px;border:2px solid #eee;border-radius:10px;margin-bottom:12px;font-size:14px}
+.login-card input:focus{outline:none;border-color:#FF6B00}
+.login-card button{width:100%;padding:14px;background:#FF6B00;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+.login-card button:hover{background:#e65f00}
+.login-card .erro{color:#e74c3c;font-size:13px;min-height:18px;margin-top:10px;text-align:center}
+.login-logo{width:56px;height:56px;border-radius:14px;background:#FF6B00;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;margin-bottom:16px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.modal-card{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.modal-card h2{margin-bottom:14px;font-size:18px}
+.modal-card input{width:100%;padding:13px;border:2px solid #eee;border-radius:10px;margin-bottom:10px;font-size:14px}
+.modal-card input:focus{outline:none;border-color:#FF6B00}
+.modal-card button{padding:13px;background:#FF6B00;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+.modal-card .erro{color:#e74c3c;font-size:13px;min-height:18px;margin-top:8px;text-align:center}
 </style>
 </head>
 <body>
-<h1>Painel Admin</h1>
-<nav>
-<button onclick="carregar('users',this)" class="ativo">Users</button>
-<button onclick="carregar('products',this)">Produtos</button>
-<button onclick="carregar('chats',this)">Chats</button>
-<button onclick="carregar('cart',this)">Carrinho</button>
-</nav>
-<div id="conteudo"><div class="msg">A carregar...</div></div>
+
+<div id="loginScreen" class="login-box">
+  <div class="login-card">
+    <div class="login-logo">ya</div>
+    <h1>Painel Admin</h1>
+    <p>Entra com uma conta de administrador.</p>
+    <input id="adminEmail" type="email" placeholder="Email" autocomplete="username">
+    <input id="adminPassword" type="password" placeholder="Palavra-passe" autocomplete="current-password" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button onclick="adminLogin()">Entrar</button>
+    <div id="loginError" class="erro"></div>
+  </div>
+</div>
+
+<div id="panel" style="display:none">
+  <div class="header">
+    <h1><i class="fa-solid fa-shield-halved"></i> Painel Admin</h1>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="adminEmailDisp" class="user" style="color:#ccc"></span>
+      <button class="btn-logout" onclick="openPassModal()" style="border-color:#555"><i class="fa-solid fa-key"></i> Alterar password</button>
+      <button class="btn-logout" onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+    </div>
+  </div>
+  <div id="passModal" class="modal" style="display:none">
+    <div class="modal-card">
+      <h2>Alterar password</h2>
+      <input id="passCurrent" type="password" placeholder="Password atual">
+      <input id="passNew" type="password" placeholder="Nova password (min. 6)"> 
+      <input id="passConfirm" type="password" placeholder="Confirmar nova password">
+      <div id="passError" class="erro"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button style="flex:1" onclick="savePassword()">Guardar</button>
+        <button onclick="closePassModal()" style="flex:1;background:#ccc;color:#333">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  <div id="delModal" class="modal" style="display:none">
+    <div class="modal-card">
+      <h2><i class="fa-solid fa-triangle-exclamation" style="color:#e74c3c;margin-right:6px"></i>Eliminar utilizador</h2>
+      <p style="font-size:13px;color:#666;margin-bottom:10px">Esta ação apaga o utilizador e <b>todos os seus dados</b> (produtos, carrinho e mensagens). <b>Isto não se pode desfazer.</b><br><br>Para confirmar, escreve o email exacto: <b id="delEmailDisp" style="color:#111"></b></p>
+      <input id="delConfirm" type="text" placeholder="Escreve o email completo" autocomplete="off" onkeydown="if(event.key==='Enter')doDeleteUser()">
+      <div id="delError" class="erro"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button style="flex:1;background:#e74c3c" onclick="doDeleteUser()"><i class="fa-solid fa-trash-can" style="margin-right:6px"></i>Eliminar</button>
+        <button onclick="closeDelModal()" style="flex:1;background:#ccc;color:#333">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="stats">
+      <div class="stat"><div class="num" id="stUsers">–</div><div class="lbl">Users</div></div>
+      <div class="stat"><div class="num" id="stProducts">–</div><div class="lbl">Produtos</div></div>
+      <div class="stat"><div class="num" id="stChats">–</div><div class="lbl">Mensagens</div></div>
+      <div class="stat"><div class="num" id="stCart">–</div><div class="lbl">Itens carrinho</div></div>
+    </div>
+    <div class="nav">
+      <button onclick="carregar('users',this)" class="ativo">Users</button>
+      <button onclick="carregar('products',this)">Produtos</button>
+      <button onclick="carregar('chats',this)">Chats</button>
+      <button onclick="carregar('cart',this)">Carrinho</button>
+    </div>
+    <div id="conteudo"><div class="msg">A carregar...</div></div>
+  </div>
+</div>
 
 <script>
-async function carregar(tipo, btn) {
-  document.querySelectorAll('nav button').forEach(b => b.className='');
+var ADMIN_TOKEN = '';
+function byId(id){return document.getElementById(id)}
+
+function adminLogin(){
+  var email=byId('adminEmail').value.trim(),pass=byId('adminPassword').value;
+  if(!email||!pass){byId('loginError').textContent='Preenche email e password';return}
+  byId('loginError').textContent='';
+  API.setTokenKey('yabisno_admin_token');
+  API.login(email,pass).then(function(r){
+    if(!r.ok){byId('loginError').textContent=r.error||'Login falhou';return}
+    if(r.user.role!=='admin'){byId('loginError').textContent='Esta conta não tem acesso de admin';return}
+    ADMIN_TOKEN=r.token;
+    byId('adminEmailDisp').textContent=r.user.email;
+    localStorage.setItem('yabisno_admin_session','1');
+    localStorage.setItem('yabisno_admin_user', JSON.stringify(r.user));
+    enterPanel();
+  });
+}
+function enterPanel(){
+  byId('loginScreen').style.display='none';
+  byId('panel').style.display='block';
+  carregarStats();
+  carregar('users',document.querySelector('.nav button'));
+}
+function adminLogout(){
+  localStorage.removeItem('yabisno_admin_session');
+  localStorage.removeItem('yabisno_admin_user');
+  localStorage.removeItem('yabisno_admin_token');
+  API.setTokenKey('yabisno_token');
+  location.reload();
+}
+function openPassModal(){
+  byId('passCurrent').value='';byId('passNew').value='';byId('passConfirm').value='';
+  byId('passError').textContent='';
+  byId('passModal').style.display='flex';
+}
+function closePassModal(){byId('passModal').style.display='none'}
+function savePassword(){
+  var cur=byId('passCurrent').value, nv=byId('passNew').value, cf=byId('passConfirm').value;
+  if(!cur||!nv){byId('passError').textContent='Preenche todos os campos';return}
+  if(nv.length<6){byId('passError').textContent='A nova password tem de ter pelo menos 6 caracteres';return}
+  if(nv!==cf){byId('passError').textContent='As passwords não coincidem';return}
+  API.changePassword(cur,nv).then(function(r){
+    if(r.ok){alert('Password alterada com sucesso!');closePassModal();}
+    else byId('passError').textContent=r.error||'Erro ao alterar password';
+  });
+}
+function carregarStats(){
+  fetch('/api/admin/stats',{headers:{'Authorization':'Bearer '+ADMIN_TOKEN}})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d||d.users===undefined)return;
+      byId('stUsers').textContent=d.users;
+      byId('stProducts').textContent=d.products;
+      byId('stChats').textContent=d.chats;
+      byId('stCart').textContent=d.cart;
+    }).catch(function(){});
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+function carregar(tipo, btn) {
+  document.querySelectorAll('.nav button').forEach(function(b){b.className=''});
   if (btn) btn.className='ativo';
-  const div = document.getElementById('conteudo');
+  var div = byId('conteudo');
   div.innerHTML = '<div class="msg">A carregar...</div>';
-  try {
-    const r = await fetch('/api/admin/' + tipo);
-    const dados = await r.json();
+  fetch('/api/admin/' + tipo, {headers:{'Authorization':'Bearer '+ADMIN_TOKEN}}).then(function(r){
+    return r.json();
+  }).then(function(dados){
     if (!dados.length) { div.innerHTML = '<div class="msg">Nenhum registo encontrado</div>'; return; }
-    let html = '<table><thead><tr>';
-    for (const chave of Object.keys(dados[0])) html += '<th>' + chave + '</th>';
+    var html = '<table><thead><tr>';
+    for (var chave of Object.keys(dados[0])) html += '<th>' + chave + '</th>';
     if (tipo === 'users' || tipo === 'products') html += '<th>Acoes</th>';
     html += '</tr></thead><tbody>';
-    for (const item of dados) {
+    for (var item of dados) {
       html += '<tr>';
-      for (const [chave, val] of Object.entries(item)) {
-        const v = String(val ?? '');
-        if (typeof val === 'string' && val.startsWith('data:image')) html += '<td><img class="thumb" src="' + val + '"></td>';
-        else html += '<td>' + v.substring(0, 100) + (v.length > 100 ? '...' : '') + '</td>';
+      for (var entry of Object.entries(item)) {
+        var chave=entry[0], val=entry[1];
+        var v = String(val == null ? '' : val);
+        if (typeof val === 'string' && val.startsWith('data:image')) html += '<td><img class="thumb" src="' + esc(val) + '"></td>';
+        else html += '<td>' + esc(v.substring(0, 100)) + (v.length > 100 ? '...' : '') + '</td>';
       }
-      if (tipo === 'users') html += '<td><button class="btn-del" onclick="eliminarUser(\'' + item.email + '\')">X</button></td>';
+      if (tipo === 'users') { var isOwner = String(item.email).toLowerCase() === String('abnermikael2017@gmail.com' || '').toLowerCase(); html += '<td>' + (isOwner ? '<span style="font-size:11px;color:#999">Dono</span>' : '<button class="btn-del" onclick="eliminarUser(\'' + encodeURIComponent(String(item.email)) + '\')">X</button>') + '</td>'; }
       if (tipo === 'products') html += '<td><button class="btn-del" onclick="eliminarProd(\'' + item.id + '\')">X</button></td>';
       html += '</tr>';
     }
     html += '</tbody></table>';
     div.innerHTML = html;
-  } catch(e) { div.innerHTML = '<div class="msg">Erro ao carregar dados</div>'; }
+  }).catch(function(){ div.innerHTML = '<div class="msg">Erro ao carregar dados</div>'; });
 }
 
-async function eliminarUser(email) {
-  if (!confirm('Eliminar user ' + email + ' e todos os seus dados?')) return;
-  await fetch('/api/admin/user/' + encodeURIComponent(email), { method:'DELETE' });
-  carregar('users', document.querySelector('nav button'));
+function eliminarUser(email) {
+  if (!email) return;
+  email = decodeURIComponent(email);
+  var typed = byId('delConfirm');
+  if (typed) typed.value = '';
+  byId('delEmailDisp').textContent = email;
+  byId('delError').textContent = '';
+  byId('delModal').style.display = 'flex';
+  if (typed) setTimeout(function(){ typed.focus(); }, 50);
+}
+function closeDelModal(){ byId('delModal').style.display = 'none'; }
+function doDeleteUser(){
+  var email = byId('delEmailDisp').textContent.trim();
+  var typed = byId('delConfirm').value.trim();
+  if (typed.toLowerCase() !== email.toLowerCase()) {
+    byId('delError').textContent = 'O email não coincide. Escreve exatamente: ' + email;
+    return;
+  }
+  fetch('/api/admin/user/' + encodeURIComponent(email), { method:'DELETE', headers:{'Authorization':'Bearer '+ADMIN_TOKEN} })
+    .then(function(r){return r.json()})
+    .then(function(d){
+      closeDelModal();
+      if (d && d.ok === false) { alert(d.error || 'Não foi possível eliminar'); return; }
+      carregar('users', document.querySelector('.nav button')); carregarStats();
+    })
+    .catch(function(){ closeDelModal(); alert('Erro ao eliminar'); });
 }
 
-async function eliminarProd(id) {
+function eliminarProd(id) {
   if (!confirm('Eliminar produto #' + id + '?')) return;
-  await fetch('/api/admin/product/' + id, { method:'DELETE' });
-  carregar('products', document.querySelectorAll('nav button')[1]);
+  fetch('/api/admin/product/' + id, { method:'DELETE', headers:{'Authorization':'Bearer '+ADMIN_TOKEN} })
+    .then(function(){ carregar('products', document.querySelectorAll('.nav button')[1]); carregarStats(); });
 }
 
-carregar('users');
+function init(){
+  API.setTokenKey('yabisno_admin_token');
+  var tok=localStorage.getItem('yabisno_admin_token');
+  var usr=localStorage.getItem('yabisno_admin_user');
+  if(tok&&usr){
+    try{
+      var email=JSON.parse(usr).email;
+      API.getUser(email).then(function(r){
+        if(r.ok&&r.user&&r.user.role==='admin'){
+          ADMIN_TOKEN=tok;
+          enterPanel();
+        }else{
+          adminLogout();
+        }
+      }).catch(function(){adminLogout();});
+    }catch(e){adminLogout();}
+  }
+}
+init();
 </script>
 </body>
 </html>

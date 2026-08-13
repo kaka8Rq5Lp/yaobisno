@@ -1,29 +1,58 @@
 var API = (function(){
-  var API_URL = 'https://yaobisno.onrender.com'; /* muda para o URL do teu backend */
-  var base = API_URL || 'http://'+(location.host||'localhost:3000');
+  /* '' = usa o MESMO dominio (frontend e backend no mesmo serviço Render/local).
+     Para outro dominio, preenche ex: 'https://yaobisno.onrender.com' */
+  var API_URL = '';
+  var base = API_URL || (window.location && window.location.origin) || 'http://localhost:3000';
+
+  var tokenKey = 'yabisno_token';
+  function getToken(){ try{return localStorage.getItem(tokenKey)||''}catch(e){return ''} }
+  function setToken(t){ try{ if(t) localStorage.setItem(tokenKey,t); else localStorage.removeItem(tokenKey); }catch(e){} }
+  function setTokenKey(k){ if(k) tokenKey = k; return tokenKey; }
 
   function api(path, opts){
     opts = opts || {};
+    var headers = {};
+    if (opts.body) headers['Content-Type'] = 'application/json';
+    var tok = getToken();
+    if (tok) headers['Authorization'] = 'Bearer ' + tok;
     return fetch(base+path, {
       method: opts.method || 'GET',
-      headers: opts.body ? {'Content-Type':'application/json'} : undefined,
+      headers: headers,
       body: opts.body ? JSON.stringify(opts.body) : undefined
     }).then(function(r){return r.json()}).catch(function(){return {ok:false}});
   }
 
-  // ─── Users ─────────────────────────────────────────
+  // ─── Auth ─────────────────────────────────────────────
 
   function login(email, password){
-    return api('/api/login', {method:'POST', body:{email,password}});
+    return api('/api/login', {method:'POST', body:{email,password}}).then(function(r){
+      if(r.ok&&r.token)setToken(r.token);
+      return r;
+    });
   }
   function register(name, email, phone, password){
-    return api('/api/register', {method:'POST', body:{name,email,phone,password}});
+    return api('/api/register', {method:'POST', body:{name,email,phone,password}}).then(function(r){
+      if(r.ok&&r.token)setToken(r.token);
+      return r;
+    });
   }
-  function resetPassword(email, password){
-    return api('/api/reset-password', {method:'POST', body:{email,password}});
+  function forgotPassword(email){
+    return api('/api/forgot-password', {method:'POST', body:{email}});
+  }
+  function resetPassword(email, code, password){
+    return api('/api/reset-password', {method:'POST', body:{email, code, password}});
+  }
+  function changePassword(currentPassword, newPassword){
+    return api('/api/change-password', {method:'POST', body:{currentPassword, newPassword}});
+  }
+  function testEmail(to){
+    return api('/api/test-email', {method:'POST', body:{to}});
   }
   function getUser(email){
     return api('/api/user/'+encodeURIComponent(email));
+  }
+  function getProfile(email){
+    return api('/api/profile/'+encodeURIComponent(email));
   }
   function saveAvatar(email, avatar){
     return api('/api/avatar', {method:'POST', body:{email,avatar}});
@@ -32,7 +61,7 @@ var API = (function(){
     return api('/api/user/address', {method:'PUT', body:{email, province, municipality, neighborhood, street, reference}});
   }
 
-  // ─── Products ──────────────────────────────────────
+  // ─── Products ──────────────────────────────────────────────
 
   function getProducts(){
     return api('/api/products');
@@ -47,11 +76,10 @@ var API = (function(){
     return api('/api/products/'+id, {method:'DELETE'});
   }
 
-  // ─── Chats ─────────────────────────────────────────
+  // ─── Chats ─────────────────────────────────────────────────
 
   function getChats(email){
-    var q = email ? '?email='+encodeURIComponent(email) : '';
-    return api('/api/chats'+q);
+    return api('/api/chats');
   }
   function sendChat(product_id, user_email, from, text, timestamp){
     return api('/api/chats', {method:'POST', body:{product_id, user_email, from, text, timestamp:timestamp||Date.now()}});
@@ -60,7 +88,7 @@ var API = (function(){
     return api('/api/chats/read', {method:'PUT', body:{product_id, user_email, reader_email: reader_email || user_email}});
   }
 
-  // ─── Cart ──────────────────────────────────────────
+  // ─── Cart ──────────────────────────────────────────────────
 
   function getCart(email){
     return api('/api/cart/'+encodeURIComponent(email));
@@ -78,11 +106,28 @@ var API = (function(){
     return api('/api/cart/all/'+encodeURIComponent(email), {method:'DELETE'});
   }
 
+  // ─── Payments (Multicaixa Express) ───────────────────────────
+
+  function createPayment(data){
+    return api('/api/payment/create', {method:'POST', body:data});
+  }
+  function getPayment(ref){
+    return api('/api/payment/'+encodeURIComponent(ref));
+  }
+  function refreshPayment(ref){
+    return api('/api/payment/'+encodeURIComponent(ref)+'/refresh');
+  }
+
   return {
+    setTokenKey: setTokenKey,
     login: login,
     register: register,
+    forgotPassword: forgotPassword,
     resetPassword: resetPassword,
+    changePassword: changePassword,
+    testEmail: testEmail,
     getUser: getUser,
+    getProfile: getProfile,
     saveAvatar: saveAvatar,
     saveAddress: saveAddress,
     getProducts: getProducts,
@@ -96,6 +141,9 @@ var API = (function(){
     addToCart: addToCart,
     changeCartQty: changeCartQty,
     removeFromCart: removeFromCart,
-    clearCart: clearCart
+    clearCart: clearCart,
+    createPayment: createPayment,
+    getPayment: getPayment,
+    refreshPayment: refreshPayment
   };
 })();

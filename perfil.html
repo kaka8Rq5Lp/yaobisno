@@ -3,188 +3,266 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#FF5F1F">
+<meta name="theme-color" content="#FF6B00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ya o bisno">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Ya o bisno — Meu Perfil</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
 <script src="api.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-:root{--orange:#FF5F1F;--dark:#1A1A1A;--gray:#F5F5F5;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+:root{--orange:#FF6B00;--dark:#111317;--bg:#f6f7f9;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;outline:none}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--dark);-webkit-font-smoothing:antialiased;min-height:calc(var(--vh,1vh)*100)}
 button{font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipulation;background:none;border:none;padding:0;color:inherit;line-height:1}
-.icon-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;border-radius:0.75rem;color:#4b5563;font-size:1.125rem;transition:background .2s;background:none;border:none;touch-action:manipulation;cursor:pointer}
-.icon-btn:hover{background:#f3f4f6}
-body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#f8f9fa;color:#1A1A1A;-webkit-font-smoothing:antialiased}
-.text-orange{color:#FF5F1F}.bg-orange{background-color:#FF5F1F}.border-orange{border-color:#FF5F1F}
-.btn-primary{background:#FF5F1F;color:#fff;border:none;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;font-size:.875rem;text-decoration:none;touch-action:manipulation}
-.btn-primary:hover{box-shadow:0 8px 25px rgba(255,95,31,.35)}
-.btn-primary:active{transform:scale(.96)}
-.btn-outline{background:transparent;color:#FF5F1F;border:2px solid #FF5F1F;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;font-size:.875rem;touch-action:manipulation}
-.btn-outline:hover{background:#FF5F1F;color:#fff}
-.card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;transition:all .3s;overflow:hidden}
-.card-img-wrap{position:relative;width:100%;padding-bottom:75%;background:#f0f0f0;overflow:hidden;border-radius:.5rem}
-.card-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
-.modal-panel{width:100%;max-width:480px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin-bottom:0}
+.btn-orange{background:#FF6B00;color:#fff;border-radius:9999px;font-weight:600;transition:all .2s;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem 1rem;font-size:.85rem;text-decoration:none;touch-action:manipulation}
+.btn-orange:hover{background:#e65f00;box-shadow:0 4px 16px rgba(255,107,0,.24)}
+.btn-orange:active{transform:scale(.96)}
+.btn-dark{background:var(--dark);color:#fff;border-radius:12px;font-weight:600;transition:all .2s;cursor:pointer;min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem 1rem;font-size:.85rem;text-decoration:none;touch-action:manipulation}
+.btn-dark:hover{background:#000}
+.btn-light{background:#f6f7f9;color:var(--dark);border:1px solid rgba(0,0,0,.06);border-radius:11px;font-weight:600;transition:all .2s;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem .9rem;font-size:.85rem;touch-action:manipulation}
+.btn-light:hover{background:#eceef1}
+.card{background:#fff;border-radius:20px;border:1px solid rgba(0,0,0,.06);box-shadow:0 4px 24px rgba(0,0,0,.04);transition:all .3s;overflow:hidden}
+.card:hover{box-shadow:0 16px 40px rgba(0,0,0,.08);transform:translateY(-1px)}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center}
+.modal.md{align-items:center;padding:1rem}
+.modal-panel{width:100%;background:#fff;border-radius:24px 24px 0 0;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.24);animation:slideUp .3s ease}
+.modal.md .modal-panel{max-width:520px;border-radius:24px}
 .modal.hidden{display:none}
-.modal-panel.no-pad{padding:0}
-.modal-panel.no-pad.chat-panel{height:55vh;max-height:70vh;min-height:250px}
+.modal-panel.chat-panel{height:60vh;max-height:70vh;min-height:300px;display:flex;flex-direction:column}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#111317;color:#fff;padding:.7rem 1.2rem;padding-bottom:calc(.7rem + var(--safe-bottom));border-radius:9999px;font-size:.85rem;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:90;animation:slideUp .25s ease;white-space:nowrap;max-width:90%;display:flex;align-items:center;gap:.5rem}
 @media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
-input[type="text"],input[type="number"],select{border:2px solid #e5e7eb;border-radius:12px;padding-top:.85rem;padding-bottom:.85rem;width:100%;font-size:1rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
-input:focus,select:focus{border-color:#FF5F1F!important;box-shadow:0 0 0 4px rgba(255,95,31,.1)!important}
-header{padding-top:0}
-.chat-msg{padding:.35rem .65rem;border-radius:10px;max-width:75%;word-wrap:break-word;font-size:.875rem}
-.chat-msg.sent{background:#FF5F1F;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
-.chat-msg.received{background:#F5F5F5;color:#1A1A1A;margin-right:auto;border-bottom-left-radius:4px}
+input[type="text"],input[type="number"],input[type="search"],select{border:1px solid rgba(0,0,0,.1);border-radius:12px;width:100%;font-size:.9rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:rgba(255,107,0,.4)!important;box-shadow:0 0 0 4px rgba(255,107,0,.1)!important}
+.chat-msg{padding:.4rem .7rem;border-radius:10px;max-width:75%;word-wrap:break-word;font-size:.875rem}
+.chat-msg.sent{background:#FF6B00;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.chat-msg.received{background:#f6f7f9;color:#111317;margin-right:auto;border-bottom-left-radius:4px}
 .chat-msg .time{font-size:.65rem;opacity:.7;margin-top:.15rem;display:block}
-.chat-input{border:2px solid #FF5F1F;border-radius:999px;padding:.55rem 1rem;width:100%;transition:all .2s}
-.chat-input:focus{outline:none;border-color:#FF5F1F;box-shadow:0 0 0 4px rgba(255,95,31,.12)}
+.chat-input{border:1px solid rgba(0,0,0,.1);border-radius:9999px;padding:.55rem 1rem;width:100%;transition:all .2s}
+.chat-input:focus{outline:none;border-color:rgba(255,107,0,.5);box-shadow:0 0 0 4px rgba(255,107,0,.12)}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:20px;padding-right:40px}
+.scrollbar-none::-webkit-scrollbar{display:none}
+.scrollbar-none{scrollbar-width:none}
+.shared-view .owner-only{display:none!important}
+.badge-orange{background:#FF6B00;color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:999px}
 </style>
 </head>
-<body>
+<body class="bg-[#f6f7f9] text-[#111317] selection:bg-[#FF6B00]/20">
 
-<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-orange/10">
-  <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative">
-    <a href="main.html" class="block w-20 sm:w-32 z-10 shrink-0 overflow-hidden">
-      <img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="max-sm:w-20 max-sm:h-8 sm:w-full sm:h-12" style="object-fit:contain;object-position:left">
+<header class="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-black/[0.06]">
+  <div class="max-w-[1200px] mx-auto px-5 md:px-8 h-[68px] flex items-center justify-between">
+    <a href="main.html" class="flex items-center">
+      <img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="h-9 object-contain">
     </a>
-    <a href="#como-funciona" class="hidden md:inline-flex btn-primary text-sm px-5 py-2.5 min-w-[140px] text-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">Como funciona</a>
-    <div class="flex items-center gap-2 z-10">
-      <a href="main.html" class="btn-primary px-4 py-2.5 text-sm"><i class="fa-solid fa-arrow-left mr-1"></i><span>Marketplace</span></a>
-      <button onclick="sair()" class="btn-primary px-4 py-2.5 text-sm" style="background:#ef4444;"><i class="fa-solid fa-right-from-bracket mr-1"></i><span>Sair</span></button>
+    <div class="flex items-center gap-2.5">
+      <a href="main.html" class="btn-orange h-9 px-4 text-[13.5px]"><i class="fa-solid fa-store mr-1"></i> Marketplace</a>
+      <button onclick="sair()" class="h-9 px-3.5 rounded-full bg-white border border-black/10 text-[13.5px] font-medium flex items-center gap-1.5 hover:bg-black/[0.04] transition owner-only"><i class="fa-solid fa-right-from-bracket opacity-60"></i> Sair</button>
     </div>
   </div>
 </header>
 
-<main style="padding-top:4rem;min-height:calc(var(--vh,1vh)*100)" class="pb-12 bg-gray-50">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6">
-
-    <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm mb-6 flex flex-col sm:flex-row items-center gap-6 mt-6 border border-gray-100">
-      <label for="profilePicInput" class="cursor-pointer group relative shrink-0">
-        <div id="picContainer" class="w-24 h-24 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-orange transition">
-          <i id="userIcon" class="fa-solid fa-user text-4xl text-gray-400"></i>
-          <img id="userAvatar" src="" class="hidden w-full h-full object-cover" onerror="this.classList.add('hidden');byId('userIcon').classList.remove('hidden')">
+<main class="max-w-[1200px] mx-auto px-5 md:px-8 py-6 md:py-8">
+  <div class="bg-white rounded-[24px] shadow-[0_8px_40px_rgba(0,0,0,0.06),0_1px_0_rgba(0,0,0,0.04)] border border-black/[0.04] p-6 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex items-center gap-5">
+      <label for="profilePicInput" class="relative cursor-pointer group shrink-0 owner-only">
+        <div class="w-[88px] h-[88px] rounded-[24px] p-[3px] bg-gradient-to-br from-[#FF6B00] to-[#FF8A3D] group-hover:opacity-90 transition">
+          <div class="w-full h-full rounded-[21px] bg-white flex items-center justify-center overflow-hidden relative">
+            <i id="userIcon" class="fa-solid fa-user text-4xl text-gray-300"></i>
+            <img id="userAvatar" src="" class="hidden w-full h-full object-cover" onerror="this.classList.add('hidden');byId('userIcon').classList.remove('hidden')">
+            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded-[21px]"><i class="fa-solid fa-camera text-white text-lg"></i></div>
+          </div>
         </div>
-        <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-          <i class="fa-solid fa-camera text-white text-lg"></i>
-        </div>
+        <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-black/10 flex items-center justify-center"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div></div>
         <input id="profilePicInput" type="file" accept="image/*" class="hidden">
       </label>
-      <div class="text-center sm:text-left flex-1">
-        <h1 id="profileName" class="text-2xl font-bold"></h1>
-        <p id="profilePhone" class="text-sm text-gray-400 mt-1"></p>
-        <div class="flex gap-3 mt-3 justify-center sm:justify-start">
-          <span class="text-xs bg-orange-100 text-orange px-3 py-1.5 rounded-full font-medium" id="productCount">0 produtos</span>
+      <div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h1 id="profileName" class="text-[24px] md:text-[26px] font-[750] tracking-tight leading-none">—</h1>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FFF1E6] text-[#FF6B00] text-[11px] font-bold tracking-wide border border-[#FF6B00]/15"><i class="fa-solid fa-box-open w-3 h-3"></i> <span id="productCount">0</span> PRODUTOS</span>
+          <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black text-white text-[10px] font-semibold"><i class="fa-solid fa-check w-3 h-3"></i> VERIFICADO</span>
+        </div>
+        <div class="mt-2.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-[13.5px]">
+          <span id="profilePhone" class="inline-flex items-center gap-1.5 text-black/60 font-medium"></span>
+          <span class="hidden sm:block w-1 h-1 rounded-full bg-black/20"></span>
+          <span class="inline-flex items-center gap-1.5 text-black/60"><i class="fa-solid fa-star text-[#FF6B00]"></i> 4.9 • <span id="ratingCount">0</span> avaliações</span>
+          <span class="hidden sm:block w-1 h-1 rounded-full bg-black/20"></span>
+          <span class="inline-flex items-center gap-1.5 text-black/60"><i class="fa-solid fa-bolt"></i> Responde em &lt;2h</span>
         </div>
       </div>
     </div>
-
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-      <div class="bg-white rounded-xl p-5 text-center shadow-sm border border-gray-100"><div class="text-2xl font-bold text-orange" id="statTotal">0</div><div class="text-xs text-gray-400 mt-1">Total produtos</div></div>
-      <div class="bg-white rounded-xl p-5 text-center shadow-sm border border-gray-100"><div class="text-2xl font-bold text-green-500" id="statNovos">0</div><div class="text-xs text-gray-400 mt-1">Produtos novos</div></div>
-      <div class="bg-white rounded-xl p-5 text-center shadow-sm border border-gray-100"><div class="text-2xl font-bold text-blue-500" id="statNegociavel">0</div><div class="text-xs text-gray-400 mt-1">Negociáveis</div></div>
-      <div class="bg-white rounded-xl p-5 text-center shadow-sm border border-gray-100"><div class="text-2xl font-bold text-purple-500" id="statChats">0</div><div class="text-xs text-gray-400 mt-1">Conversas</div></div>
-    </div>
-
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-bold">Meus Produtos</h2>
-      <button id="publishBtn" class="btn-primary px-5 py-2.5 text-sm"><i class="fa-solid fa-plus"></i> Novo produto</button>
-    </div>
-    <div id="userProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-
-    <h2 class="text-xl font-bold mt-12 mb-6">Conversas</h2>
-    <div id="chatsList" class="space-y-3"></div>
-
-    <section id="como-funciona" class="mt-16 mb-6 scroll-mt-24">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl font-bold mb-3">Como funciona</h2>
-        <p class="text-gray-500">Três passos simples para começares a vender ou comprar.</p>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div class="card p-6 sm:p-8 text-center bg-white">
-          <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-4">
-            <i class="fa-solid fa-camera text-2xl text-orange"></i>
-          </div>
-          <h3 class="text-lg font-bold mb-2">1. Fotografa</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Tira fotos do teu produto com o telemóvel.</p>
-        </div>
-        <div class="card p-6 sm:p-8 text-center bg-white">
-          <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-4">
-            <i class="fa-solid fa-cloud-arrow-up text-2xl text-orange"></i>
-          </div>
-          <h3 class="text-lg font-bold mb-2">2. Publica grátis</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Publica o teu anúncio em segundos sem pagar nada.</p>
-        </div>
-        <div class="card p-6 sm:p-8 text-center bg-white">
-          <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-4">
-            <i class="fa-solid fa-coins text-2xl text-orange"></i>
-          </div>
-          <h3 class="text-lg font-bold mb-2">3. Recebe o dinheiro</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Combina e recebe o pagamento rápido e seguro.</p>
+    <div class="flex items-center gap-3 md:ml-auto">
+      <div class="hidden md:flex items-center gap-2 px-3 py-2 rounded-[12px] bg-[#f6f7f9] border border-black/[0.04]">
+        <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-line w-4 h-4 text-[#FF6B00]"></i></div>
+        <div class="leading-tight">
+          <div class="text-[11px] font-semibold text-black/40 uppercase tracking-wide">Performance</div>
+          <div class="text-[13px] font-bold">Top 10% em Luanda</div>
         </div>
       </div>
-    </section>
+      <button onclick="copyProfile()" class="h-10 px-4 rounded-[12px] bg-[#111317] text-white text-[13.5px] font-semibold hover:bg-black transition flex items-center gap-1.5 owner-only"><i class="fa-solid fa-link opacity-70"></i> Partilhar perfil</button>    </div>
+  </div>
 
+  <div id="statsGrid" class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4 owner-only"></div>
+
+  <div id="insightBanner" class="mt-6 relative overflow-hidden rounded-[16px] bg-[#FFF4EC] border border-[#FF6B00]/15 px-4 md:px-5 py-3.5 flex items-center gap-3.5 owner-only">
+    <div class="absolute inset-0 bg-[radial-gradient(600px_at_0%_0%,rgba(255,107,0,0.12),transparent_60%)] pointer-events-none"></div>
+    <div class="relative w-8 h-8 rounded-full bg-[#FF6B00] text-white flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(255,107,0,0.3)]"><i class="fa-solid fa-wand-magic-sparkles w-4 h-4"></i></div>
+    <div class="relative flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
+      <span class="text-[12px] font-bold tracking-wide text-[#FF6B00] uppercase">Insight inteligente</span>
+      <span class="text-[13.5px] leading-snug text-[#7A3A12]" id="insightText">Os teus produtos estão prontos para vender. Dá um boost para chegares a mais compradores em Luanda hoje.</span>
+    </div>
+    <button onclick="closeInsight()" class="relative w-7 h-7 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition shrink-0"><i class="fa-solid fa-xmark w-3.5 h-3.5"></i></button>
+  </div>
+
+  <div class="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <h2 class="text-[20px] font-[700] tracking-tight">Produtos</h2>
+      <span id="itemsCount" class="text-[12px] font-medium px-2.5 py-1 rounded-full bg-white border border-black/10 text-black/60">0 itens</span>
+    </div>
+    <div class="flex items-center gap-2.5 w-full md:w-auto owner-only">
+      <div class="relative flex-1 md:w-[240px]">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/30"></i>
+        <input id="searchInput" type="text" placeholder="Buscar produtos..." class="w-full h-10 pl-9 pr-3 rounded-[12px] bg-white border border-black/10 text-[13.5px] outline-none focus:border-[#FF6B00]/40 focus:ring-4 focus:ring-[#FF6B00]/10 transition placeholder:text-black/30">
+      </div>
+      <div id="filters" class="flex items-center p-1 rounded-[12px] bg-white border border-black/10 shadow-sm">
+        <button data-f="todos" class="h-8 px-3.5 rounded-[9px] text-[12.5px] font-semibold transition filter-btn active:bg-[#111317] active:text-white active:shadow">Todos</button>
+        <button data-f="negociaveis" class="h-8 px-3.5 rounded-[9px] text-[12.5px] font-semibold transition filter-btn">Negociáveis</button>
+        <button data-f="boost" class="h-8 px-3.5 rounded-[9px] text-[12.5px] font-semibold transition filter-btn">Boost</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="userProductsGrid" class="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+  <div class="mt-12 flex items-center justify-between owner-only">
+    <h2 class="text-[20px] font-[700] tracking-tight">Conversas</h2>
+    <button id="publishBtn" class="btn-orange h-9 px-4 text-[13.5px]"><i class="fa-solid fa-plus mr-1"></i> Novo produto</button>
+  </div>
+  <div id="chatsList" class="mt-5 space-y-3"></div>
+
+  <div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4 text-[12px] text-black/40">
+    <div class="bg-white rounded-[16px] border border-black/[0.04] p-4 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-[10px] bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-shield-halved w-4 h-4"></i></div>
+      <div><div class="font-semibold text-black/70">Conta verificada</div><div>Documento e telefone confirmados</div></div>
+    </div>
+    <div class="bg-white rounded-[16px] border border-black/[0.04] p-4 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-[10px] bg-[#FFF1E6] text-[#FF6B00] flex items-center justify-center"><i class="fa-solid fa-truck-fast w-4 h-4"></i></div>
+      <div><div class="font-semibold text-black/70">Entrega Ya</div><div>Entrega em 24h disponível</div></div>
+    </div>
+    <div class="bg-white rounded-[16px] border border-black/[0.04] p-4 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-[10px] bg-[#f6f7f9] flex items-center justify-center"><i class="fa-solid fa-star w-4 h-4 text-black/40"></i></div>
+      <div><div class="font-semibold text-black/70">Reputação Premium</div><div>Entre os melhores vendedores</div></div>
+    </div>
   </div>
 </main>
 
 <div id="publishModal" class="modal hidden">
-  <div class="modal-panel">
-    <div class="flex items-center justify-between mb-6"><h3 class="text-xl font-bold">Publicar produto</h3><button id="closePublish" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button></div>
-    <form id="publishForm" class="space-y-4">
-      <input id="pub-name" type="text" placeholder="Nome do produto" required>
-      <input id="pub-price" type="number" placeholder="Preço (Kz)" required>
-      <input id="pub-location" type="text" placeholder="Localização (ex: Luanda, Benguela)" required>
-      <input id="pub-image" type="file" accept="image/*" multiple class="text-sm py-3">
-      <div id="pub-image-preview" class="flex gap-2 flex-wrap"></div>
-      <select id="pub-category" required><option value="">Categoria</option><option>Moda</option><option>Eletronicos</option><option>Casa</option><option>Desporto</option><option>Carros</option><option>Perfumes e Cosmeticos</option><option>Imoveis</option></select>
-      <div class="flex gap-4"><label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-new" type="checkbox" class="w-4 h-4 accent-orange"><span>Produto novo</span></label><label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-neg" type="checkbox" class="w-4 h-4 accent-orange"><span>Aceito negociação</span></label></div>
-      <div class="flex gap-3 pt-2"><button type="button" id="cancelPublish" class="btn-outline flex-1 py-3 rounded-xl">Cancelar</button><button type="submit" class="btn-primary flex-1 py-3">Publicar grátis</button></div>
-    </form>
+  <div class="modal-panel max-w-[520px] mx-auto">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-5"><div><div class="text-[11px] font-bold tracking-widest text-[#FF6B00]">PUBLICAR</div><h3 class="mt-1 text-[18px] font-bold tracking-tight">Publicar produto</h3></div><button id="closePublish" class="w-8 h-8 rounded-full bg-[#f6f7f9] flex items-center justify-center hover:bg-black/5 transition"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="publishForm" class="space-y-4">
+        <div><label class="text-[12px] font-semibold text-black/60">Nome do produto</label><input id="pub-name" type="text" placeholder="Ex: iPhone 14 Pro Max" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" required></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="text-[12px] font-semibold text-black/60">Preço (Kz)</label><input id="pub-price" type="number" placeholder="0" class="mt-1.5 h-11 px-3.5 bg-white font-bold" required></div>
+          <div><label class="text-[12px] font-semibold text-black/60">Localização</label><input id="pub-location" type="text" placeholder="Luanda" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" required></div>
+        </div>
+        <div><label class="text-[12px] font-semibold text-black/60">Categoria</label><select id="pub-category" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" required><option value="">Escolher categoria</option><option value="Moda">Moda</option><option value="Eletronicos">Eletrônicos</option><option value="Casa">Casa</option><option value="Desporto">Desporto</option><option value="Carros">Carros</option><option value="Perfumes e Cosmeticos">Perfumes</option><option value="Imoveis">Imóveis</option><option value="Outros">Outros</option></select></div>
+        <div><label class="text-[12px] font-semibold text-black/60">Fotos</label><input id="pub-image" type="file" accept="image/*" multiple class="mt-1.5 text-sm py-3 bg-[#f6f7f9] rounded-[12px] px-3.5"><div id="pub-image-preview" class="flex gap-2 flex-wrap mt-2"></div></div>
+        <div class="flex items-center gap-6">
+          <label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-new" type="checkbox" class="w-4 h-4 accent-[#FF6B00]"><span>Produto novo</span></label>
+          <label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-neg" type="checkbox" class="w-4 h-4 accent-[#FF6B00]"><span>Aceito negociação</span></label>
+        </div>
+        <div class="flex gap-2.5 pt-2">
+          <button type="button" id="cancelPublish" class="flex-1 h-11 rounded-[12px] bg-[#f6f7f9] border border-black/10 text-[14px] font-semibold hover:bg-black/[0.06] transition">Cancelar</button>
+          <button type="submit" class="flex-1 h-11 rounded-[12px] bg-[#111317] text-white text-[14px] font-semibold hover:bg-black transition"><i class="fa-solid fa-upload mr-1"></i> Publicar grátis</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="editModal" class="modal hidden">
+  <div class="modal-panel max-w-[480px] mx-auto">
+    <div class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div><div class="text-[11px] font-bold tracking-widest text-[#FF6B00]">EDIÇÃO RÁPIDA</div><h3 id="editTitle" class="mt-1 text-[18px] font-bold tracking-tight leading-tight line-clamp-2"></h3></div>
+        <button onclick="closeModal('editModal')" class="w-8 h-8 rounded-full bg-[#f6f7f9] flex items-center justify-center hover:bg-black/5 transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mt-5 grid gap-4">
+        <div id="editImageWrap" class="aspect-[4/3] rounded-[16px] overflow-hidden bg-[#f6f7f9] border border-black/10"><img id="editImage" src="" class="w-full h-full object-cover" alt=""></div>
+        <div><label class="text-[12px] font-semibold text-black/60">Título</label><input id="edit-name" type="text" class="mt-1.5 w-full h-11 px-3.5 rounded-[12px] bg-[#f6f7f9] border border-black/10 text-[14px] font-medium outline-none focus:border-[#FF6B00]/30 focus:bg-white transition"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="text-[12px] font-semibold text-black/60">Preço</label><input id="edit-price" type="number" class="mt-1.5 w-full h-11 px-3.5 rounded-[12px] bg-white border border-black/10 text-[14px] font-bold outline-none focus:border-[#FF6B00]/30 transition"></div>
+          <div><label class="text-[12px] font-semibold text-black/60">Negociável</label><div class="mt-1.5 h-11 px-3.5 rounded-[12px] bg-[#f6f7f9] border border-black/10 flex items-center justify-between cursor-pointer" onclick="toggleEditNeg()"><span id="edit-neg-label" class="text-[13px] font-medium">Não</span><div id="edit-neg-switch" class="w-9 h-5 rounded-full p-0.5 transition bg-black/20"><div class="w-4 h-4 rounded-full bg-white shadow transition"></div></div></div></div>
+        </div>
+      </div>
+      <div class="mt-6 flex gap-2.5">
+        <button onclick="closeModal('editModal')" class="flex-1 h-11 rounded-[12px] bg-[#f6f7f9] border border-black/10 text-[14px] font-semibold hover:bg-black/[0.06] transition">Cancelar</button>
+        <button onclick="saveEdit()" class="flex-1 h-11 rounded-[12px] bg-[#111317] text-white text-[14px] font-semibold hover:bg-black transition">Guardar</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <div id="chatModal" class="modal hidden">
-  <div class="modal-panel no-pad chat-panel" style="max-width:520px;display:flex;flex-direction:column">
-    <div class="flex items-center justify-between p-4 border-b border-gray-100 shrink-0"><div><h3 id="chatTitle" class="font-bold text-lg"></h3><p id="chatSubtitle" class="text-xs text-gray-400"></p></div><button onclick="closeModal('chatModal')" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button></div>
-    <div id="chatMessages" class="flex-1 overflow-y-auto p-3 space-y-3" style="min-height:0;-webkit-overflow-scrolling:touch"></div>
-    <div class="p-3 border-t border-gray-100 flex gap-2 shrink-0"><input id="chatInput" type="text" placeholder="Escreve a tua mensagem..." class="chat-input" onkeydown="if(event.key==='Enter')sendMsg()"><button onclick="sendMsg()" class="btn-primary px-4 py-2 rounded-full"><i class="fa-solid fa-paper-plane"></i></button></div>
+  <div class="modal-panel chat-panel max-w-[520px] mx-auto">
+    <div class="flex items-center justify-between p-4 border-b border-black/[0.06] shrink-0">
+      <div><h3 id="chatTitle" class="font-bold text-lg"></h3><p id="chatSubtitle" class="text-xs text-black/40"></p></div>
+      <button onclick="closeModal('chatModal')" class="w-8 h-8 rounded-full bg-[#f6f7f9] flex items-center justify-center hover:bg-black/5 transition"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-none" style="min-height:0;-webkit-overflow-scrolling:touch"></div>
+    <div class="p-3 border-t border-black/[0.06] flex gap-2 shrink-0"><input id="chatInput" type="text" placeholder="Escreve a tua mensagem..." class="chat-input" onkeydown="if(event.key==='Enter')sendMsg()"><button onclick="sendMsg()" class="btn-orange px-4 py-2 rounded-full"><i class="fa-solid fa-paper-plane"></i></button></div>
   </div>
 </div>
-
-<footer class="bg-white border-t border-orange/10 text-gray-600 py-8">
-  <div class="max-w-7xl mx-auto px-4"><div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-6"><div class="col-span-2 md:col-span-1"><a href="perfil.html"><img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="h-8 mb-2"></a><p class="text-sm text-gray-400">Bisno fácil, dinheiro rápido.</p></div><div><h5 class="text-gray-800 font-bold mb-3 text-sm">Descobrir</h5><ul class="space-y-2 text-sm"><li><a href="main.html" class="text-gray-500 hover:text-orange transition">Marketplace</a></li></ul></div><div><h5 class="text-gray-800 font-bold mb-3 text-sm">Ajuda</h5><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Central de ajuda em breve')">Ajuda</a></li><li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Denúncia enviada')">Reportar</a></li></ul></div><div><h5 class="text-gray-800 font-bold mb-3 text-sm">Contato</h5><ul class="space-y-2 text-sm"><li><a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-whatsapp mr-2"></i>WhatsApp</a></li><li><a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-instagram mr-2"></i>Instagram</a></li><li><a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-facebook mr-2"></i>Facebook</a></li></ul></div></div><div class="border-t border-gray-100 pt-6 text-sm text-center flex flex-col sm:flex-row justify-between gap-3"><p class="text-gray-400">&copy; 2026 Ya o bisno</p><div class="flex gap-4 justify-center"><span class="text-gray-400"><i class="fa-solid fa-shield-halved mr-1 text-orange"></i> 5% Proteção</span><span class="text-gray-400"><i class="fa-solid fa-check mr-1 text-green-400"></i> 0% Taxa</span></div></div></div>
-</footer>
 
 <div id="toastContainer"></div>
 
 <script>
-var products=[],chats={},activeChatProductId=null,activeChatBuyerEmail=null,editingProductId=null;
+var products=[],chats={},activeChatProductId=null,activeChatBuyerEmail=null,editingProductId=null,editNeg=!1,filterTab="todos",sharedEmail=null;
 
 (function(){
   try{
     if(typeof localStorage==="undefined"){}
     if(!localStorage.getItem("yabisno_user")){window.location.replace("index.html");return}
   }catch(e){window.location.replace("index.html");return}
-  loadLocal();renderUser();renderProducts();renderChats();bindAll();
+  try{
+    var m=window.location.search.match(/[?&]perfil=([^&]+)/);
+    if(m&&m[1])sharedEmail=decodeURIComponent(m[1]).toLowerCase();
+  }catch(e){sharedEmail=null}
+  var cur;try{cur=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(sharedEmail&&cur&&sharedEmail!==String(cur.email).toLowerCase()){
+    document.body.classList.add("shared-view");
+    byId("profileName").textContent="A carregar...";
+    API.getProfile(sharedEmail).then(function(r){
+      if(!r||!r.ok){byId("profileName").textContent="Perfil não encontrado";return}
+      renderSharedProfile(r);
+    });
+    return;
+  }
+  loadLocal();renderUser();renderStats();renderProducts();renderChats();bindAll();
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(u){
     API.getProducts().then(function(server){
-      if(server&&server.length>0){products=server;try{localStorage.setItem("yabisno_products",JSON.stringify(server))}catch(e){};renderProducts()}
+      var merged=mergeProducts(server);
+      products=merged;try{localStorage.setItem("yabisno_products",JSON.stringify(merged))}catch(e){}
+      renderStats();renderProducts()
     }).catch(function(){});
     API.getChats(u.email).then(function(server){
-      if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats()}
+      if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats();renderStats()}
     }).catch(function(){});
   }
-  setInterval(function(){try{var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u&&u.email){API.getChats(u.email).then(function(server){if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats();var m=byId("chatModal");if(activeChatProductId&&m&&!m.classList.contains("hidden")){var k=activeChatProductId+"_"+activeChatBuyerEmail;renderChat(k);markRead(k)}}}).catch(function(){})}}catch(e){}},3000);
-  try{window.addEventListener("storage",function(){try{loadLocal();var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u&&u.email){API.getChats(u.email).then(function(server){if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats();var m=byId("chatModal");if(activeChatProductId&&m&&!m.classList.contains("hidden")){var k=activeChatProductId+"_"+activeChatBuyerEmail;renderChat(k);markRead(k)}}}).catch(function(){})}}catch(e){}})}catch(e){}
+  setInterval(function(){try{var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u&&u.email){API.getChats(u.email).then(function(server){if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats();renderStats();var m=byId("chatModal");if(activeChatProductId&&m&&!m.classList.contains("hidden")){var k=activeChatProductId+"_"+activeChatBuyerEmail;renderChat(k);markRead(k)}}}).catch(function(){})}}catch(e){}},3000);
+  try{window.addEventListener("storage",function(){try{loadLocal();var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u&&u.email){API.getChats(u.email).then(function(server){if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};renderChats();renderStats();var m=byId("chatModal");if(activeChatProductId&&m&&!m.classList.contains("hidden")){var k=activeChatProductId+"_"+activeChatBuyerEmail;renderChat(k);markRead(k)}}}).catch(function(){})}}catch(e){}})}catch(e){}
+  try{window.addEventListener("storage",function(e){if(e.key==="yabisno_products"||e.key==="yabisno_admin_poke"||e.key==="yabisno_chats"){try{loadLocal();API.getProducts().then(function(server){products=mergeProducts(server);try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e2){};renderStats();renderProducts()})}catch(e3){}}});}catch(e){}
+  try{var _pbc=new BroadcastChannel("ya_bisno_sync");_pbc.onmessage=function(){try{API.getProducts().then(function(server){products=mergeProducts(server);try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){};renderStats();renderProducts()})}catch(e){}}}catch(e){}
 })();
 
 function loadLocal(){
@@ -192,6 +270,22 @@ function loadLocal(){
     products=JSON.parse(localStorage.getItem("yabisno_products"))||[];
     chats=JSON.parse(localStorage.getItem("yabisno_chats"))||{};
   }catch(e){products=[];chats={}}
+}
+function mergeProducts(server){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  var out=(server&&server.length>0)?server.slice():[];
+  if(!u)return out;
+  var serverKeys={};
+  for(var i=0;i<out.length;i++)serverKeys[(out[i].ownerEmail||'')+'|'+(out[i].name||'').toLowerCase()+'|'+(out[i].price||'')]=true;
+  for(var j=0;j<products.length;j++){
+    var lp=products[j];
+    var k=(lp.ownerEmail||'')+'|'+(lp.name||'').toLowerCase()+'|'+(lp.price||'');
+    if(lp.id!==undefined&&!serverKeys[k]&&lp.ownerEmail&&String(lp.ownerEmail).toLowerCase()===String(u.email).toLowerCase()){
+      out.unshift(lp);
+      serverKeys[k]=true;
+    }
+  }
+  return out;
 }
 function byId(id){return document.getElementById(id)}
 
@@ -202,6 +296,7 @@ function bindAll(){
     el=byId("closePublish");if(el)el.onclick=function(){closeModal("publishModal")};
     el=byId("cancelPublish");if(el)el.onclick=function(){editingProductId=null;closeModal("publishModal")};
     el=byId("publishModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("publishModal")};
+    el=byId("editModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("editModal")};
     el=byId("publishForm");if(el)el.onsubmit=handlePublish;
     el=byId("pub-image");if(el)el.onchange=function(){
       var p=byId("pub-image-preview");if(!p)return;p.innerHTML="";
@@ -214,6 +309,13 @@ function bindAll(){
     };
     el=byId("chatModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("chatModal")};
     el=byId("profilePicInput");if(el)el.onchange=handlePic;
+    el=byId("searchInput");if(el)el.oninput=function(){renderProducts()};
+    var tabs=document.querySelectorAll(".filter-btn");
+    for(var ti=0;ti<tabs.length;ti++)(function(t){t.onclick=function(){
+      filterTab=t.getAttribute("data-f");
+      for(var x=0;x<tabs.length;x++){tabs[x].classList.remove("bg-[#111317]","text-white","shadow")}
+      t.classList.add("bg-[#111317]","text-white","shadow");renderProducts()
+    }})(tabs[ti]);
   }catch(e){try{console.error("bindAll:",e)}catch(ex){}}
 }
 
@@ -222,12 +324,45 @@ function renderUser(){
     var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u)return;
     var pn=byId("profileName"),pp=byId("profilePhone"),img=byId("userAvatar"),ico=byId("userIcon");
     if(pn)pn.textContent=u.name||"";
-    if(pp)pp.textContent=u.phone?"Telemóvel: "+u.phone:"";
+    if(pp)pp.innerHTML=u.phone?'<span class="w-6 h-6 rounded-full bg-[#f6f7f9] flex items-center justify-center"><i class="fa-solid fa-phone w-3.5 h-3.5"></i></span>'+esc(u.phone):'';
     var av=localStorage.getItem("yabisno_avatar_"+u.email);
     if(av){if(img){img.src=av;img.classList.remove("hidden")}if(ico)ico.classList.add("hidden")}else{
       API.getUser(u.email).then(function(r){if(r.ok&&r.user.avatar){localStorage.setItem("yabisno_avatar_"+u.email,r.user.avatar);renderUser();}});
       if(img){img.src="";img.classList.add("hidden")}if(ico)ico.classList.remove("hidden")
     }
+  }catch(e){}
+}
+
+function renderSharedProfile(r){
+  try{
+    var p=r.profile||{},pr=r.products||[];
+    products=pr;
+    byId("profileName").textContent=p.name||"—";
+    var pp=byId("profilePhone");if(pp)pp.innerHTML="";
+    var ico=byId("userIcon"),img=byId("userAvatar");
+    if(p.avatar){if(img){img.src=p.avatar;img.classList.remove("hidden")}if(ico)ico.classList.add("hidden")}
+    else{if(img){img.src="";img.classList.add("hidden")}if(ico)ico.classList.remove("hidden")}
+    byId("productCount").textContent=pr.length;
+    byId("itemsCount").textContent=pr.length+" item"+(pr.length!==1?"s":"");
+    var g=byId("userProductsGrid");if(!g)return;
+    if(pr.length===0){g.innerHTML='<div class="col-span-full bg-white rounded-[20px] border border-dashed border-black/15 p-10 text-center"><div class="w-12 h-12 rounded-full bg-[#f6f7f9] mx-auto flex items-center justify-center"><i class="fa-solid fa-box-open w-5 h-5 text-black/30"></i></div><div class="mt-3 text-[14px] font-semibold">Este vendedor ainda não publicou produtos</div></div>';return}
+    var h="";
+    for(var i=0;i<pr.length;i++){
+      var x=pr[i],imgs=x.images||[],src=imgs.length>0?imgs[0]:imgPH(x.name);
+      h+='<div class="card group"><div class="relative aspect-[4/3] bg-[#f6f7f9] overflow-hidden">'
+        +'<img src="'+esc(src)+'" class="main-img w-full h-full object-cover" onerror="imgFallback(this)">'
+        +(x.isNew?'<span class="badge-orange absolute top-3 left-3">NOVO</span>':'')
+        +(imgs.length>1?'<span class="absolute top-3 right-3 text-[11px] font-medium px-2.5 py-1 rounded-full bg-black/70 text-white border border-white/10"><i class="fa-solid fa-images mr-1"></i>'+imgs.length+'</span>':'')
+        +'</div><div class="p-4"><h3 class="text-[14px] font-semibold leading-[1.35] line-clamp-2 min-h-[38px]">'+esc(x.name)+'</h3>'
+        +'<div class="mt-1 text-[11px] font-medium text-black/40 uppercase tracking-wide">'+esc(x.category||"Outros")+'</div>'
+        +'<div class="mt-3 flex items-baseline gap-2"><span class="text-[18px] font-bold tracking-tight text-[#FF6B00]">'+fmt(x.price)+'</span>'
+        +(x.negotiable?'<span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#FFF1E6] text-[#FF6B00]">Negociável</span>':'')
+        +'</div>'
+        +'<div class="mt-4"><a href="main.html" class="flex-1 h-9 rounded-[11px] bg-[#f6f7f9] border border-black/[0.06] text-[13px] font-semibold flex items-center justify-center gap-1.5 transition hover:bg-black/[0.06]"><i class="fa-solid fa-comment w-3.5 h-3.5"></i> Falar com o vendedor</a></div>'
+        +'</div></div>';
+    }
+    g.innerHTML=h;
+    try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
   }catch(e){}
 }
 
@@ -250,34 +385,124 @@ function handlePic(e){
   };img.src=url;
 }
 
-function renderProducts(){
+function myProducts(){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u)return [];
+  return products.filter(function(p){return(p.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase()});
+}
+
+function renderStats(){
   try{
-    var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u)return;
-    var mine=products.filter(function(p){return(p.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase()}),g=byId("userProductsGrid");if(!g)return;
-    byId("statTotal").textContent=mine.length;
-    byId("statNovos").textContent=mine.filter(function(p){return p.isNew}).length;
-    byId("statNegociavel").textContent=mine.filter(function(p){return p.negotiable}).length;
-    byId("productCount").textContent=mine.length+" produto"+(mine.length!==1?"s":"");
-    if(mine.length===0){g.innerHTML='<div class="col-span-full card p-12 text-center"><i class="fa-solid fa-box-open text-5xl mb-4 text-gray-200"></i><p class="text-gray-400 mb-4">Ainda não publicaste produtos.</p><a href="main.html" class="btn-primary px-6 py-3 inline-block rounded-xl text-sm">Publicar</a></div>';return}
+    var mine=myProducts(),chatsArr=0;
+    var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+    if(u){var keys=Object.keys(chats);for(var i=0;i<keys.length;i++){var msgs=chats[keys[i]];if(msgs&&msgs.length){var parts=keys[i].split('_'),pid=parseInt(parts[0]),be=parts.slice(1).join('_');var pr=products.find(function(p){return p.id===pid});var isMine=pr&&(pr.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase();var hasMe=msgs.some(function(m){return m.from===u.email});var hasOther=msgs.some(function(m){return m.from!==u.email});if((isMine&&(hasOther||hasMe))||(!isMine&&hasMe))chatsArr++}}}
+    var neg=mine.filter(function(p){return p.negotiable}).length;
+    var stats=[
+      {icon:"fa-box-open",label:"Total produtos",value:mine.length,sub:"+1 esta semana",trend:"up",color:"from-[#FF6B00] to-[#FF8F3D]"},
+      {icon:"fa-eye",label:"Novos interessados",value:"0",sub:"Aguardando visitas",trend:"neutral",color:"from-[#FF6B00] to-[#FF8F3D]"},
+      {icon:"fa-handshake",label:"Negociáveis",value:neg,sub:mine.length?Math.round(neg/mine.length*100)+"% do catálogo":"0% do catálogo",trend:"up",color:"from-[#FF6B00] to-[#FF8F3D]"},
+      {icon:"fa-comment-dots",label:"Conversas ativas",value:chatsArr,sub:"Resposta <2h",trend:"up",color:"from-[#FF6B00] to-[#FF8F3D]"}
+    ];
+    var g=byId("statsGrid");if(!g)return;
     var h="";
-    for(var i=0;i<mine.length;i++){
-      var p=mine[i],imgs=p.images||[],src=imgs.length>0?imgs[0]:imgPH(p.name);
-      var more=imgs.length>1?'<span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur"><i class="fa-solid fa-images mr-1"></i>'+imgs.length+'</span>':'';
-      var thumbs='';
-      if(imgs.length>1){thumbs='<div class="flex gap-1 mt-1 overflow-x-auto">';for(var ti=0;ti<imgs.length;ti++)thumbs+='<img src="'+esc(imgs[ti])+'" class="w-10 h-10 rounded object-cover shrink-0 cursor-pointer border-2 border-transparent hover:border-orange transition" onclick="var m=this.closest(\'.card\').querySelector(\'.main-img\');m.src=this.src;this.closest(\'.card\').querySelectorAll(\'.thumb\').forEach(function(t){t.style.borderColor=\'transparent\'});this.style.borderColor=\'#FF5F1F\'">';thumbs+='</div>'}
-      h+='<div class="card p-4"><div class="card-img-wrap"><img src="'+esc(src)+'" class="main-img absolute inset-0 w-full h-full object-contain" onerror="imgFallback(this)">'+more+'</div>'+thumbs+'<h3 class="card-name font-bold mt-2">'+esc(p.name)+'</h3><p class="text-sm text-gray-400"><i class="fa-solid fa-location-dot mr-1"></i>'+esc(p.location)+'</p><p class="text-orange font-bold text-xl mt-1">'+fmt(p.price)+'</p><div class="flex flex-wrap gap-2 mt-4"><button onclick="edit('+p.id+')" class="text-sm bg-gray-100 px-4 py-2.5 rounded-lg hover:bg-gray-200 font-medium">Editar</button><button onclick="del('+p.id+')" class="text-sm bg-red-100 text-red-600 px-4 py-2.5 rounded-lg hover:bg-red-200 font-medium">Apagar</button><button onclick="viewChat('+p.id+')" class="text-sm bg-orange-100 text-orange px-4 py-2.5 rounded-lg hover:bg-orange-200 font-medium"><i class="fa-solid fa-comment mr-1"></i>Chat</button></div></div>'
+    for(var s=0;s<stats.length;s++){
+      var v=stats[s];
+      h+='<div class="bg-white rounded-[20px] border border-black/[0.04] shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-[18px] relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-all">'
+        +'<div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#FF6B00]/10 to-transparent rounded-full blur-xl -mr-8 -mt-8"></div>'
+        +'<div class="flex items-start justify-between">'
+        +'<div class="w-9 h-9 rounded-[12px] bg-gradient-to-br '+v.color+' text-white flex items-center justify-center shadow-[0_4px_12px_rgba(255,107,0,0.3)]"><i class="fa-solid '+v.icon+' w-[18px] h-[18px]"></i></div>'
+        +'<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full '+(v.trend==="up"?"bg-emerald-50 text-emerald-600 border border-emerald-200":"bg-[#f6f7f9] text-black/40 border border-black/10")+'">'+(v.trend==="up"?"↗ +12%":"— estável")+'</span>'
+        +'</div><div class="mt-4"><div class="text-[28px] font-[800] tracking-tight leading-none">'+v.value+'</div><div class="mt-1 text-[13px] font-medium text-black/60">'+v.label+'</div><div class="mt-1 text-[11.5px] text-black/40">'+v.sub+'</div></div></div>';
     }
     g.innerHTML=h
   }catch(e){}
 }
 
-function del(id){if(!confirm("Apagar este produto?"))return;products=products.filter(function(p){return p.id!==id});try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}renderProducts();toast("Apagado!")}
-function edit(id){
-  var p=products.find(function(x){return x.id===id});if(!p)return;
-  var pn=byId("pub-name"),pp=byId("pub-price"),pl=byId("pub-location"),pc=byId("pub-category"),pnew=byId("pub-new"),pneg=byId("pub-neg");
-  if(pn)pn.value=p.name||"";if(pp)pp.value=p.price||"";if(pl)pl.value=p.location||"";if(pc)pc.value=p.category||"";
-  if(pnew)pnew.checked=!!p.isNew;if(pneg)pneg.checked=!!p.negotiable;editingProductId=p.id;openModal("publishModal")
+function renderProducts(){
+  try{
+    var mine=myProducts(),g=byId("userProductsGrid");if(!g)return;
+    byId("productCount").textContent=mine.length;
+    byId("itemsCount").textContent=mine.length+" item"+(mine.length!==1?"s":"");
+    var q=(byId("searchInput")?byId("searchInput").value:"").trim().toLowerCase();
+    var list=mine.filter(function(p){
+      if(filterTab==="negociaveis"&&!p.negotiable)return false;
+      if(filterTab==="boost"&&!p.boost)return false;
+      if(q&&String(p.name||"").toLowerCase().indexOf(q)<0&&String(p.location||"").toLowerCase().indexOf(q)<0)return false;
+      return true;
+    });
+    if(list.length===0){g.innerHTML='<div class="col-span-full bg-white rounded-[20px] border border-dashed border-black/15 p-10 text-center"><div class="w-12 h-12 rounded-full bg-[#f6f7f9] mx-auto flex items-center justify-center"><i class="fa-solid fa-box-open w-5 h-5 text-black/30"></i></div><div class="mt-3 text-[14px] font-semibold">'+(mine.length===0?"Ainda não publicaste produtos":"Nenhum produto encontrado")+'</div><div class="text-[13px] text-black/50 mt-1">'+(mine.length===0?"Publica o teu primeiro anúncio grátis":"Tente ajustar filtros ou busca")+'</div></div>';return}
+    var h="";
+    for(var i=0;i<list.length;i++){
+      var p=list[i],imgs=p.images||[],src=imgs.length>0?imgs[0]:imgPH(p.name);
+      var views=(p.views?p.views:Math.max(1,(Math.abs(p.id%1000)))),likes=Math.max(0,Math.round(views/12));
+      var thumbs='';
+      if(imgs.length>1){thumbs='<div class="flex gap-1 px-4 pb-2 overflow-x-auto scrollbar-none">';for(var ti=0;ti<imgs.length;ti++)thumbs+='<img src="'+esc(imgs[ti])+'" class="w-10 h-10 rounded object-cover shrink-0 cursor-pointer border-2 border-transparent hover:border-[#FF6B00] transition" onclick="var m=this.closest(\'.card\').querySelector(\'.main-img\');m.src=this.src;this.closest(\'.card\').querySelectorAll(\'.thumb\').forEach(function(t){t.style.borderColor=\'transparent\'});this.style.borderColor=\'#FF6B00\'">';thumbs+='</div>'}
+      h+='<div class="card group"><div class="relative aspect-[4/3] bg-[#f6f7f9] overflow-hidden">'
+        +'<img src="'+esc(src)+'" class="main-img w-full h-full object-cover group-hover:scale-[1.03] transition duration-700" onerror="imgFallback(this)">'
+        +'<div class="absolute top-3 left-3 flex items-center gap-1.5"><span class="text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-md border bg-white/90 text-black border-black/10">• ATIVO</span>'
+        +(p.boost?'<span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#FF6B00] text-white shadow-[0_4px_12px_rgba(255,107,0,0.4)] inline-flex items-center gap-1"><i class="fa-solid fa-bolt w-3 h-3"></i> BOOST</span>':'')
+        +'</div>'
+        +(imgs.length>1?'<span class="absolute top-3 right-3 text-[11px] font-medium px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-white border border-white/10"><i class="fa-solid fa-images mr-1"></i>'+imgs.length+'</span>':'')
+        +'<div class="absolute bottom-3 left-3 right-3 flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="text-[11px] font-medium px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-white border border-white/10 inline-flex items-center gap-1"><i class="fa-solid fa-eye w-3 h-3"></i> '+views+'</span><span class="text-[11px] font-medium px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-white border border-white/10"><i class="fa-solid fa-heart w-3 h-3"></i> '+likes+'</span></div>'
+        +(p.negotiable?'<span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white text-black border border-black/10">NEGOCIÁVEL</span>':'')
+        +'</div></div>'
+        +thumbs
+        +'<div class="p-4"><div class="flex items-start justify-between gap-3"><h3 class="text-[14px] font-semibold leading-[1.35] line-clamp-2 min-h-[38px]">'+esc(p.name)+'</h3></div>'
+        +'<div class="mt-1 text-[11px] font-medium text-black/40 uppercase tracking-wide">'+esc(p.category||"Outros")+'</div>'
+        +'<div class="mt-3 flex items-baseline gap-2"><span class="text-[18px] font-bold tracking-tight text-[#FF6B00]">'+fmt(p.price)+'</span></div>'
+        +'<div class="mt-4 flex items-center gap-2">'
+        +'<button onclick="openEdit('+p.id+')" class="flex-1 h-9 rounded-[11px] bg-[#f6f7f9] hover:bg-black/[0.06] border border-black/[0.06] text-[13px] font-semibold flex items-center justify-center gap-1.5 transition"><i class="fa-solid fa-pencil w-3.5 h-3.5"></i> Editar</button>'
+        +'<button onclick="toggleBoost('+p.id+')" class="flex-1 h-9 rounded-[11px] text-[13px] font-semibold flex items-center justify-center gap-1.5 transition border '+(p.boost?"bg-[#111317] text-white border-black hover:bg-black":"bg-[#FFF1E6] text-[#FF6B00] border-[#FF6B00]/20 hover:bg-[#FF6B00] hover:text-white")+'"><i class="fa-solid fa-bolt w-3.5 h-3.5"></i> '+(p.boost?"Pausar":"Impulsionar")+'</button>'
+        +'</div>'
+        +'<div class="mt-2 flex items-center gap-2">'
+        +'<button onclick="del('+p.id+')" class="flex-1 h-8 rounded-[11px] text-[12.5px] font-semibold flex items-center justify-center gap-1.5 transition border border-red-100 text-red-500 hover:bg-red-50"><i class="fa-solid fa-trash w-3 h-3"></i> Apagar</button>'
+        +'<button onclick="viewChatsForProduct('+p.id+')" class="flex-1 h-8 rounded-[11px] text-[12.5px] font-semibold flex items-center justify-center gap-1.5 transition border border-[#FF6B00]/20 text-[#FF6B00] hover:bg-[#FFF1E6]"><i class="fa-solid fa-comment w-3 h-3"></i> Chat</button>'
+        +'</div></div></div>';
+    }
+    g.innerHTML=h
+  }catch(e){}
 }
+
+function toggleBoost(id){
+  var p=products.find(function(x){return x.id===id});if(!p)return;
+  p.boost=!p.boost;
+  try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
+  renderProducts();
+  toast(p.boost?"Produto impulsionado com sucesso":"Impulsionamento pausado");
+  API.updateProduct(id,{boost:p.boost});
+}
+
+var editProductId=null;
+function openEdit(id){
+  var p=products.find(function(x){return x.id===id});if(!p)return;
+  editProductId=id;
+  var imgs=p.images||[];
+  byId("editTitle").textContent=p.name||"";
+  byId("edit-name").value=p.name||"";
+  byId("edit-price").value=p.price||"";
+  byId("editImage").src=imgs.length>0?imgs[0]:imgPH(p.name);
+  editNeg=!!p.negotiable;updateNegUI();
+  openModal("editModal")
+}
+function updateNegUI(){
+  byId("edit-neg-label").textContent=editNeg?"Sim":"Não";
+  var sw=byId("edit-neg-switch");if(!sw)return;
+  sw.classList.toggle("bg-[#FF6B00]",editNeg);sw.classList.toggle("bg-black/20",!editNeg);
+  var k=sw.querySelector("div");if(k)k.classList.toggle("translate-x-4",editNeg)
+}
+function toggleEditNeg(){editNeg=!editNeg;updateNegUI()}
+function saveEdit(){
+  if(editProductId==null){closeModal("editModal");return}
+  var p=products.find(function(x){return x.id===editProductId});if(!p){closeModal("editModal");return}
+  var n=byId("edit-name").value.trim(),pr=parseFloat(byId("edit-price").value)||0;
+  if(!n){toast("Preenche o título");return}
+  p.name=n;p.price=pr;p.negotiable=editNeg;
+  try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
+  API.updateProduct(editProductId,{name:n,price:pr,negotiable:editNeg});
+  renderProducts();closeModal("editModal");toast("Alterações guardadas")
+}
+
+function del(id){if(!confirm("Apagar este produto?"))return;products=products.filter(function(p){return p.id!==id});try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}renderStats();renderProducts();toast("Apagado!")}
 
 function handlePublish(e){
   if(e)e.preventDefault();
@@ -305,60 +530,99 @@ function handlePublish(e){
       toast("Produto publicado!")
     }
     try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
-    renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pv=byId("pub-image-preview");if(pf)pf.reset();if(pv)pv.innerHTML=""
+    renderStats();renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pv=byId("pub-image-preview");if(pf)pf.reset();if(pv)pv.innerHTML=""
   }
   if(files&&files.length>0){
     var loaded=[],toLoad=Math.min(files.length,10),cnt=0;
+    function doneOne(){cnt++;if(cnt>=toLoad)fin(loaded)}
     for(var fi=0;fi<toLoad;fi++)(function(f){
-      var r=new FileReader();r.onload=function(ev){
-        var img=new Image();img.onload=function(){
-          var c=document.createElement("canvas"),MAX=800,w=img.width,h=img.height;
-          if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX}else{w=Math.round(w*MAX/h);h=MAX}}
-          c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
-          loaded.push(c.toDataURL("image/jpeg",0.5));cnt++;if(cnt>=toLoad)fin(loaded)
-        };img.src=ev.target.result
-      };r.onerror=function(){cnt++;if(cnt>=toLoad)fin(loaded)};r.readAsDataURL(f)
+      var r=new FileReader();
+      r.onload=function(ev){
+        var img=new Image();
+        img.onload=function(){
+          try{
+            var c=document.createElement("canvas"),MAX=800,w=img.width,h=img.height;
+            if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX}else{w=Math.round(w*MAX/h);h=MAX}}
+            c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+            var data=c.toDataURL("image/jpeg",0.5);
+            if(data&&data.indexOf("data:image")===0)loaded.push(data);
+          }catch(err){}
+          doneOne();
+        };
+        img.onerror=function(){doneOne()};
+        img.src=ev.target.result;
+      };
+      r.onerror=function(){doneOne()};
+      r.readAsDataURL(f);
     })(files[fi])
   }else if(editingProductId){var ex=products.find(function(p){return p.id===editingProductId});fin(ex?ex.images||[imgPH(ex.name)]:[imgPH(name)])}
   else{fin([imgPH(name)])}
   }catch(e){try{console.error("handlePublish:",e)}catch(ex){}toast("Erro ao publicar")}
 }
 
-function renderChats(){
+function viewChatsForProduct(productId){
+  var related=[];
+  var keys=Object.keys(chats);
+  for(var i=0;i<keys.length;i++){if(keys[i].indexOf(productId+"_")===0)related.push(keys[i])}
+  if(related.length===0){toast("Ainda sem mensagens");return}
+  if(related.length===1){viewChat(related[0]);return}
+  activeChatProductId=productId;
+  filterProductId=productId;
+  renderChats(productId)
+}
+var filterProductId=null;
+function renderChats(fpid){
   var c=byId("chatsList");if(!c)return;
   try{
     var u=JSON.parse(localStorage.getItem("yabisno_user"));if(!u)return;
-    var keys=Object.keys(chats),cnt=0,html="";
+    var myEmail=(u.email||"").toLowerCase();
+    var keys=Object.keys(chats),html="";
+    if(typeof fpid==="number")filterProductId=fpid;
     for(var i=0;i<keys.length;i++){
-      var parts=keys[i].split('_'),pid=parseInt(parts[0]),buyerEmail=parts.slice(1).join('_');
-      var msgs=chats[keys[i]];if(!msgs||msgs.length===0)continue;
+      var key=keys[i];
+      if(filterProductId!==null&&key.indexOf(filterProductId+"_")!==0)continue;
+      var sep=key.indexOf('_');if(sep<0)continue;
+      var pid=parseInt(key.substring(0,sep));
+      var buyerEmail=key.substring(sep+1);
+      if(!buyerEmail)continue;
+      var msgs=chats[key];if(!msgs||msgs.length===0)continue;
       var prod=products.find(function(p){return p.id===pid});
-      var isMine=prod&&(prod.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase();
-      var hasMe=msgs.some(function(m){return m.from===u.email});
-      var hasOther=msgs.some(function(m){return m.from!==u.email});
-      if(!isMine&&!hasMe)continue;if(isMine&&!hasOther&&!hasMe)continue;
-      cnt++;var pName=prod?prod.name:"Produto #"+pid;
+      var ownerEmail=prod?(prod.ownerEmail||"").toLowerCase():"";
+      var isOwner=ownerEmail===myEmail;
+      var isBuyer=buyerEmail.toLowerCase()===myEmail;
+      if(!isOwner&&!isBuyer)continue;
+      var pName=prod?prod.name:"Produto #"+pid;
       var buyerName=buyerEmail.split('@')[0];
-      var displayName=isMine?pName+" — "+buyerName:pName;
+      var displayName=isOwner?pName+" — "+buyerName:pName;
       var last=msgs[msgs.length-1],t=new Date(last.timestamp).toLocaleString("pt-PT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
-      var unread=msgs.filter(function(m){return m.from!==u.email&&!m.read}).length;
-      html+='<div class="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md transition border '+(unread>0?'border-orange':'border-transparent')+'" onclick="viewChat(\''+keys[i]+'\')"><div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-comment text-orange"></i></div><div class="flex-1 min-w-0"><div class="font-bold text-sm">'+esc(displayName)+'</div><div class="text-sm '+(unread>0?'text-black font-medium':'text-gray-400')+' truncate">'+esc(last.text)+'</div></div><div class="text-right shrink-0"><div class="text-xs text-gray-400">'+t+'</div>'+(unread>0?'<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold mt-1 inline-block">'+unread+' nova'+(unread>1?'s':'')+'</span>':'')+'</div></div>'
+      var unread=msgs.filter(function(m){return m.from.toLowerCase()!==myEmail&&!m.read}).length;
+      html+='<div class="bg-white rounded-[16px] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex items-center gap-4 cursor-pointer hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition border '+(unread>0?'border-[#FF6B00]/40':'border-black/[0.04]')+'" onclick="viewChat(\''+key+'\')"><div class="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#FF6B00] to-[#FF8F3D] flex items-center justify-center shrink-0 text-white shadow-[0_4px_12px_rgba(255,107,0,0.3)]"><i class="fa-solid fa-comment"></i></div><div class="flex-1 min-w-0"><div class="font-bold text-sm">'+esc(displayName)+'</div><div class="text-sm '+(unread>0?'text-black font-medium':'text-black/40')+' truncate">'+esc(last.text)+'</div></div><div class="text-right shrink-0"><div class="text-xs text-black/40">'+t+'</div>'+(unread>0?'<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold mt-1 inline-block">'+unread+' nova'+(unread>1?'s':'')+'</span>':'')+'</div></div>'
     }
-    byId("statChats").textContent=cnt;
-    if(!html)html='<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-comments text-4xl mb-3"></i><p>Nenhuma conversa ativa</p></div>';
+    if(!html)html='<div class="bg-white rounded-[16px] border border-dashed border-black/15 p-8 text-center"><div class="w-12 h-12 rounded-full bg-[#f6f7f9] mx-auto flex items-center justify-center"><i class="fa-solid fa-comments w-5 h-5 text-black/30"></i></div><div class="mt-3 text-[14px] font-semibold">'+(filterProductId!==null?'Nenhuma mensagem neste produto':'Nenhuma conversa ativa')+'</div><div class="text-[13px] text-black/50 mt-1">'+(filterProductId!==null?'Espera mas já devem aparecer mensagens':'Quando compradores falarem contigo, aparece aqui')+'</div></div>';
     c.innerHTML=html
   }catch(e){}
 }
 
-function viewChat(key){
-  var parts=key.split('_'),pid=parseInt(parts[0]),buyerEmail=parts.slice(1).join('_');
+function viewChat(keyOrId){
+  var key=String(keyOrId),sep=key.indexOf('_'),pid,buyerEmail;
+  if(sep>0&&key.indexOf('@')>sep){
+    pid=parseInt(key.substring(0,sep));buyerEmail=key.substring(sep+1);
+  }else{
+    pid=parseInt(key);
+    var found=null,list=Object.keys(chats);
+    for(var i=0;i<list.length;i++){if(list[i].indexOf(pid+"_")===0){found=list[i];break}}
+    if(!found){toast("Nenhuma conversa neste produto");return}
+    return viewChat(found)
+  }
+  if(!buyerEmail){toast("Falha ao identificar o comprador");return}
   activeChatProductId=pid;activeChatBuyerEmail=buyerEmail;
+  filterProductId=null;
   var prod=products.find(function(p){return p.id===pid});
   var pn=prod?prod.name:"Produto";
   var buyerName=buyerEmail.split('@')[0];
   var isSeller=prod&&(prod.ownerEmail||"").toLowerCase()===(JSON.parse(localStorage.getItem("yabisno_user")||"{}").email||"").toLowerCase();
   byId("chatTitle").textContent=pn;byId("chatSubtitle").textContent=isSeller?"Chat com "+buyerName+" sobre "+pn:"Chat sobre "+pn;
-  renderChat(key);markRead(key);openModal("chatModal")
+  renderChat(activeChatProductId+"_"+activeChatBuyerEmail);markRead(activeChatProductId+"_"+activeChatBuyerEmail);openModal("chatModal")
 }
 function renderChat(key){
   var c=byId("chatMessages"),u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
@@ -370,11 +634,13 @@ function markRead(key){
   var msgs=chats[key]||[],u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(!u)return;var ch=false;
   for(var i=0;i<msgs.length;i++){if(msgs[i].from!==u.email&&!msgs[i].read){msgs[i].read=true;ch=true}}
-  if(ch){try{localStorage.setItem("yabisno_chats",JSON.stringify(chats))}catch(e){}renderChats();var parts=key.split('_'),pid=parseInt(parts[0]),buyerEmail=parts.slice(1).join('_');API.markChatRead(pid,buyerEmail,u.email)}
+  if(ch){try{localStorage.setItem("yabisno_chats",JSON.stringify(chats))}catch(e){}renderChats();var se=key?key.indexOf('_'):-1,pid=se>0?parseInt(key.substring(0,se)):null,buyerEmail=se>0?key.substring(se+1):'';if(pid!==null&&buyerEmail)API.markChatRead(pid,buyerEmail,u.email)}
 }
 function sendMsg(){
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
-  if(!u){toast("Faz login");return}if(!activeChatProductId)return;
+  if(!u){toast("Faz login");return}
+  if(!activeChatProductId)return;
+  if(!activeChatBuyerEmail){toast("Falha ao identificar o comprador");return}
   var inp=byId("chatInput");if(!inp)return;
   var t=inp.value.trim();if(!t)return;
   var key=activeChatProductId+"_"+activeChatBuyerEmail;
@@ -384,18 +650,34 @@ function sendMsg(){
   API.sendChat(activeChatProductId, activeChatBuyerEmail, u.email, t);
 }
 
-function sair(){
-  try{localStorage.removeItem("yabisno_user")}catch(e){}window.location.href="index.html"
+function copyProfile(){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  var link=location.href.split("?")[0]+"?perfil="+encodeURIComponent((u&&u.email)||"");
+  var done=function(){toast("Link do perfil copiado")};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(done,function(){fallbackCopy(link,done)});
+  }else{fallbackCopy(link,done)}
 }
-function imgFallback(el){try{var n=el.closest('.card').querySelector('.card-name');if(n)el.src=imgPH(n.textContent)}catch(e){}}
+function fallbackCopy(link,done){
+  try{var ta=document.createElement("textarea");ta.value=link;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();document.execCommand("copy");document.body.removeChild(ta);done()}catch(err){toast("Link do perfil: "+link)}
+}
+function closeInsight(){var b=byId("insightBanner");if(b)b.style.display="none"}
+function sair(){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  try{if(u&&u.email)localStorage.removeItem("yabisno_cart_"+String(u.email).toLowerCase())}catch(e){}
+  try{localStorage.removeItem("yabisno_user")}catch(e){}
+  try{localStorage.removeItem("yabisno_token")}catch(e){}
+  window.location.href="index.html"
+}
+function imgFallback(el){try{var c=el.closest('.card');var n=c.querySelector('h3');if(n)el.src=imgPH(n.textContent)}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"']/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]})}
 function fmt(v){return Number(v).toLocaleString("pt-PT")+" Kz"}
-function imgPH(n){var c=['#FF5F1F','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f8f8f8"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}
+function imgPH(n){var c=['#FF6B00','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f6f7f9"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}
 function openModal(id){var el=byId(id);if(el)el.classList.remove("hidden")}
 function closeModal(id){var el=byId(id);if(el)el.classList.add("hidden")}
 function toast(m){
   var c=byId("toastContainer");if(!c)return;
-  var el=document.createElement("div");el.className="toast";el.textContent=m;
+  var el=document.createElement("div");el.className="toast";el.innerHTML='<div class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-check w-3 h-3 text-emerald-400"></i></div><span>'+esc(m)+'</span>';
   c.appendChild(el);setTimeout(function(){el.style.transition="opacity .3s";el.style.opacity="0";setTimeout(function(){el.remove()},300)},2500)
 }
 </script>

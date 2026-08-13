@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#FF5F1F">
+<meta name="theme-color" content="#FF6B00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ya o bisno">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Ya o bisno — Marketplace</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
@@ -12,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-:root{--orange:#FF5F1F;--dark:#1A1A1A;--gray:#F5F5F5;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+:root{--orange:#FF6B00;--dark:#1A1A1A;--gray:#F5F5F5;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;outline:none}
 button{font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipulation;background:none;border:none;padding:0;color:inherit;line-height:1}
 .icon-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;border-radius:0.75rem;color:#4b5563;font-size:1.125rem;transition:background .2s;background:none;border:none;touch-action:manipulation;cursor:pointer;overflow:hidden}
@@ -24,7 +30,6 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#fff;colo
 .btn-primary:active{transform:scale(.96)}
 .btn-outline{background:transparent;color:#FF5F1F;border:2px solid #FF5F1F;border-radius:14px;font-weight:600;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;font-size:.875rem;touch-action:manipulation}
 .btn-outline:hover{background:#FF5F1F;color:#fff}
-#checkoutForm input,#checkoutForm select{font-size:.875rem!important;padding-top:.65rem!important;padding-bottom:.65rem!important}
 .card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;transition:all .3s;overflow:hidden}
 .card:hover{border-color:#FF5F1F;box-shadow:0 12px 40px rgba(255,95,31,.1);transform:translateY(-4px)}
 .product-img-wrap{position:relative;width:100%;padding-bottom:75%;background:#f8f8f8;overflow:hidden}
@@ -37,7 +42,7 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#fff;colo
 .modal-panel.no-pad.chat-panel{height:55vh;max-height:70vh;min-height:250px}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;padding-bottom:calc(.75rem + var(--safe-bottom));border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
 @media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
 input[type="text"],input[type="email"],input[type="password"],input[type="tel"],input[type="number"],select{border:2px solid #e5e7eb;border-radius:12px;padding-top:.85rem;padding-bottom:.85rem;width:100%;font-size:1rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
 input:focus,select:focus{border-color:#FF5F1F!important;box-shadow:0 0 0 4px rgba(255,95,31,.1)!important}
@@ -49,9 +54,75 @@ header{padding-top:0}
 .filter-btn{transition:all .2s;cursor:pointer;border:2px solid #FF5F1F;color:#FF5F1F;background:transparent;font-weight:600;min-height:40px;touch-action:manipulation}
 .filter-btn:hover{background:rgba(255,95,31,.08)}
 .filter-btn.active{background:#FF5F1F!important;color:#fff!important}
-.category-btn{transition:all .2s;cursor:pointer;min-height:40px;touch-action:manipulation}
-.category-btn:hover{border-color:#FF5F1F!important}
-.category-btn.selected{border-color:#FF5F1F;background:#FF5F1F;color:#fff;font-weight:700}
+/* ─── Menu Neumórfico Ya o bisno ─── */
+.neo-header{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,107,0,.12)}
+.neo-header-inner{max-width:1440px;margin:0 auto;padding:0 1.25rem;height:72px;position:relative;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.neo-logo{flex-shrink:0;width:132px;display:block;overflow:hidden}
+.neo-logo img{width:100%;height:46px;object-fit:contain;object-position:left;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.neo-logo:hover img{transform:scale(1.03)}
+.neo-search{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;max-width:540px;height:48px}
+.neo-search i{position:absolute;left:1.15rem;top:50%;transform:translateY(-50%);color:#FF6B00;font-size:.95rem;pointer-events:none}
+.neo-search input{width:100%;height:48px;border:none;border-radius:16px;background:#f0f0f3;padding:0 1.2rem 0 3rem;font-family:inherit;font-size:.925rem;color:#1A1A1A;box-shadow:inset 4px 4px 8px #d1d1d9, inset -4px -4px 8px #ffffff, 8px 8px 16px rgba(0,0,0,.05);transition:box-shadow .3s cubic-bezier(.4,0,.2,1)}
+.neo-search input::placeholder{color:#9ca3af}
+.neo-search input:focus{outline:none;box-shadow:inset 2px 2px 5px #d1d1d9, inset -2px -2px 5px #ffffff, 0 0 0 3px rgba(255,107,0,.16)}
+.neo-actions{display:flex;align-items:center;gap:.45rem;flex-shrink:0;position:relative;z-index:2}
+.neo-icon{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;border-radius:14px;background:#f0f0f3;color:#4b5563;font-size:1rem;box-shadow:4px 4px 8px #d1d1d9, -4px -4px 8px #ffffff;transition:all .25s cubic-bezier(.4,0,.2,1);cursor:pointer;border:none;touch-action:manipulation}
+.neo-icon:hover{transform:translateY(-2px);color:#FF6B00;box-shadow:6px 6px 12px #d1d1d9, -6px -6px 12px #ffffff}
+.neo-icon:active{transform:translateY(0);box-shadow:inset 3px 3px 6px #d1d1d9, inset -3px -3px 6px #ffffff}
+.neo-badge,.neo-badge-red{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:999px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700}
+.neo-badge{background:#FF6B00;box-shadow:0 2px 8px rgba(255,107,0,.5)}
+.neo-badge-red{background:#ef4444;box-shadow:0 2px 8px rgba(239,68,68,.5)}
+.neo-avatar{display:inline-flex;align-items:center;gap:.55rem;min-height:44px;padding:0 .7rem;border-radius:14px;background:#f0f0f3;color:#4b5563;text-decoration:none;box-shadow:4px 4px 8px #d1d1d9, -4px -4px 8px #ffffff;transition:all .25s cubic-bezier(.4,0,.2,1)}
+.neo-avatar:hover{transform:translateY(-2px);color:#FF6B00}
+.neo-avatar i{color:#FF6B00;font-size:1.35rem}
+.neo-avatar img{width:32px;height:32px;border-radius:999px;object-fit:cover;border:2px solid rgba(255,107,0,.25)}
+.neo-avatar-name{font-weight:700;font-size:.875rem;white-space:nowrap}
+.neo-sell{display:inline-flex;align-items:center;gap:.5rem;min-height:44px;padding:0 1.3rem;border-radius:14px;background:linear-gradient(145deg,#FF7A1A,#FF6B00);color:#fff;font-weight:700;font-size:.9rem;font-family:inherit;border:none;cursor:pointer;white-space:nowrap;box-shadow:0 6px 16px rgba(255,107,0,.4);transition:all .25s cubic-bezier(.4,0,.2,1);touch-action:manipulation}
+.neo-sell:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(255,107,0,.5)}
+.neo-sell:active{transform:translateY(0);box-shadow:inset 3px 3px 6px rgba(0,0,0,.22), inset -3px -3px 6px rgba(255,255,255,.25), 0 2px 6px rgba(255,107,0,.35)}
+.neo-mobile-search{position:relative;display:none;padding:0 .9rem .9rem}
+.neo-mobile-search:not(.hidden){display:block}
+.neo-mobile-search i{position:absolute;left:1.9rem;top:50%;transform:translateY(-50%);color:#FF6B00;font-size:.9rem;pointer-events:none}
+.neo-mobile-search input{width:100%;height:46px;border:none;border-radius:14px;background:#f0f0f3;padding:0 1rem 0 2.8rem;font-family:inherit;font-size:.9rem;color:#1A1A1A;box-shadow:inset 4px 4px 8px #d1d1d9, inset -4px -4px 8px #ffffff;transition:box-shadow .3s cubic-bezier(.4,0,.2,1)}
+.neo-mobile-search input:focus{outline:none;box-shadow:inset 2px 2px 5px #d1d1d9, inset -2px -2px 5px #ffffff, 0 0 0 3px rgba(255,107,0,.16)}
+.neo-cat-section{position:relative;z-index:1;background:#f5f6f8;padding:0}
+.neo-cat-wrap{position:relative;max-width:1440px;margin:0 auto}
+.neo-cat-bar{display:flex;gap:14px;padding:18px 24px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.neo-cat-bar::-webkit-scrollbar{display:none}
+.neo-cat-fade{position:absolute;top:0;bottom:0;width:34px;pointer-events:none;z-index:3}
+.neo-cat-fade-l{left:0;background:linear-gradient(to right,#f5f6f8,transparent)}
+.neo-cat-fade-r{right:0;background:linear-gradient(to left,#f5f6f8,transparent)}
+.neo-cat-item{position:relative;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:7px;scroll-snap-align:start;cursor:pointer;transform-style:preserve-3d}
+.neo-cat-item:first-child{margin-left:auto}
+.neo-cat-item:last-child{margin-right:auto}
+.neo-cat{width:88px;height:88px;flex-shrink:0;background:#fff;border-radius:20px;border:1px solid #eceef1;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05);font-family:inherit;padding:0;cursor:pointer;touch-action:manipulation;transform-style:preserve-3d;transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s cubic-bezier(.4,0,.2,1),border-color .3s cubic-bezier(.4,0,.2,1);will-change:transform}
+.neo-cat-img{display:block;width:100%;height:56px;overflow:hidden;border-radius:19px 19px 0 0;background:#f5f6f8}
+.neo-cat-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.neo-cat-label{display:flex;align-items:center;justify-content:center;gap:4px;height:32px;font-size:11px;font-weight:700;color:#6b7280;background:#fff;border-radius:0 0 20px 20px}
+.neo-cat:hover{transform:translateY(-4px) rotateX(5deg) scale(1.04);box-shadow:0 12px 24px rgba(0,0,0,.12)}
+.neo-cat:hover .neo-cat-img img{transform:scale(1.15)}
+.neo-cat-dot{width:6px;height:6px;border-radius:999px;background:#FF6B00;box-shadow:0 0 8px #FF6B00;opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
+.neo-cat-item.active .neo-cat{border:2px solid #FF6B00;box-shadow:0 8px 20px rgba(255,107,0,.35)}
+.neo-cat-item.active .neo-cat-label{color:#FF6B00}
+.neo-cat-item.active .neo-cat-dot{opacity:1;transform:translateY(0)}
+.neo-mobile-only{display:none}
+@media(max-width:1280px){
+  .neo-search{max-width:432px}
+}
+@media(max-width:1024px){
+  .neo-search{max-width:324px}
+  .neo-sell{padding:0 1rem}
+}
+@media(max-width:768px){
+  .neo-header-inner{height:64px;padding:0 .85rem;gap:.55rem}
+  .neo-logo{width:100px}
+  .neo-logo img{height:36px}
+  .neo-search{display:none}
+  .neo-mobile-only{display:inline-flex}
+  .neo-avatar-name{display:none}
+  .neo-actions{gap:.3rem}
+  .neo-cat-bar{padding:16px 16px}
+}
 .qty-btn{border:2px solid #FF5F1F;border-radius:8px;padding:.35rem .7rem;background:#fff;color:#FF5F1F;font-weight:600;cursor:pointer;min-height:38px;transition:all .15s}
 .del-btn{border:2px solid #ef4444;border-radius:8px;padding:.35rem .7rem;background:#fff;color:#ef4444;font-weight:600;cursor:pointer;min-height:38px}
 .chat-msg{padding:.35rem .65rem;border-radius:10px;max-width:75%;word-wrap:break-word;font-size:.875rem}
@@ -63,59 +134,120 @@ header{padding-top:0}
 .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .scrollbar-hide::-webkit-scrollbar{display:none}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:20px;padding-right:40px}
+@media(max-width:399px){
+  header > div:first-child{padding-left:.5rem!important;padding-right:.5rem!important;gap:0!important}
+  header a[href="index.html"]{width:4rem!important}
+  #msgBtn{display:none!important}
+  #headerUserName,.compact-label{display:none!important}
+  #profileLink{padding-left:.25rem!important;padding-right:.25rem!important;gap:0!important}
+  #publishBtn{min-width:44px!important;padding-left:.75rem!important;padding-right:.75rem!important;gap:0!important}
+  .modal{padding:.5rem}
+  .modal-panel{padding:1rem}
+}
+/* ─── Global Neumorfismo 3D HD #FF6B00 ─── */
+:root{
+  --bg:#f0f0f3;--shadow:#d1d1d9;--light:#ffffff;--orange:#FF6B00;--orange2:#FF7A1A
+}
+body{background:var(--bg);font-family:"Inter",sans-serif}
+.neo-header{height:72px;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.03)}
+.neo-icon,.neo-avatar{background:var(--bg)!important;box-shadow:5px 5px 10px var(--shadow),-5px -5px 10px var(--light)!important;border:none!important;border-radius:12px}
+.neo-search input{background:var(--bg)!important;border-radius:16px!important;height:52px!important;box-shadow:inset 5px 5px 10px var(--shadow),inset -5px -5px 10px var(--light)!important}
+.card.product-card{background:var(--bg)!important;border-radius:20px!important;padding:12px!important;box-shadow:10px 10px 20px var(--shadow),-10px -10px 20px var(--light)!important;transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s cubic-bezier(.4,0,.2,1)!important;border:1px solid rgba(255,255,255,.6)}
+.card.product-card:hover{transform:translateY(-6px)!important;box-shadow:14px 14px 28px var(--shadow),-14px -14px 28px var(--light)!important}
+.card.product-card .product-img-wrap{border-radius:16px!important;background:#fff!important;overflow:hidden}
+.card.product-card .product-img-wrap img{border-radius:16px!important}
+.card.product-card .text-lg.text-orange{color:var(--orange)!important;font-weight:800!important;font-size:16px!important}
+.card.product-card .add-cart{background:linear-gradient(145deg,var(--orange2),var(--orange))!important;color:#fff!important;box-shadow:0 6px 16px rgba(255,107,0,.4),inset -2px -2px 4px rgba(0,0,0,.15)!important;border-radius:10px!important;font-weight:700!important;border:none}
+.card.product-card .chat-btn{background:var(--bg)!important;border:1px solid rgba(255,107,0,.3)!important;color:var(--orange)!important;box-shadow:5px 5px 10px var(--shadow),-5px -5px 10px var(--light)!important;border-radius:10px!important}
+.neo-sell{background:linear-gradient(145deg,#FF7A1A,#FF6B00)!important;box-shadow:0 6px 16px rgba(255,107,0,.4)!important;border-radius:14px!important}
+/* ─── Footer Neumórfico ─── */
+.neo-footer{background:var(--bg);border-top:1px solid rgba(255,255,255,.8)}
+.neo-footer-inner{max-width:1440px;margin:0 auto;padding:3rem 1.25rem 1.5rem}
+.neo-footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:2.5rem}
+@media(max-width:900px){.neo-footer-grid{grid-template-columns:1fr 1fr;gap:2rem}}
+@media(max-width:520px){.neo-footer-grid{grid-template-columns:1fr;gap:1.75rem}}
+.neo-f-logo{display:block;width:150px;margin-bottom:.9rem}
+.neo-f-logo img{width:100%;height:42px;object-fit:contain;object-position:left}
+.neo-f-tagline{color:#6b7280;font-size:.85rem;line-height:1.6;max-width:260px}
+.neo-f-badges{display:flex;gap:.75rem;margin-top:1.1rem;flex-wrap:wrap}
+.neo-f-badge{display:inline-flex;align-items:center;gap:.45rem;background:var(--bg);color:#4b5563;font-size:.72rem;font-weight:700;padding:.55rem .85rem;border-radius:999px;box-shadow:4px 4px 8px var(--shadow),-4px -4px 8px var(--light)}
+.neo-f-badge i{color:var(--orange)}
+.neo-f-title{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#9ca3af;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.neo-f-title::after{content:"";flex:0 0 18px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--orange),transparent)}
+.neo-f-links{display:flex;flex-direction:column;gap:.6rem}
+.neo-f-link{display:inline-flex;align-items:center;gap:.6rem;color:#4b5563;text-decoration:none;font-size:.9rem;font-weight:500;transition:all .25s cubic-bezier(.4,0,.2,1)}
+.neo-f-link:hover{color:var(--orange);transform:translateX(4px)}
+.neo-f-link i{width:32px;height:32px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--bg);color:#6b7280;font-size:.85rem;box-shadow:3px 3px 6px var(--shadow),-3px -3px 6px var(--light);transition:all .25s cubic-bezier(.4,0,.2,1)}
+.neo-f-link:hover i{color:#fff;background:linear-gradient(145deg,var(--orange2),var(--orange));box-shadow:0 4px 12px rgba(255,107,0,.35)}
+.neo-f-bottom{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid rgba(209,209,217,.6);display:flex;flex-direction:column;gap:.75rem;align-items:center;text-align:center}
+@media(min-width:640px){.neo-f-bottom{flex-direction:row;justify-content:space-between;text-align:left}}
+.neo-f-copy{color:#9ca3af;font-size:.8rem;font-weight:600}
+.neo-f-copy b{color:#6b7280}
 </style>
 </head>
 <body>
 
 <div id="cartOverlay" class="cart-overlay"></div>
 
-<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-orange/10">
-  <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
-    <a href="index.html" class="block w-20 sm:w-32 shrink-0 overflow-hidden">
-      <img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="max-sm:w-20 max-sm:h-8 sm:w-full sm:h-12" style="object-fit:contain;object-position:left">
-    </a>
-    <div class="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-nowrap" style="-webkit-overflow-scrolling:touch">
-      <button id="searchToggle" class="icon-btn sm:hidden flex-shrink-0" title="Pesquisar"><i class="fa-solid fa-magnifying-glass"></i></button>
-      <button id="msgBtn" class="icon-btn relative flex-shrink-0" title="Notificações">
-        <i class="fa-solid fa-bell"></i>
-        <span id="msgCount" class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] w-[18px] h-[18px] rounded-full items-center justify-center hidden font-bold">0</span>
-      </button>
-      <button id="cartBtn" class="icon-btn relative flex-shrink-0" title="Cesto">
-        <i class="fa-solid fa-basket-shopping"></i>
-        <span id="cartCount" class="absolute -top-0.5 -right-0.5 bg-orange text-white text-[10px] w-[18px] h-[18px] rounded-full items-center justify-center hidden font-bold">0</span>
-      </button>
-      <a href="perfil.html" id="profileLink" class="flex items-center gap-1.5 text-sm font-medium text-gray-700 px-2 py-1.5 rounded-xl hover:bg-gray-100 flex-shrink-0" style="min-height:44px">
-        <i class="fa-solid fa-circle-user text-2xl text-orange"></i>
-        <span id="headerUserName" class="font-bold text-sm">Perfil</span>
-      </a>
-      <button id="logoutBtn" class="icon-btn flex-shrink-0" style="color:#9ca3af" title="Sair"><i class="fa-solid fa-right-from-bracket text-lg"></i></button>
-      <button id="publishBtn" class="btn-primary px-2 sm:px-4 py-2 text-sm whitespace-nowrap flex-shrink-0"><i class="fa-solid fa-plus"></i> Vender</button>
+<header class="neo-header">
+  <div class="neo-header-inner">
+    <a href="index.html" class="neo-logo"><img src="ya_o_bisno_transp.png" alt="Ya o bisno"></a>
+    <div class="neo-search"><i class="fa-solid fa-magnifying-glass"></i><input id="searchInput" type="text" placeholder="Pesquisar produtos..." autocomplete="off"></div>
+    <div class="neo-actions">
+      <button id="searchToggle" class="neo-icon neo-mobile-only" title="Pesquisar"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button id="msgBtn" class="neo-icon" title="Notificações"><i class="fa-solid fa-bell"></i><span id="msgCount" class="neo-badge-red hidden">0</span></button>
+      <button id="cartBtn" class="neo-icon" title="Cesto"><i class="fa-solid fa-basket-shopping"></i><span id="cartCount" class="neo-badge hidden">0</span></button>
+      <a href="perfil.html" id="profileLink" class="neo-avatar"><i class="fa-solid fa-circle-user"></i><span id="headerUserName" class="neo-avatar-name">Perfil</span></a>
+      <button id="logoutBtn" class="neo-icon" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+      <button id="publishBtn" class="neo-sell"><i class="fa-solid fa-plus"></i><span class="compact-label">Vender</span></button>
     </div>
   </div>
-  <div id="mobileSearchBar" class="sm:hidden hidden px-4 pb-3 relative">
-    <i class="fa-solid fa-magnifying-glass absolute left-7 top-1/2 -translate-y-1/2 text-orange text-sm pointer-events-none"></i>
-    <input id="searchInputMobile" type="text" placeholder="Pesquisar produtos..." class="border-2 border-gray-200 rounded-full px-4 pl-9 py-3 w-full text-sm">
+  <div id="mobileSearchBar" class="neo-mobile-search hidden">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input id="searchInputMobile" type="text" placeholder="Pesquisar produtos..." autocomplete="off">
   </div>
 </header>
 
-<main style="padding-top:4rem;min-height:calc(var(--vh,1vh)*100)">
+<main style="padding-top:72px;min-height:calc(var(--vh,1vh)*100)">
 
-  <section class="py-5 bg-white border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="max-w-lg mx-auto mb-4 relative hidden sm:block">
-        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-orange pointer-events-none"></i>
-        <input id="searchInput" type="text" placeholder="Pesquisar produtos..." class="border-2 border-gray-200 rounded-full px-4 pl-10 py-3 w-full text-sm input-fix">
+  <section class="neo-cat-section">
+    <div class="neo-cat-wrap">
+      <div class="neo-cat-bar">
+        <div class="neo-cat-item active">
+          <button class="neo-cat" data-cat=""><span class="neo-cat-img"><img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=200" alt="Todas" loading="lazy"></span><span class="neo-cat-label">Todas</span></button>
+          <span class="neo-cat-dot"></span>
+        </div>
+        <div class="neo-cat-item">
+          <button class="neo-cat" data-cat="Moda"><span class="neo-cat-img"><img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200" alt="Moda" loading="lazy"></span><span class="neo-cat-label">Moda</span></button>
+          <span class="neo-cat-dot"></span>
+        </div>
+        <div class="neo-cat-item">
+          <button class="neo-cat" data-cat="Eletronicos"><span class="neo-cat-img"><img src="electronica.webp" alt="Eletrônicos" loading="lazy"></span><span class="neo-cat-label">Eletrônicos</span></button>
+          <span class="neo-cat-dot"></span>
+        </div>
+        <div class="neo-cat-item">
+          <button class="neo-cat" data-cat="Casa"><span class="neo-cat-img"><img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200" alt="Casa" loading="lazy"></span><span class="neo-cat-label">Casa</span></button>
+          <span class="neo-cat-dot"></span>
+        </div>
+        <div class="neo-cat-item">
+          <button class="neo-cat" data-cat="Carros"><span class="neo-cat-img"><img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200" alt="Carros" loading="lazy"></span><span class="neo-cat-label">Carros</span></button>
+          <span class="neo-cat-dot"></span>
+        </div>
+        <div class="neo-cat-item">
+          <button class="neo-cat" data-cat="Desporto"><span class="neo-cat-img"><img src="icons/desporto.webp" alt="Desporto" loading="lazy"></span><span class="neo-cat-label">Desporto</span></button>
+          <span class="neo-cat-dot"></span>
+        </div>
+        <div class="neo-cat-item">
+          <button class="neo-cat" data-cat="Perfumes e Cosmeticos"><span class="neo-cat-img"><img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?w=200" alt="Perfumes" loading="lazy"></span><span class="neo-cat-label">Perfumes</span></button>
+          <span class="neo-cat-dot"></span>
+        </div>
+        <div class="neo-cat-item">
+          <button class="neo-cat" data-cat="Imoveis"><span class="neo-cat-img"><img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=200" alt="Imóveis" loading="lazy"></span><span class="neo-cat-label">Imóveis</span></button>
+          <span class="neo-cat-dot"></span>
+        </div>
       </div>
-      <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-start sm:justify-center">
-        <button class="category-btn selected px-4 py-2.5 rounded-xl border-2 text-sm shrink-0 font-bold border-orange text-white bg-orange" data-cat="">Todas</button>
-        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Moda">Moda</button>
-        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Eletronicos">Eletrônicos</button>
-        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Casa">Casa</button>
-        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Carros">Carros</button>
-        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Desporto">Desporto</button>
-        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Perfumes e Cosmeticos">Perfumes</button>
-        <button class="category-btn px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm shrink-0" data-cat="Imoveis">Imóveis</button>
-      </div>
+      <div class="neo-cat-fade neo-cat-fade-l"></div>
+      <div class="neo-cat-fade neo-cat-fade-r"></div>
     </div>
   </section>
 
@@ -142,33 +274,113 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div id="cartItems" class="flex-1 overflow-y-auto p-5 space-y-4" style="-webkit-overflow-scrolling:touch"></div>
   <div class="p-5 border-t border-gray-100 space-y-4 shrink-0">
     <div class="flex justify-between text-lg"><span class="text-gray-500">Total</span><span id="cartTotal" class="font-bold text-2xl text-orange">0 Kz</span></div>
-    <button id="checkoutBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg"><i class="fa-brands fa-whatsapp"></i> Finalizar no WhatsApp</button>
+    <button id="checkoutBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg"><i class="fa-solid fa-bag-shopping"></i> Finalizar Compra</button>
   </div>
 </aside>
 
 <div id="checkoutModal" class="modal hidden">
-  <div class="modal-panel">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold"><i class="fa-brands fa-whatsapp mr-2 text-orange"></i>Finalizar compra</h3>
-      <button onclick="closeModal('checkoutModal')" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-panel" id="checkoutPanel" style="max-width:520px;padding:0.7rem">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-full bg-[#FFF1EB] flex items-center justify-center text-[#FF5F1F] text-[13px]"><i class="fa-solid fa-lock"></i></div>
+        <div class="leading-tight">
+          <p class="text-[14px] font-bold">Checkout seguro</p>
+          <p class="text-[10px] text-[#6B7280]">Ya o bisno</p>
+        </div>
+      </div>
+      <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-orange text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div id="checkoutSummary" class="mb-4 p-3 bg-gray-50 rounded-xl text-sm space-y-1"></div>
-    <form id="checkoutForm" class="space-y-3" onsubmit="return handleCheckout(event)">
-      <p class="text-sm font-bold">Morada de entrega</p>
-      <select id="chkProvince" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm bg-white" style="-webkit-appearance:none;appearance:none">
-        <option value="">Província *</option>
-        <option>Bengo</option><option>Benguela</option><option>Bié</option><option>Cabinda</option>
-        <option>Cuando Cubango</option><option>Cuanza Norte</option><option>Cuanza Sul</option>
-        <option>Cunene</option><option>Huambo</option><option>Huíla</option><option>Luanda</option>
-        <option>Lunda Norte</option><option>Lunda Sul</option><option>Malanje</option>
-        <option>Moxico</option><option>Namibe</option><option>Uíge</option><option>Zaire</option>
-      </select>
-      <input id="chkMunicipality" type="text" required placeholder="Município *" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm">
-      <input id="chkNeighborhood" type="text" required placeholder="Bairro *" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm">
-      <input id="chkStreet" type="text" required placeholder="Rua / Número *" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm">
-      <input id="chkReference" type="text" placeholder="Ponto de referência (opcional)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm">
-      <button type="submit" class="btn-primary w-full py-4 rounded-xl font-bold text-base"><i class="fa-brands fa-whatsapp"></i> Finalizar no WhatsApp</button>
-    </form>
+
+    <!-- TOTAL -->
+    <div class="mb-3">
+      <div class="flex items-center justify-between rounded-[14px] bg-[#FBFBF9] border border-[#F0F0ED] px-3 py-2.5">
+        <span class="text-[12px] text-[#6B7280] font-medium"><i class="fa-solid fa-bag-shopping mr-1 text-[#FF5F1F]"></i>Total a pagar</span>
+        <span id="checkoutTotal" class="text-[16px] font-bold text-[#FF5F1F]">0 Kz</span>
+      </div>
+    </div>
+
+    <!-- MORADA -->
+    <div class="mb-3">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-6 h-6 rounded-full bg-[#111827] flex items-center justify-center text-white text-[10px]">📍</div>
+        <h2 class="text-[13px] font-bold">Morada de entrega</h2>
+      </div>
+
+      <form id="checkoutForm" onsubmit="return handleCheckout(event)" class="space-y-2">
+        <div>
+          <label class="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] mb-1">Província</label>
+          <select id="chkProvince" required class="w-full h-[35px] rounded-[12px] border border-[#E5E7EB] bg-white px-3 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" style="-webkit-appearance:none;appearance:none">
+            <option value="">Seleciona a província</option>
+            <option>Bengo</option><option>Benguela</option><option>Bié</option><option>Cabinda</option>
+            <option>Cuando Cubango</option><option>Cuanza Norte</option><option>Cuanza Sul</option>
+            <option>Cunene</option><option>Huambo</option><option>Huíla</option><option>Luanda</option>
+            <option>Lunda Norte</option><option>Lunda Sul</option><option>Malanje</option>
+            <option>Moxico</option><option>Namibe</option><option>Uíge</option><option>Zaire</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] mb-1">Município</label>
+            <input id="chkMunicipality" type="text" required class="w-full h-[35px] rounded-[12px] border border-[#E5E7EB] px-3 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" placeholder="Ex: Viana">
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] mb-1">Bairro / Vila</label>
+            <input id="chkNeighborhood" type="text" required class="w-full h-[35px] rounded-[12px] border border-[#E5E7EB] px-3 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" placeholder="Ex: Vila">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] mb-1">Rua / Nº</label>
+            <input id="chkStreet" type="text" required class="w-full h-[35px] rounded-[12px] border border-[#E5E7EB] px-3 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" placeholder="Ex: Rua 17">
+          </div>
+          <div>
+            <div class="flex gap-2 items-center mb-1">
+              <label class="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] truncate">Ponto de referência</label>
+              <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-[#F3F4F6] text-[#9CA3AF] uppercase shrink-0">Opc</span>
+            </div>
+            <input id="chkReference" type="text" class="w-full h-[35px] rounded-[12px] border border-[#E5E7EB] px-3 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" placeholder="Ao lado da escola...">
+          </div>
+        </div>
+
+        <div class="h-[1px] bg-[#EDEDED]"></div>
+
+        <!-- PAGAMENTO -->
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-6 h-6 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white text-[10px]">💳</div>
+            <h2 class="text-[13px] font-bold">Pagar com Multicaixa Express</h2>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-2">
+              <label class="text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] shrink-0">Nº MCX</label>
+              <div class="relative flex-1">
+                <div class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#F3F4F6] flex items-center justify-center text-[#6B7280] text-[12px]"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <input id="chkPhone" type="tel" inputmode="numeric" maxlength="9" class="w-full h-[39px] rounded-[12px] border border-[#E5E7EB] pl-[46px] pr-3 text-[14px] font-semibold tracking-wide focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" placeholder="9xx xxx xxx">
+              </div>
+            </div>
+            <p class="mt-1.5 text-[11px] text-[#6B7280]"><i class="fa-solid fa-check text-[#10B981]"></i> Receberás um pedido de pagamento no teu telemóvel</p>
+          </div>
+        </div>
+
+        <!-- BOTOES -->
+        <div class="space-y-2 pt-1">
+          <button type="button" id="payMCXBtn" onclick="payWithMCX()" class="w-full h-[39px] rounded-[12px] bg-[#0F3D2E] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#0C3226] transition shadow-[0_8px_20px_rgba(15,61,46,0.25)]"><i class="fa-solid fa-mobile-screen-button"></i> Pagar com Multicaixa Express</button>
+
+          <button type="submit" id="btnZap" class="w-full h-[39px] rounded-[12px] bg-[#FF5F1F] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#E8541B] transition shadow-[0_8px_20px_rgba(255,95,31,0.25)]"><i class="fa-brands fa-whatsapp text-[16px]"></i> Finalizar no WhatsApp</button>
+
+          <div class="flex items-center justify-center gap-3 pt-0.5">
+            <span class="text-[10px] text-[#9CA3AF]"><i class="fa-solid fa-shield-halved mr-1"></i>Pagamento 100% seguro</span>
+            <span class="w-1 h-1 rounded-full bg-[#E5E7EB]"></span>
+            <span class="text-[10px] text-[#9CA3AF]">Entrega em Luanda</span>
+          </div>
+        </div>
+
+        <div id="payStatus" class="hidden p-2.5 rounded-[12px] text-[12px] text-center font-medium"></div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -234,7 +446,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <input id="pub-location" type="text" placeholder="Localização (ex: Luanda, Benguela)" required>
       <input id="pub-image" type="file" accept="image/*" multiple class="text-sm py-3">
       <div id="pub-image-preview" class="flex gap-2 flex-wrap"></div>
-      <select id="pub-category" required><option value="">Categoria</option><option>Moda</option><option>Eletronicos</option><option>Casa</option><option>Desporto</option><option>Carros</option><option>Perfumes e Cosmeticos</option><option>Imoveis</option></select>
+      <select id="pub-category" required><option value="">Categoria</option><option value="Moda">Moda</option><option value="Eletronicos">Eletrônicos</option><option value="Casa">Casa</option><option value="Desporto">Desporto</option><option value="Carros">Carros</option><option value="Perfumes e Cosmeticos">Perfumes</option><option value="Imoveis">Imóveis</option></select>
       <div class="flex gap-4">
         <label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-new" type="checkbox" class="w-4 h-4 accent-orange"><span>Produto novo</span></label>
         <label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-neg" type="checkbox" class="w-4 h-4 accent-orange"><span>Aceito negociação</span></label>
@@ -247,15 +459,43 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
-<footer class="bg-white border-t border-orange/10 text-gray-600 py-8">
-  <div class="max-w-7xl mx-auto px-4">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-6">
-      <div class="col-span-2 md:col-span-1"><a href="main.html"><img src="ya_o_bisno_transp.png" alt="Ya o bisno" class="h-8 mb-2"></a><p class="text-sm text-gray-400">Bisno fácil, dinheiro rápido.</p></div>
-      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Descobrir</h5><ul class="space-y-2 text-sm"><li><a href="#produtos" class="text-gray-500 hover:text-orange transition">Anúncios</a></li></ul></div>
-      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Ajuda</h5><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Central de ajuda em breve')">Ajuda</a></li><li><a href="#" class="text-gray-500 hover:text-orange transition" onclick="toast('Denúncia enviada')">Reportar</a></li></ul></div>
-      <div><h5 class="text-gray-800 font-bold mb-3 text-sm">Contato</h5><ul class="space-y-2 text-sm"><li><a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-whatsapp mr-2"></i>WhatsApp</a></li><li><a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-instagram mr-2"></i>Instagram</a></li><li><a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="text-gray-500 hover:text-orange transition"><i class="fa-brands fa-facebook mr-2"></i>Facebook</a></li></ul></div>
+<footer class="neo-footer">
+  <div class="neo-footer-inner">
+    <div class="neo-footer-grid">
+      <div>
+        <a href="main.html" class="neo-f-logo"><img src="ya_o_bisno_transp.png" alt="Ya o bisno"></a>
+        <p class="neo-f-tagline">Bisno fácil, dinheiro rápido. Compra e venda em Angola de forma simples, rápida e segura.</p>
+        <div class="neo-f-badges">
+          <span class="neo-f-badge"><i class="fa-solid fa-shield-halved"></i> 5% Proteção</span>
+          <span class="neo-f-badge"><i class="fa-solid fa-check"></i> 0% Taxa</span>
+        </div>
+      </div>
+      <div>
+        <h5 class="neo-f-title">Descobrir</h5>
+        <div class="neo-f-links">
+          <a href="#produtos" class="neo-f-link"><i class="fa-solid fa-tags"></i>Anúncios</a>
+        </div>
+      </div>
+      <div>
+        <h5 class="neo-f-title">Ajuda</h5>
+        <div class="neo-f-links">
+          <a href="#" class="neo-f-link" onclick="toast('Central de ajuda em breve')"><i class="fa-solid fa-circle-question"></i>Ajuda</a>
+          <a href="#" class="neo-f-link" onclick="toast('Denúncia enviada')"><i class="fa-solid fa-flag"></i>Reportar</a>
+        </div>
+      </div>
+      <div>
+        <h5 class="neo-f-title">Contato</h5>
+        <div class="neo-f-links">
+          <a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>
+          <a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-instagram"></i>Instagram</a>
+          <a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-facebook"></i>Facebook</a>
+        </div>
+      </div>
     </div>
-    <div class="border-t border-gray-100 pt-6 text-sm text-center flex flex-col sm:flex-row justify-between gap-3"><p class="text-gray-400">&copy; 2026 Ya o bisno</p><div class="flex gap-4 justify-center"><span class="text-gray-400"><i class="fa-solid fa-shield-halved mr-1 text-orange"></i> 5% Proteção</span><span class="text-gray-400"><i class="fa-solid fa-check mr-1 text-green-400"></i> 0% Taxa</span></div></div>
+    <div class="neo-f-bottom">
+      <p class="neo-f-copy">&copy; 2026 <b>Ya o bisno</b> — Todos os direitos reservados</p>
+      <p class="neo-f-copy"><i class="fa-solid fa-bolt" style="color:var(--orange)"></i> Feito com <i class="fa-solid fa-heart" style="color:var(--orange)"></i> para Angola</p>
+    </div>
   </div>
 </footer>
 
@@ -263,17 +503,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <script>
 var products=[],cart=[],chats={},currentFilter="",searchQuery="",activeChatProductId=null,editingProductId=null;
-
-var mockProducts=[
-  {id:1,name:"Ténis Nike Air Max 90",price:45000,location:"Luanda",category:"Moda",images:["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800","https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800"],isNew:true,negotiable:false,ownerEmail:"demo@yaobisno.com",owner_name:"Nildo"},
-  {id:2,name:"iPhone 13 Pro Max 256GB",price:350000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800","https://images.unsplash.com/photo-1574944985070-8f3ebc00b6b2?w=800"],isNew:true,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"Nildo"},
-  {id:3,name:"Sofá 3 Lugares em Couro",price:120000,location:"Benguela",category:"Casa",images:["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800","https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800"],isNew:false,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"João"},
-  {id:4,name:"MacBook Air M1 2021",price:280000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800","https://images.unsplash.com/photo-1537495329792-41ae41ad3bf0?w=800"],isNew:false,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"João"},
-  {id:5,name:"Vestido de Festa Afro",price:15000,location:"Huíla",category:"Moda",images:["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800","https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800"],isNew:true,negotiable:false,ownerEmail:"demo@yaobisno.com",owner_name:"Nildo"},
-  {id:6,name:"Bicicleta de Montanha",price:75000,location:"Huambo",category:"Desporto",images:["https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800","https://images.unsplash.com/photo-1576435728678-68d0fbf94da8?w=800"],isNew:false,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"João"},
-  {id:7,name:"PlayStation 5 Slim",price:200000,location:"Luanda",category:"Eletronicos",images:["https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800","https://images.unsplash.com/photo-1607016284316-e1d1489002ff?w=800"],isNew:true,negotiable:false,ownerEmail:"demo@yaobisno.com",owner_name:"Nildo"},
-  {id:8,name:"Mesa de Escritório Executiva",price:40000,location:"Benguela",category:"Casa",images:["https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=800","https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800"],isNew:false,negotiable:true,ownerEmail:"demo@yaobisno.com",owner_name:"João"}
-];
 
 (function(){
   try{
@@ -287,38 +516,72 @@ function loadFromApi(){
   loadLocal();
   bindAll();renderUser();renderProducts();updateCart();
   API.getProducts().then(function(server){
-    if(server&&server.length>0){products=server;try{localStorage.setItem("yabisno_products",JSON.stringify(server))}catch(e){};renderProducts()}
-    else{products=server||[];syncLocal();renderProducts()}
-  }).catch(function(){
-    if(products.length===0){products=mockProducts.slice();syncLocal()}
-  });
+    var merged=mergeProducts(server);
+    products=merged;
+    try{localStorage.setItem("yabisno_products",JSON.stringify(merged))}catch(e){}
+    renderProducts();
+  }).catch(function(){});
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(u){
     API.getChats(u.email).then(function(server){
       if(server){chats=server;try{localStorage.setItem("yabisno_chats",JSON.stringify(server))}catch(e){};updateBadge()}
     }).catch(function(){});
     API.getCart(u.email).then(function(server){
-      if(server&&server.length>0){cart=server;try{localStorage.setItem("yabisno_cart",JSON.stringify(server))}catch(e){};updateCart()}
+      if(server&&server.length>0){cart=server;try{localStorage.setItem(cartKey(),JSON.stringify(server))}catch(e){};updateCart()}
     }).catch(function(){});
   }
 }
+function mergeProducts(server){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  var out=(server&&server.length>0)?server.slice():[];
+  if(!u)return out;
+  var serverKeys={};
+  for(var i=0;i<out.length;i++)serverKeys[(out[i].ownerEmail||'')+'|'+(out[i].name||'').toLowerCase()+'|'+(out[i].price||'')]=true;
+  for(var j=0;j<products.length;j++){
+    var lp=products[j];
+    var k=(lp.ownerEmail||'')+'|'+(lp.name||'').toLowerCase()+'|'+(lp.price||'');
+    if(lp.id!==undefined&&!serverKeys[k]&&lp.ownerEmail&&String(lp.ownerEmail).toLowerCase()===String(u.email).toLowerCase()){
+      out.unshift(lp);
+      serverKeys[k]=true;
+    }
+  }
+  return out;
+}
 
+function cartKey(){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  return (u&&u.email)?'yabisno_cart_'+String(u.email).toLowerCase():'yabisno_cart';
+}
 function loadLocal(){
   try{
     products=JSON.parse(localStorage.getItem("yabisno_products"))||[];
-    cart=JSON.parse(localStorage.getItem("yabisno_cart"))||[];
+    cart=JSON.parse(localStorage.getItem(cartKey()))||[];
     chats=JSON.parse(localStorage.getItem("yabisno_chats"))||{};
   }catch(e){products=[];cart=[];chats={}}
 }
 function syncLocal(){
   try{
     localStorage.setItem("yabisno_products",JSON.stringify(products));
-    localStorage.setItem("yabisno_cart",JSON.stringify(cart));
+    localStorage.setItem(cartKey(),JSON.stringify(cart));
     localStorage.setItem("yabisno_chats",JSON.stringify(chats));
   }catch(e){}
+}
+function refreshCart(){
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
-  if(!u)return;
-  if(u.email)API.getCart(u.email).then(function(c){if(c){cart=c;updateCart()}}).catch(function(){});
+  if(!u||!u.email)return;
+  return API.getCart(u.email).then(function(c){
+    cart=c||[];
+    try{localStorage.setItem(cartKey(),JSON.stringify(cart))}catch(e){}
+    updateCart();
+  }).catch(function(){});
+}
+var _cartRefreshPending=0;
+function queueCartRefresh(){
+  if(_cartRefreshPending>0)return;
+  _cartRefreshPending++;
+  setTimeout(function(){
+    refreshCart().then(function(){_cartRefreshPending=0});
+  },300);
 }
 function byId(id){return document.getElementById(id)}
 
@@ -327,7 +590,7 @@ function bindAll(){
     var el=byId("searchInput");if(el)el.oninput=function(){searchQuery=this.value;var m=byId("searchInputMobile");if(m)m.value=this.value;renderProducts()};
     el=byId("searchInputMobile");if(el)el.oninput=function(){searchQuery=this.value;var d=byId("searchInput");if(d)d.value=this.value;renderProducts()};
     el=byId("searchToggle");if(el)el.onclick=function(){var b=byId("mobileSearchBar");if(b){b.classList.toggle("hidden");if(!b.classList.contains("hidden"))setTimeout(function(){var m=byId("searchInputMobile");if(m)m.focus()},100)}};
-    el=byId("publishBtn");if(el)el.onclick=function(){editingProductId=null;var f=byId("publishForm"),p=byId("pub-image-preview");if(f)f.reset();if(p)p.innerHTML="";openModal("publishModal")};
+    el=byId("publishBtn");if(el)el.onclick=function(){window.location.href="perfil.html"};
     el=byId("closePublish");if(el)el.onclick=function(){closeModal("publishModal")};
     el=byId("cancelPublish");if(el)el.onclick=function(){editingProductId=null;closeModal("publishModal")};
     el=byId("publishModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("publishModal")};
@@ -345,9 +608,11 @@ function bindAll(){
     el=byId("closeCart");if(el)el.onclick=toggleCart;
     el=byId("cartOverlay");if(el)el.onclick=toggleCart;
     el=byId("checkoutBtn");if(el)el.onclick=checkout;
-    el=byId("chatModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("chatModal")};
-    el=byId("productModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("productModal")};
-    el=byId("logoutBtn");if(el)el.onclick=function(){try{localStorage.removeItem("yabisno_user")}catch(e){}window.location.href="index.html"};
+  window.addEventListener("resize",function(){if(!byId("checkoutModal").classList.contains("hidden"))fitCheckout()});
+el=byId("chatModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("chatModal")};
+  el=byId("productModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("productModal")};
+  el=byId("checkoutModal");if(el)el.onclick=function(e){if(e.target===this)closeCheckoutModal()};
+    el=byId("logoutBtn");if(el)el.onclick=function(){try{localStorage.removeItem(cartKey())}catch(e){};try{localStorage.removeItem("yabisno_user")}catch(e){};try{localStorage.removeItem("yabisno_token")}catch(e){};window.location.href="index.html"};
     el=byId("modalBuyBtn");if(el)el.onclick=function(){var id=parseInt(this.dataset.productId);if(id){addCart(id);closeModal("productModal")}};
     el=byId("modalChatBtn");if(el)el.onclick=function(){var id=parseInt(this.dataset.productId);if(id){closeModal("productModal");openChat(id)}};
     document.querySelectorAll(".filter-btn").forEach(function(b){
@@ -357,23 +622,18 @@ function bindAll(){
         b.classList.add("active");currentFilter=b.dataset.filter;renderProducts()
       }
     });
-    document.querySelectorAll(".category-btn").forEach(function(b){
+    document.querySelectorAll(".neo-cat").forEach(function(b){
       b.onclick=function(){
-        document.querySelectorAll(".category-btn").forEach(function(x){
-          x.classList.remove("selected","border-orange","text-white","font-bold");
-          x.className=x.className.replace(/\s*(selected|border-orange|text-white|font-bold)/g,"").trim();
-          x.className+=" border-gray-200 text-gray-600 font-medium"
-        });
-        b.className=b.className.replace(/\s*(border-gray-200|text-gray-600|font-medium)/g,"").trim();
-        b.className+=" selected border-orange text-white font-bold";
-        searchQuery=b.dataset.cat;var si=byId("searchInput"),sm=byId("searchInputMobile");if(si)si.value=searchQuery;if(sm)sm.value=searchQuery;renderProducts()
+        document.querySelectorAll(".neo-cat-item").forEach(function(x){x.classList.remove("active")});
+        b.closest(".neo-cat-item").classList.add("active");
+        searchQuery=b.dataset.cat;var lbl=catLabel(searchQuery),si=byId("searchInput"),sm=byId("searchInputMobile");if(si)si.value=lbl;if(sm)sm.value=lbl;renderProducts()
       }
     });
     el=byId("detailSendMsg");if(el)el.onclick=sendFromDetail;
     el=byId("detailMsgInput");if(el)el.onkeydown=function(e){if(e.key==="Enter")sendFromDetail()};
     el=byId("msgBtn");if(el)el.onclick=function(){window.location.href="perfil.html"};
-    setInterval(function(){try{loadLocal();syncLocal();updateBadge();var m=byId("chatModal");if(activeChatProductId&&m&&m.classList.contains("hidden")===false){renderChat(activeChatProductId);markRead(activeChatProductId)}}catch(e){}},3000);
-    try{window.addEventListener("storage",function(){try{loadLocal();updateBadge();var m=byId("chatModal");if(activeChatProductId&&m&&m.classList.contains("hidden")===false){renderChat(activeChatProductId);markRead(activeChatProductId)}}catch(e){}})}catch(e){}
+    setInterval(function(){try{loadLocal();syncLocal();updateBadge();var m=byId("chatModal");if(activeChatProductId&&m&&m.classList.contains("hidden")===false){renderChat();markRead()}}catch(e){}},3000);
+    try{window.addEventListener("storage",function(){try{loadLocal();updateBadge();var m=byId("chatModal");if(activeChatProductId&&m&&m.classList.contains("hidden")===false){renderChat();markRead()}}catch(e){}})}catch(e){}
     bindGal();
   }catch(e){try{console.error("bindAll:",e)}catch(ex){}}
 }
@@ -395,7 +655,7 @@ function renderUser(){
 function renderProducts(){
   var f=products.slice();
   if(currentFilter==="negociavel")f=f.filter(function(p){return p.negotiable});
-  if(searchQuery){var q=searchQuery.toLowerCase();f=f.filter(function(p){return p.name.toLowerCase().includes(q)||p.location.toLowerCase().includes(q)||(p.category||"").toLowerCase().includes(q)})}
+  if(searchQuery){var q=norm(searchQuery);f=f.filter(function(p){return norm(p.name).includes(q)||norm(safeLocal(p.location)).includes(q)||norm(p.category||"").includes(q)})}
   var g=byId("productsGrid"),c=byId("resultCount");if(!g)return;
   if(f.length===0){g.innerHTML='<div class="col-span-full card p-12 text-center"><i class="fa-solid fa-inbox text-5xl mb-4 text-gray-200"></i><p class="text-gray-400">Nenhum produto encontrado</p></div>';if(c)c.textContent="0 produtos";return}
   var h="";for(var i=0;i<f.length;i++)h+=cardHTML(f[i]);
@@ -407,14 +667,16 @@ function cardHTML(p){
   var inCart=cart.find(function(i){return i.id===p.id});
   var imgs=p.images||[],src=imgs.length>0?imgs[0]:imgPH(p.name);
   var more=imgs.length>1?'<span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur"><i class="fa-solid fa-images mr-1"></i>'+imgs.length+'</span>':'';
+  var own=isOwn(p);
+  var chatBtn=own?'<span class="flex-1 text-center py-2.5 rounded-lg text-xs font-semibold text-gray-400"><i class="fa-solid fa-user-check mr-1"></i>O teu anúncio</span>':'<button class="chat-btn flex-1 btn-outline py-2.5 rounded-lg font-semibold text-xs" data-id="'+p.id+'">Chat</button>';
   return '<div class="card product-card" data-id="'+p.id+'">'+
     '<div class="product-img-wrap"><img src="'+esc(src)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="imgFallback(this)">'+(p.isNew?'<span class="badge-orange absolute top-3 left-3">NOVO</span>':'')+more+'</div>'+
     '<div class="p-3"><h3 class="card-name font-semibold mb-1 text-sm">'+esc(p.name)+'</h3>'+
-    '<div class="flex items-center gap-1 text-xs text-gray-400 mb-2"><i class="fa-solid fa-location-dot"></i><span>'+esc(p.location)+'</span>'+
-    (p.negotiable?'<span class="ml-auto text-orange font-medium"><i class="fa-solid fa-handshake mr-1"></i>Negoc.</span>':'')+'</div>'+
+    '<div class="flex items-center gap-1.5 text-xs text-gray-400 mb-2"><span class="text-[10px] font-bold text-orange bg-orange/10 px-2 py-0.5 rounded-full shrink-0">'+esc(catLabel(p.category))+'</span><i class="fa-solid fa-location-dot shrink-0"></i><span class="truncate">'+esc(safeLocal(p.location))+'</span>'+
+    (p.negotiable?'<span class="ml-auto text-orange font-medium shrink-0"><i class="fa-solid fa-handshake mr-1"></i>Negoc.</span>':'')+'</div>'+
     '<div class="text-lg font-extrabold text-orange mb-2">'+fmt(p.price)+'</div>'+
     '<div class="flex gap-2"><button class="add-cart flex-1 '+(inCart?"bg-green-500 text-white":"btn-primary")+' py-2.5 rounded-lg font-semibold text-xs" data-id="'+p.id+'">'+(inCart?"✓ Adicionado":"Comprar")+'</button>'+
-    '<button class="chat-btn flex-1 btn-outline py-2.5 rounded-lg font-semibold text-xs" data-id="'+p.id+'">Chat</button></div></div></div>';
+    chatBtn+'</div></div></div>';
 }
 
 function attachEvts(){
@@ -444,14 +706,18 @@ function openProduct(id){
   var p=products.find(function(x){return x.id===id});if(!p)return;
   galImgs=p.images||[imgPH(p.name)];galIdx=0;
   var t=byId("modalProductTitle"),l=byId("modalProductLocation"),o=byId("modalProductOwner"),pr=byId("modalProductPrice"),pt=byId("modalProductProtection");
-  if(t)t.textContent=p.name;if(l)l.textContent=p.location;
+  if(t)t.textContent=p.name;if(l)l.textContent=safeLocal(p.location);
   if(o)o.innerHTML='<i class="fa-solid fa-user mr-1"></i>'+esc(p.owner_name||(p.ownerEmail||"").split("@")[0]||"Vendedor");
   if(pr)pr.textContent=fmt(p.price);if(pt)pt.textContent=fmt(Math.round(p.price*0.05));
   updGal();
   var b=byId("modalProductBadge"),n=byId("modalProductNegotiable");
   if(b){if(p.isNew){b.textContent="NOVO";b.classList.remove("hidden")}else{b.classList.add("hidden")}}
   if(n){if(p.negotiable){n.classList.remove("hidden")}else{n.classList.add("hidden")}}
-  var mb=byId("modalBuyBtn"),mc=byId("modalChatBtn");if(mb)mb.dataset.productId=id;if(mc)mc.dataset.productId=id;openModal("productModal");
+  var mb=byId("modalBuyBtn"),mc=byId("modalChatBtn");if(mb)mb.dataset.productId=id;if(mc)mc.dataset.productId=id;
+  var own=isOwn(p),cs=byId("contactSellerArea");
+  if(mc)mc.style.display=own?"none":"";
+  if(cs)cs.style.display=own?"none":"";
+  openModal("productModal");
 }
 function updGal(){
   var img=byId("modalProductImage"),prev=byId("modalGalleryPrev"),next=byId("modalGalleryNext"),dots=byId("modalGalleryDots");
@@ -465,6 +731,15 @@ function updGal(){
 }
 
 
+var activeChatKey=null;
+function chatBuyerOf(key){
+  var parts=String(key||"").split("_");
+  return { pid: parseInt(parts[0]), buyer: parts.slice(1).join("_") };
+}
+function findChatKey(id){
+  for(var k in chats){ if(k.indexOf(id+"_")===0) return k; }
+  return null;
+}
 function chatKey(id){
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   return id + "_" + (u ? u.email : '');
@@ -474,13 +749,28 @@ function openChat(id){
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(!u){toast("Faz login primeiro");return}
   var p=products.find(function(x){return x.id===id});if(!p)return;
-  activeChatProductId=id;byId("chatTitle").textContent=p.name;byId("chatSubtitle").textContent="Chat sobre "+esc(p.name);
-  renderChat(id);markRead(id);openModal("chatModal");
+  if(isOwn(p)){
+    // dono a responder na conversa do próprio anúncio
+    var k=findChatKey(id);
+    if(!k){toast("Não há conversa neste anúncio");return}
+    activeChatKey=k;
+  }else{
+    activeChatKey=chatKey(id);
+  }
+  activeChatProductId=id;
+  var ck=chatBuyerOf(activeChatKey);
+  byId("chatTitle").textContent=p.name;
+  byId("chatSubtitle").textContent=isOwn(p)?("Conversa sobre o teu anúncio • "+esc(ck.buyer.split("@")[0])):("Chat sobre "+esc(p.name));
+  renderChat();markRead();openModal("chatModal");
 }
-function renderChat(id){
+function isOwn(p){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  return !!(u&&p&&(p.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase());
+}
+function renderChat(){
   var c=byId("chatMessages"),u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
-  if(!c||!u)return;
-  var k=chatKey(id),msgs=chats[k]||[];
+  if(!c||!u||!activeChatKey)return;
+  var msgs=chats[activeChatKey]||[];
   if(msgs.length===0){c.innerHTML='<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-comments text-4xl mb-3"></i><p>Nenhuma mensagem ainda.</p></div>';return}
   var h="";
   for(var i=0;i<msgs.length;i++){
@@ -490,23 +780,24 @@ function renderChat(id){
   }
   c.innerHTML=h;c.scrollTop=c.scrollHeight;
 }
-function markRead(id){
-  var k=chatKey(id),msgs=chats[k]||[],u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
-  if(!u)return;var ch=false;
+function markRead(){
+  var msgs=activeChatKey?chats[activeChatKey]:null,u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u||!msgs)return;
+  var ch=false;
   for(var i=0;i<msgs.length;i++){if(msgs[i].from!==u.email&&!msgs[i].read){msgs[i].read=true;ch=true}}
-  if(ch){syncLocal();API.markChatRead(id, u.email)}
+  if(ch){syncLocal();var ck=chatBuyerOf(activeChatKey);API.markChatRead(ck.pid, ck.buyer||u.email, u.email)}
 }
 function sendMsg(){
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(!u){toast("Faz login");return}
-  if(!activeChatProductId)return;
+  if(!activeChatKey){toast("Abre primeiro a conversa");return}
   var inp=byId("chatInput");if(!inp)return;
   var t=inp.value.trim();if(!t)return;
-  var k=chatKey(activeChatProductId);
-  if(!chats[k])chats[k]=[];
-  chats[k].push({from:u.email,text:t,timestamp:Date.now(),read:false});
-  inp.value="";syncLocal();renderChat(activeChatProductId);
-  API.sendChat(activeChatProductId, u.email, u.email, t);
+  if(!chats[activeChatKey])chats[activeChatKey]=[];
+  chats[activeChatKey].push({from:u.email,text:t,timestamp:Date.now(),read:false});
+  inp.value="";syncLocal();renderChat();
+  var ck=chatBuyerOf(activeChatKey);
+  API.sendChat(ck.pid, ck.buyer||u.email, u.email, t);
 }
 function sendFromDetail(){
   var mb=byId("modalBuyBtn"),di=byId("detailMsgInput");
@@ -514,8 +805,8 @@ function sendFromDetail(){
   var pid=parseInt(mb.dataset.productId),txt=di.value.trim();
   if(!txt||!pid)return;var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(!u){toast("Faz login primeiro");return}
-  var k=chatKey(pid);
-  if(!chats[k])chats[k]=[];chats[k].push({from:u.email,text:txt,timestamp:Date.now(),read:false});
+  activeChatKey=chatKey(pid);
+  if(!chats[activeChatKey])chats[activeChatKey]=[];chats[activeChatKey].push({from:u.email,text:txt,timestamp:Date.now(),read:false});
   syncLocal();di.value="";toast("Mensagem enviada!");
   API.sendChat(pid, u.email, u.email, txt);
 }
@@ -526,7 +817,7 @@ function addCart(id){
   if(e)e.qty+=1;else cart.push({id:p.id,name:p.name,price:p.price,qty:1});
   syncLocal();updateCart();renderProducts();toast("Adicionado ao cesto");
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
-  if(u)API.addToCart(u.email,id);
+  if(u)API.addToCart(u.email,id).then(queueCartRefresh);
 }
 function updateCart(){
   var el=byId("cartItems"),ce=byId("cartCount"),te=byId("cartTotal"),count=0;
@@ -544,10 +835,15 @@ function chgQty(id,d){
   var it=cart.find(function(x){return x.id===id});if(!it)return;
   it.qty+=d;if(it.qty<=0)rmCart(id);syncLocal();updateCart();renderProducts();
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
-  if(u&&it.qty>0)API.changeCartQty(u.email,id,d);
+  if(u&&it.qty>0)API.changeCartQty(u.email,id,d).then(queueCartRefresh);
 }
-function rmCart(id){cart=cart.filter(function(x){return x.id!==id});syncLocal();updateCart();renderProducts();var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u)API.removeFromCart(u.email,id)}
-function toggleCart(){try{var s=byId("cartSidebar"),o=byId("cartOverlay");if(s)s.classList.toggle("open");if(o)o.classList.toggle("open")}catch(e){}}
+function rmCart(id){cart=cart.filter(function(x){return x.id!==id});syncLocal();updateCart();renderProducts();var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){};if(u)API.removeFromCart(u.email,id).then(queueCartRefresh)}
+function closeModals(){document.querySelectorAll(".modal").forEach(function(m){m.classList.add("hidden")})}
+function closeCart(){var s=byId("cartSidebar"),o=byId("cartOverlay");if(s)s.classList.remove("open");if(o)o.classList.remove("open")}
+function lockScroll(){try{document.body.style.overflow="hidden"}catch(e){}}
+function unlockScroll(){try{var any=document.querySelector(".modal:not(.hidden)"),s=byId("cartSidebar");if(!any&&(!s||!s.classList.contains("open")))document.body.style.overflow=""}catch(e){}}
+function openCart(){closeModals();var s=byId("cartSidebar"),o=byId("cartOverlay");if(s)s.classList.add("open");if(o)o.classList.add("open");lockScroll()}
+function toggleCart(){var s=byId("cartSidebar");if(s&&s.classList.contains("open")){closeCart();unlockScroll()}else{openCart()}}
 
 function handlePublish(e){
   e.preventDefault();
@@ -571,7 +867,9 @@ function handlePublish(e){
       var mx=0;for(var i=0;i<products.length;i++){if(products[i].id>mx)mx=products[i].id}
       var p={id:Date.now(),name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name};
       products.unshift(p);
-      API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name});
+      API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name}).then(function(r){
+        if(r&&!r.ok)toast("Aviso: não sincronizado com o servidor (ficará só neste dispositivo)")
+      });
       searchQuery="";currentFilter="";document.querySelectorAll(".filter-btn").forEach(function(x){x.classList.remove("active")});
       var si=byId("searchInput"),sm=byId("searchInputMobile");if(si)si.value="";if(sm)sm.value="";
       toast("Produto publicado!")
@@ -580,15 +878,26 @@ function handlePublish(e){
   }
   if(files&&files.length>0){
     var loaded=[],toLoad=Math.min(files.length,10),cnt=0;
+    function doneOne(){cnt++;if(cnt>=toLoad)fin(loaded)}
     for(var fi=0;fi<toLoad;fi++)(function(f){
-      var r=new FileReader();r.onload=function(ev){
-        var img=new Image();img.onload=function(){
-          var c=document.createElement("canvas"),MAX=800,w=img.width,h=img.height;
-          if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX}else{w=Math.round(w*MAX/h);h=MAX}}
-          c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
-          loaded.push(c.toDataURL("image/jpeg",0.5));cnt++;if(cnt>=toLoad)fin(loaded)
-        };img.src=ev.target.result
-      };r.onerror=function(){cnt++;if(cnt>=toLoad)fin(loaded)};r.readAsDataURL(f)
+      var r=new FileReader();
+      r.onload=function(ev){
+        var img=new Image();
+        img.onload=function(){
+          try{
+            var c=document.createElement("canvas"),MAX=800,w=img.width,h=img.height;
+            if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX}else{w=Math.round(w*MAX/h);h=MAX}}
+            c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+            var data=c.toDataURL("image/jpeg",0.5);
+            if(data&&data.indexOf("data:image")===0)loaded.push(data);
+          }catch(err){}
+          doneOne();
+        };
+        img.onerror=function(){doneOne()};
+        img.src=ev.target.result;
+      };
+      r.onerror=function(){doneOne()};
+      r.readAsDataURL(f);
     })(files[fi])
   }else if(editingProductId){var ex=products.find(function(p){return p.id===editingProductId});fin(ex?ex.images||[imgPH(ex.name)]:[imgPH(name)])}
   else{fin([imgPH(name)])}
@@ -598,8 +907,7 @@ function handlePublish(e){
 function checkout(){
   if(cart.length===0){toast("Cesto vazio");return}
   var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
-  var tx="";for(var i=0;i<cart.length;i++)tx+='<div class="flex justify-between"><span>'+cart[i].qty+'x '+esc(cart[i].name)+'</span><span class="font-medium">'+fmt(cart[i].price*cart[i].qty)+'</span></div>';
-  byId("checkoutSummary").innerHTML='<div class="font-bold mb-1">Resumo</div>'+tx+'<div class="border-t border-gray-200 pt-1 mt-1 flex justify-between font-bold"><span>Total</span><span class="text-orange">'+fmt(t)+'</span></div>';
+  var tt=byId("checkoutTotal");if(tt)tt.textContent=fmt(t);
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(u&&u.email)API.getUser(u.email).then(function(r){
     if(r.ok&&r.user){
@@ -612,6 +920,7 @@ function checkout(){
     }
   });
   openModal("checkoutModal");
+  fitCheckout();
 }
 
 function handleCheckout(e){
@@ -631,6 +940,68 @@ function handleCheckout(e){
   return false;
 }
 
+var payTimer=null;
+function closeCheckoutModal(){
+  stopPayPoll();
+  closeModal("checkoutModal");
+}
+
+function fitCheckout(){
+  var p=byId("checkoutPanel");if(!p)return;
+  var maxH=Math.min(window.innerHeight||600,document.documentElement.clientHeight||600)*0.94;
+  var cur=p.offsetHeight||maxH;
+  var s=Math.min(1.07,(maxH/cur)*1.07);
+  if(s<0.55)s=0.55;
+  p.style.transformOrigin="top center";
+  p.style.transform="scale("+s+")";
+  p.style.height=Math.round(cur*s)+"px";
+}
+
+function payWithMCX(){
+  var province=byId("chkProvince").value.trim(),municipality=byId("chkMunicipality").value.trim(),neighborhood=byId("chkNeighborhood").value.trim(),street=byId("chkStreet").value.trim(),reference=byId("chkReference").value.trim();
+  if(!province||!municipality||!neighborhood||!street){toast("Preenche todos os campos obrigatórios");return}
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u){toast("Faz login primeiro");return}
+  var phone=byId("chkPhone").value.replace(/[^\d]/g,"");
+  if(!/^9\d{8}$/.test(phone)){toast("Introduz um nº de Multicaixa Express válido (9 dígitos)");return}
+  API.saveAddress(u.email,province,municipality,neighborhood,street,reference);
+  var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
+  if(t<=0){toast("Cesto vazio");return}
+  var items=cart.map(function(c){return {id:c.id,name:c.name,qty:c.qty,price:c.price}});
+  var btn=byId("payMCXBtn");
+  if(btn){btn.disabled=true;btn.textContent="A processar..."}
+  API.createPayment({mobile:phone,amount:t,items:items}).then(function(r){
+    if(!r.ok){showPayStatus(r.error||"Erro ao iniciar o pagamento","erro");if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}return}
+    showPayStatus("Confirma o pagamento no app Multicaixa Express. Aguardando...","aguarda");
+    var start=Date.now();
+    payTimer=setInterval(function(){
+      if(Date.now()-start>120000){stopPayPoll();showPayStatus("Tempo esgotado. Podes tentar novamente.","erro");if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}return}
+      API.refreshPayment(r.ref).then(function(s){
+        if(!s.ok)return;
+        if(s.status==="accepted"){
+          stopPayPoll();showPayStatus("Pagamento confirmado! Obrigado pela compra.","ok");
+          cart=[];syncLocal();updateCart();API.clearCart(u.email);
+          setTimeout(function(){closeModal("checkoutModal")},1500);
+        }else if(s.status==="rejected"){
+          stopPayPoll();showPayStatus("Pagamento recusado. Tenta novamente.","erro");
+          if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}
+        }
+      });
+    },3000);
+  });
+}
+
+function stopPayPoll(){
+  if(payTimer){clearInterval(payTimer);payTimer=null}
+}
+
+function showPayStatus(msg,type){
+  var el=byId("payStatus");if(!el)return;
+  el.classList.remove("hidden");
+  el.className="p-2.5 rounded-[12px] text-[12px] text-center font-medium "+(type==="ok"?"bg-emerald-50 text-emerald-700":type==="erro"?"bg-red-50 text-red-600":"bg-orange-50 text-orange");
+  el.textContent=msg;
+}
+
 function updateBadge(){
   var b=byId("msgCount");if(!b)return;
   try{
@@ -646,11 +1017,33 @@ function updateBadge(){
 }
 
 function imgFallback(el){try{var n=el.closest('.card').querySelector('.card-name');if(n)el.src=imgPH(n.textContent)}catch(e){}}
+function safeLocal(loc){
+  if(loc==null||loc==="")return "Luanda";
+  if(typeof loc==="object"){
+    if(loc instanceof Array)return safeLocal(loc[0]);
+    var a=(loc.city||loc.cidade||loc.municipality||loc.municipio||""),b=(loc.bairro||loc.neighborhood||loc.provincia||loc.province||"");
+    return (a+" • "+b).replace(/^• | • $/g,"").trim()||"Luanda";
+  }
+  if(typeof loc==="string"){
+    var s=loc.trim();
+    if(s==="[object Object]"||s==="[object Array]")return "Luanda";
+    if(s.charAt(0)==="{"||s.charAt(0)==="["){
+      try{var o=JSON.parse(s);if(typeof o==="object")return safeLocal(o)}catch(e){}
+    }
+    return s;
+  }
+  return String(loc);
+}
 function esc(s){return String(s).replace(/[&<>"']/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]})}
 function fmt(v){return Number(v).toLocaleString("pt-PT")+" Kz"}
+function norm(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function catLabel(c){
+  var m={moda:"Moda",eletronicos:"Eletrônicos",casa:"Casa",carros:"Carros",desporto:"Desporto","perfumes e cosmeticos":"Perfumes",imoveis:"Imóveis"};
+  return m[norm(c)]||(c||"Outros");
+}
 function imgPH(n){var c=['#FF5F1F','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f8f8f8"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}
-function openModal(id){var el=byId(id);if(el)el.classList.remove("hidden")}
-function closeModal(id){var el=byId(id);if(el)el.classList.add("hidden")}
+function openModal(id){var el=byId(id);if(!el)return;closeCart();el.classList.remove("hidden");lockScroll()}
+function closeModal(id){var el=byId(id);if(el)el.classList.add("hidden");unlockScroll()}
 function toast(m){
   var c=byId("toastContainer");if(!c)return;
   var el=document.createElement("div");el.className="toast";el.textContent=m;
