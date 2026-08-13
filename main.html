@@ -958,6 +958,8 @@ function fitCheckout(){
 }
 
 function payWithMCX(){
+  try{
+  if(typeof API.createPayment!=="function"){toast("Versão desatualizada — recarrega com Ctrl+F5");return}
   var province=byId("chkProvince").value.trim(),municipality=byId("chkMunicipality").value.trim(),neighborhood=byId("chkNeighborhood").value.trim(),street=byId("chkStreet").value.trim(),reference=byId("chkReference").value.trim();
   if(!province||!municipality||!neighborhood||!street){toast("Preenche todos os campos obrigatórios");return}
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
@@ -971,7 +973,7 @@ function payWithMCX(){
   var btn=byId("payMCXBtn");
   if(btn){btn.disabled=true;btn.textContent="A processar..."}
   API.createPayment({mobile:phone,amount:t,items:items}).then(function(r){
-    if(!r.ok){showPayStatus(r.error||"Erro ao iniciar o pagamento","erro");if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}return}
+    if(!r.ok){showPayStatus(r.error||"Erro ao iniciar o pagamento","erro");toast(r.error||"Erro ao iniciar o pagamento");if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}return}
     showPayStatus("Confirma o pagamento no app Multicaixa Express. Aguardando...","aguarda");
     var start=Date.now();
     payTimer=setInterval(function(){
@@ -988,7 +990,8 @@ function payWithMCX(){
         }
       });
     },3000);
-  });
+  }).catch(function(e){showPayStatus("Erro de ligação ao servidor","erro");if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}});
+  }catch(e){try{console.error("payWithMCX:",e)}catch(x){};toast("Erro ao processar pagamento");var btn=byId("payMCXBtn");if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}}
 }
 
 function stopPayPoll(){
