@@ -594,6 +594,38 @@ app.get('/api/admin/cart', authAdmin, async (req, res) => {
   } catch (e) { res.status(500).json([]); }
 });
 
+app.get('/api/admin/sales', authAdmin, async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM payments WHERE status IN ('accepted','finalizado','vendido','concluido') ORDER BY id DESC");
+    const out = [];
+    for (const p of rows) {
+      let items = [];
+      try { items = JSON.parse(p.items || '[]'); } catch (_) { items = []; }
+      const first = items[0] || {};
+      let seller = null;
+      if (first.id) {
+        const [pr] = await db.query('SELECT owner_email, owner_name FROM products WHERE id=?', [first.id]);
+        if (pr.length) seller = { name: pr[0].owner_name, email: pr[0].owner_email };
+      }
+      out.push({
+        id: p.id,
+        ref: p.ref,
+        buyer_email: p.buyer_email,
+        mobile: p.mobile,
+        amount: Number(p.amount),
+        items: items,
+        product_name: first.name || null,
+        qty: first.qty || 1,
+        seller: seller ? seller.name : null,
+        seller_email: seller ? seller.email : null,
+        status: p.status,
+        created_at: p.created_at
+      });
+    }
+    res.json({ ok: true, sales: out });
+  } catch (e) { res.status(500).json({ ok: false, sales: [] }); }
+});
+
 app.get('/api/admin/stats', authAdmin, async (req, res) => {
   try {
     const [u] = await db.query('SELECT COUNT(*) AS c FROM users');
