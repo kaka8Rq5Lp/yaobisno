@@ -99,6 +99,8 @@ tbody tr.row:hover{background:#fffaf5}
 .t-owner .av{width:28px;height:28px;border-radius:50%;background:#f1e6d8;color:#a06f2d;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700}
 .badge.active{background:#e8f7ee;color:#0a9e4e}
+.badge.paid{background:#e0f2fe;color:#0369a1}
+.badge.warn{background:#fff1e0;color:#b45309}
 .badge.pending{background:#fff4e0;color:#d97706}
 .badge.rejected{background:#fdecea;color:#dc3023}
 .actions{display:flex;gap:6px}
@@ -140,6 +142,10 @@ tbody tr.row:hover{background:#fffaf5}
 .dr-section .em{font-size:12px;color:#9aa0a6}
 .dr-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
 .dr-btn{flex:1;min-width:130px;padding:12px;border-radius:12px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+button.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:11px;font-size:12.5px;font-weight:600;background:#FF6B00;color:#fff;border:none;cursor:pointer;transition:.15s}
+button.btn:hover{background:#e85f00}
+button.btn.second{background:#f2f1ec;color:#555}
+button.btn.second:hover{background:#e6e4db}
 .btn-orange{background:#FF6B00;color:#fff}.btn-orange:hover{background:#e85f00}
 .btn-green{background:#0a9e4e;color:#fff}.btn-green:hover{background:#086d3f}
 .btn-red{background:#dc3023;color:#fff}.btn-red:hover{background:#c22a1e}
@@ -286,8 +292,28 @@ tbody tr.row:hover{background:#fffaf5}
 
 <div class="toasts" id="toasts"></div>
 
+<div class="modal-mask" id="payModal">
+  <div class="modal">
+    <h3><i class="fa-solid fa-building-columns" style="color:#0a9e4e"></i>Conta para pagamento (comprovativo)</h3>
+    <p>Estes dados aparecem ao cliente na página do comprovativo, antes de anexar o comprovativo.</p>
+    <textarea id="payText" placeholder="Ex: Banco BAI — IBAN AO06...&#10;Titular: ...&#10;Carteira 91 000 0000" style="width:100%;height:120px;border:1px solid #e5e7eb;border-radius:12px;padding:12px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
+    <div class="err" id="payErr"></div>
+    <div class="row"><button class="btn" style="background:#0a9e4e" onclick="savePayDetails()">Guardar</button><button class="btn second" onclick="closePayModal()">Cancelar</button></div>
+  </div>
+</div>
+
+<div class="modal-mask" id="receiptModal">
+  <div class="modal">
+    <h3><i class="fa-solid fa-receipt" style="color:#FF6B00"></i>Comprovativo de pagamento</h3>
+    <p id="receiptMeta"></p>
+    <div id="receiptBody" style="background:#f6f7f9;border-radius:14px;padding:10px;text-align:center;max-height:50vh;overflow:auto"></div>
+    <div class="err" id="receiptErr"></div>
+    <div class="row"><button class="btn second" onclick="closeReceipt()">Fechar</button></div>
+  </div>
+</div>
+
 <script>
-var TOKEN='', products=[], users=[], chats=[], cart=[], sales=[], admins=[];
+var TOKEN='', products=[], users=[], chats=[], cart=[], sales=[], admins=[], settings={};
 var activeTab='kpis', searchQ='', pFilterStatus='', pFilterCat='';
 var delTarget=null, drawerIdx=0;
 var ADMIN_EMAIL='';
@@ -442,6 +468,7 @@ function loadAll(){
   req('/api/admin/cart').then(function(d){cart=d||[];byId('cntCart').textContent=cart.length;if(activeTab==='cart')renderCart()});
   req('/api/admin/sales').then(function(d){sales=(d&&d.sales)||[];byId('cntSales').textContent=sales.length;if(activeTab==='kpis')renderKpis();if(activeTab==='sales')renderSalesTab()});
   req('/api/admin/admins').then(function(d){admins=d||[];byId('cntAdmins').textContent=admins.length;if(activeTab==='admins')renderAdmins()});
+  req('/api/settings').then(function(d){settings=(d&&d.settings)||{};if(activeTab==='sales')renderSalesTab()});
 }
 function refreshDrawerChat(){
   var el=document.querySelector('.drawer-body');
@@ -463,7 +490,7 @@ function salesTotal(list){
   var t=0;list.forEach(function(s){t+=Number(s.amount)||0});return t;
 }
 function saleStatusBadge(st){
-  var map={accepted:['Finalizado','active'],finalizado:['Finalizado','active'],vendido:['Vendido','active'],concluido:['Concluído','active']};
+  var map={accepted:['Finalizado','active'],finalizado:['Finalizado','active'],vendido:['Vendido','active'],concluido:['Concluído','active'],pago:['Pago','paid']};
   var it=map[String(st||'')]||['Finalizado','active'];
   return '<span class="badge '+it[1]+'"><i class="fa-solid fa-circle-check"></i>'+it[0]+'</span>';
 }
@@ -485,22 +512,29 @@ function fmtMorada(d){
 }
 function renderSales(){
   var list=finalizedSales();
-  var pend=sales.filter(function(s){return String(s.status||'')==='pendente'});
+  var pend=sales.filter(function(s){var st=String(s.status||'');return st==='pendente'||st==='pago'});
   var html='';
-  html+='<div style="margin-top:28px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Vendas pendentes (WhatsApp)</h2></div>';
+  html+='<div style="margin-top:28px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Vendas a aguardar (WhatsApp)</h2></div>';
   if(!pend.length){
-    html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem vendas pendentes</p><small>Encomendas fechadas no WhatsApp a aguardar confirmação aparecem aqui</small></div></div>';
+    html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem vendas pendentes</p><small>Encomendas fechadas no WhatsApp a aguardar comprovativo/confirmação aparecem aqui</small></div></div>';
   }else{
-    html+='<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Valor</th><th>Morada</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
+    html+='<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Valor</th><th>Morada</th><th>Comprovativo</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
     for(var i=0;i<pend.length;i++){
       var s=pend[i];
+      var isPaid=String(s.status||'')==='pago';
+      var comp=(s.comprovativo&&s.comprovativo.image)?s.comprovativo.image:null;
       html+='<tr>'
         +'<td><div class="t-owner"><div class="av">'+esc((s.buyer_email||'?').charAt(0)).toUpperCase()+'</div><div>'+esc(s.buyer_email||'—')+'</div></div></td>'
         +'<td style="font-size:12px;color:#8a8578">'+esc(s.mobile||'—')+'</td>'
         +'<td><span class="t-price">'+fmt(s.amount)+'</span></td>'
         +'<td style="font-size:12px;color:#8a8578">'+esc(fmtMorada(s.delivery)||'—')+'</td>'
+        +'<td>'+(isPaid
+            ?(comp?'<span class="badge paid" style="margin-right:6px">Pago</span><button class="btn second" style="padding:3px 10px;font-size:10.5px" onclick="viewReceipt(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-image"></i> Ver</button>':'<span class="badge paid">Pago</span>')
+            :'<span class="badge warn"><i class="fa-solid fa-clock"></i>A aguardar anexo</span>')+'</td>'
         +'<td style="font-size:12px;color:#8a8578">'+saleDate(s.created_at)+'</td>'
-        +'<td><button class="btn" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>Confirmar</button></td>'
+        +'<td>'+(isPaid
+            ?'<button class="btn" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>Validar</button>'
+            :'<span style="font-size:10.5px;color:#9aa0a6">/<span>')+'</td>'
         +'</tr>';
     }
     html+='</tbody></table></div></div>';
@@ -530,21 +564,60 @@ function renderSales(){
   return html;
 }
 function renderSalesTab(){
-  var pend=sales.filter(function(s){return String(s.status||'')==='pendente'});
+  var pend=sales.filter(function(s){var st=String(s.status||'');return st==='pendente'||st==='pago'});
   var list=finalizedSales();
   var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">'
     +'<div><h2 style="font-size:18px;font-weight:800">Painel de Vendas</h2><div style="font-size:12.5px;color:#9aa0a6;margin-top:3px">'+pend.length+' pendente'+(pend.length===1?'':'s')+' · '+list.length+' finalizada'+(list.length===1?'':'s')+'</div></div>'
+    +'<button class="btn second" onclick="openPayModal()"><i class="fa-solid fa-building-columns"></i>Conta p/ pagamento</button>'
     +'</div>'
     +renderSales();
   byId('mainContent').innerHTML=html;
 }
 function confirmVenda(ref){
   if(!ref)return;
-  if(!confirm('Confirmar venda '+ref+' como finalizada?'))return;
+  var s=sales.find(function(x){return String(x.ref)===String(ref)});
+  var isPago=!!(s&&String(s.status)==='pago');
+  if(!confirm('Confirmar venda '+ref+' como finalizada'+(isPago?' (comprovativo já recebido)':'')+'?'))return;
   req('/api/admin/sales/'+encodeURIComponent(ref)+'/confirm','POST').then(function(d){
     if(d&&d.ok){toast('Venda confirmada!','ok');loadAll();}
     else toast('Falha a confirmar','err');
   }).catch(function(){toast('Erro a confirmar','err')});
+}
+function viewReceipt(ref){
+  var s=sales.find(function(x){return String(x.ref)===String(ref)});
+  if(!s||!s.comprovativo){toast('Sem comprovativo','err');return}
+  var body=byId('receiptBody');
+  var image=s.comprovativo.image||'';
+  var texto=s.comprovativo.texto||'';
+  var at=s.comprovativo.at||'';
+  var html='';
+  if(image)html+='<img src="'+esc(image)+'" style="max-width:100%;max-height:42vh;border-radius:12px;display:block;margin:0 auto">';
+  else html+='<p style="padding:30px;color:#9aa0a6">Sem imagem anexada</p>';
+  if(texto)html+='<p style="margin-top:10px;font-size:12.5px;color:#374151;background:#fff;border-radius:10px;padding:10px"><b>Referência:</b> '+esc(texto)+'</p>';
+  html+='<p style="margin-top:10px;font-size:11px;color:#9aa0a6">'+esc(at||'')+'</p>';
+  body.innerHTML=html;
+  byId('receiptMeta').textContent='Ref: '+ref+' · '+esc(s.buyer_email||'');
+  byId('receiptErr').textContent='';
+  byId('receiptModal').classList.add('open');
+}
+function closeReceipt(){
+  byId('receiptModal').classList.remove('open');
+  byId('receiptBody').innerHTML='';
+}
+function openPayModal(){
+  var cur=settings['pagamento_detalhes']||'';
+  byId('payText').value=cur;
+  byId('payErr').textContent='';
+  byId('payModal').classList.add('open');
+}
+function closePayModal(){byId('payModal').classList.remove('open')}
+function savePayDetails(){
+  var v=byId('payText').value.trim();
+  req('/api/admin/settings','PUT',{pagamento_detalhes:v}).then(function(d){
+    closePayModal();
+    if(d&&d.ok){settings['pagamento_detalhes']=v;toast('Detalhes de pagamento guardados','ok')}
+    else toast('Falha a guardar','err');
+  }).catch(function(){toast('Erro a guardar','err')});
 }
 function renderKpis(){
   var pend=products.filter(function(p){return (p.status||'active')==='pending'}).length;

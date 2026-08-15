@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FF6B00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ya o bisno — Pagamento">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Ya o bisno — Pagamento</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
+<script src="api.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--orange:#FF6B00;--dark:#111317;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;outline:none}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#f6f7f9;color:var(--dark);-webkit-font-smoothing:antialiased;min-height:calc(var(--vh,1vh)*100)}
+button{font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipulation;background:none;border:none;padding:0;color:inherit;line-height:1}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#111317;color:#fff;padding:.7rem 1.2rem;padding-bottom:calc(.7rem + var(--safe-bottom));border-radius:9999px;font-size:.85rem;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:90;animation:slideUp .25s ease;white-space:nowrap;max-width:90%;display:flex;align-items:center;gap:.5rem}
+@media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
+.drag-over{border-color:#FF6B00!important;background:#fff5ec!important}
+input[type="text"],input[type="file"]{border-radius:12px;width:100%;font-size:.9rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
+</style>
+</head>
+<body class="bg-[#f6f7f9] text-[#111317] selection:bg-[#FF6B00]/20">
+
+<header class="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-black/[0.06]">
+  <div class="max-w-[640px] mx-auto px-5 h-[64px] flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-full bg-[#FF6B00]/10 flex items-center justify-center text-[#FF6B00] text-[15px]"><i class="fa-solid fa-receipt"></i></div>
+      <div class="leading-tight">
+        <p class="text-[14px] font-bold">Comprovativo de pagamento</p>
+        <p class="text-[10.5px] text-[#6B7280]">Ya o bisno</p>
+      </div>
+    </div>
+    <a href="main.html" class="text-[12.5px] font-semibold text-[#FF6B00] hover:opacity-80"><i class="fa-solid fa-store mr-1"></i>Loja</a>
+  </div>
+</header>
+
+<main class="max-w-[640px] mx-auto px-5 py-6">
+  <div id="view" style="display:none">
+
+    <!-- CABEÇALHO DE ESTADO -->
+    <div id="stateCard" class="rounded-[20px] p-5 mb-4 text-white shadow-lg" style="background:linear-gradient(135deg,#FF6B00,#FF8A3D)">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-[17px]"><i id="stateIcon" class="fa-solid fa-clock"></i></div>
+        <div class="leading-tight">
+          <p class="text-[15px] font-bold" id="stateTitle">A aguardar o comprovativo</p>
+          <p class="text-[11.5px] opacity-90" id="stateSub">Encomenda registada. Faz o pagamento e anexa aqui o comprovativo.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETALHES DA CONTA PARA PAGAR -->
+    <div id="accountCard" class="bg-white rounded-[20px] border border-black/[0.04] shadow-sm p-5 mb-4">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[12px]"><i class="fa-solid fa-building-columns"></i></div>
+        <h2 class="text-[13.5px] font-bold">Conta para pagamento</h2>
+      </div>
+      <div id="accountBody" class="text-[12.5px] leading-relaxed whitespace-pre-line text-[#374151]">A carregar...</div>
+    </div>
+
+    <!-- RESUMO DA ENCOMENDA -->
+    <div class="bg-white rounded-[20px] border border-black/[0.04] shadow-sm p-5 mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-[13.5px] font-bold"><i class="fa-solid fa-bag-shopping mr-1.5 text-[#FF6B00]"></i>Encomenda</h2>
+        <span id="saleRef" class="text-[10.5px] font-mono text-[#9CA3AF]"></span>
+      </div>
+      <div id="itemsList" class="space-y-2 mb-3"></div>
+      <div class="border-t border-dashed border-[#E5E7EB] pt-3 space-y-1 text-[12.5px]">
+        <div class="flex justify-between text-[#6B7280]"><span>Total dos produtos</span><span id="sumTotal" class="font-semibold text-[#111317]"></span></div>
+        <div class="flex justify-between text-[#6B7280]"><span>Proteção (5%)</span><span id="sumProt" class="font-semibold text-[#111317]"></span></div>
+        <div class="flex justify-between text-[#111317] font-bold"><span>Total a pagar</span><span id="sumAmount" class="text-[#FF6B00]"></span></div>
+      </div>
+      <div id="deliveryBox" class="mt-3 rounded-[12px] bg-[#FBFBF9] border border-[#F0F0ED] p-3 text-[11.5px] text-[#6B7280]">
+        <i class="fa-solid fa-location-dot mr-1.5 text-[#FF6B00]"></i><span id="deliveryText"></span>
+      </div>
+    </div>
+
+    <!-- ENVIO DO COMPROVATIVO -->
+    <div id="uploadCard" class="bg-white rounded-[20px] border border-black/[0.04] shadow-sm p-5">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-7 h-7 rounded-full bg-[#FFF1E6] text-[#FF6B00] flex items-center justify-center text-[12px]"><i class="fa-solid fa-file-image"></i></div>
+        <h2 class="text-[13.5px] font-bold">Anexa o comprovativo</h2>
+      </div>
+      <label id="dropZone" for="fileInput" class="flex flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-[#E5E7EB] bg-[#FBFBF9] p-6 cursor-pointer transition hover:bg-[#FFF9F4] hover:border-[#FF6B00]/40">
+        <div class="w-12 h-12 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center text-[20px]"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <p class="text-[13px] font-semibold">Arrasta a foto aqui ou toca para escolher</p>
+        <p class="text-[11px] text-[#9CA3AF]">Foto do comprovativo de pagamento (recebido do banco/carteira)</p>
+        <input id="fileInput" type="file" accept="image/*" capture="environment" class="hidden">
+      </label>
+      <div id="previewBox" class="hidden mt-3">
+        <img id="previewImg" class="w-full max-h-[300px] object-contain rounded-[14px] border border-[#F0F0ED] bg-white">
+      </div>
+      <input id="receiptText" type="text" placeholder="Referência / ID do pagamento (opcional)" class="mt-3 text-[13px] px-3.5 h-11">
+      <button id="sendBtn" class="hidden mt-3 w-full h-11 rounded-[14px] bg-[#FF6B00] text-white text-[13.5px] font-bold flex items-center justify-center gap-2 hover:bg-[#e65f00] active:scale-[0.98] transition"><i class="fa-solid fa-paper-plane"></i> Enviar comprovativo</button>
+
+      <div id="sending" class="hidden mt-3 flex items-center justify-center gap-2 py-3 text-[13px] font-semibold text-[#FF6B00]">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> A enviar comprovativo...
+      </div>
+      <div id="waitingBox" class="hidden mt-3 rounded-[12px] bg-[#FFF8F0] border border-[#FFEAD9] p-3.5 text-[12.5px] leading-relaxed">
+        <p class="font-bold text-[#B45309] mb-0.5"><i class="fa-solid fa-hourglass-half mr-1"></i> A aguardar validação da loja</p>
+        <p class="text-[#92400E]">Estamos a verificar o teu comprovativo. Assim que for validado, a mensagem com tudo pago vai abrir no WhatsApp. Não feches esta página.</p>
+      </div>
+    </div>
+
+    <!-- ESTADO FINAL (PAGO) -->
+    <div id="doneBox" class="hidden rounded-[20px] p-6 text-center text-white shadow-lg" style="background:linear-gradient(135deg,#0a9e4e,#16a34a)">
+      <div class="w-16 h-16 mx-auto rounded-full bg-white/20 flex items-center justify-center text-[28px] mb-3"><i class="fa-solid fa-circle-check"></i></div>
+      <p class="text-[18px] font-bold mb-1">Pagamento validado! 🎉</p>
+      <p class="text-[12.5px] opacity-90 mb-5 leading-relaxed">A loja confirmou o teu comprovativo. A tua encomenda está concluída e marcada como paga. Envia a mensagem no WhatsApp para finalizar.</p>
+      <button onclick="openWhatsApp()" class="w-full h-12 rounded-[14px] bg-white text-[#0a9e4e] text-[13.5px] font-bold flex items-center justify-center gap-2 hover:bg-[#f6f7f9] transition"><i class="fa-brands fa-whatsapp text-[18px]"></i> Abrir WhatsApp com tudo pago</button>
+    </div>
+
+    <!-- ERRO -->
+    <div id="errorBox" class="hidden rounded-[20px] border border-red-100 bg-red-50 p-5 text-center">
+      <div class="w-12 h-12 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[20px] mb-3"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <p class="text-[14px] font-bold text-red-700 mb-1">Não conseguimos carregar a encomenda</p>
+      <p class="text-[12.5px] text-red-500 mb-4" id="errorMsg"></p>
+      <a href="main.html" class="inline-flex h-10 px-4 rounded-[12px] bg-red-600 text-white text-[13px] font-semibold items-center justify-center">Voltar à loja</a>
+    </div>
+
+  </div>
+  <div id="loading" class="py-24 text-center">
+    <i class="fa-solid fa-circle-notch fa-spin text-[#FF6B00] text-3xl"></i>
+    <p class="mt-3 text-[13px] text-[#6B7280] font-medium">A carregar a tua encomenda...</p>
+  </div>
+</main>
+
+<div id="toastContainer"></div>
+
+<script>
+function byId(id){return document.getElementById(id)}
+function fmt(v){
+  v=Number(v||0);
+  return v.toLocaleString('pt-AO',{minimumFractionDigits:0,maximumFractionDigits:0})+' Kz';
+}
+function toast(m){
+  var c=byId("toastContainer");if(!c)return;
+  var el=document.createElement("div");el.className="toast";el.textContent=m;
+  c.appendChild(el);setTimeout(function(){el.style.transition="opacity .3s";el.style.opacity="0";setTimeout(function(){el.remove()},300)},2600)
+}
+function qp(k){
+  try{return new URLSearchParams(window.location.search).get(k)||''}catch(e){return ''}
+}
+
+var SALE=null, STATUS='', receiptImage=null, timer=null;
+
+function showView(){
+  byId("loading").style.display='none';
+  byId("view").style.display='block';
+}
+
+function renderSimpl(){
+  showView();
+  document.title='Ya o bisno — Pagamento '+(SALE.ref||'');
+  byId("saleRef").textContent=SALE.ref||'';
+  var sum=0;
+  var html='';
+  (SALE.items||[]).forEach(function(it){
+    var line=Number(it.qty||1)*(Number(it.price)||0);
+    sum+=line;
+    html+='<div class="flex justify-between items-center gap-2">'
+      +'<span class="text-[12.5px] text-[#374151]"><span class="font-bold">'+(it.qty||1)+'x</span> '+esc(it.name||'(item)')+'</span>'
+      +'<span class="text-[12.5px] font-semibold whitespace-nowrap">'+fmt(line)+'</span></div>';
+  });
+  byId("itemsList").innerHTML=html||'<p class="text-[12px] text-[#9CA3AF]">Sem itens</p>';
+  var tot=Number(SALE.amount)||0;
+  byId("sumTotal").textContent=fmt(sum);
+  byId("sumProt").textContent=fmt(Math.round(sum*0.05));
+  byId("sumAmount").textContent=fmt(tot);
+  var d=SALE.delivery||{};
+  var morada=[d.province,d.municipality,d.neighborhood,d.street].filter(function(x){return x}).join(' • ');
+  if(d.reference)morada+=' ('+d.reference+')';
+  byId("deliveryText").textContent=morada||'Sem morada';
+}
+
+function esc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function applyStatus(){
+  if(!SALE)return;
+  var st=String(SALE.status||'');
+  STATUS=st;
+  var done=byId("doneBox"), upload=byId("uploadCard"), stIc=byId("stateIcon"), stT=byId("stateTitle"), stS=byId("stateSub");
+  if(st==='pago'){
+    stopPoll();
+    upload.style.display='none';
+    done.style.display='block';
+    stIc.className='fa-solid fa-circle-check';
+    stT.textContent='Pagamento confirmado';
+    stS.textContent='A loja já validou o teu comprovativo. Envia a mensagem no WhatsApp.';
+    try{byId("accountCard").style.display='none'}catch(e){}
+    autoOpenOnce();
+  }else if(st==='pendente'){
+    if(SALE.has_comprovativo){
+      upload.style.display='none';
+      byId("waitingBox").style.display='block';
+      stIc.className='fa-solid fa-hourglass-half';
+      stT.textContent='A aguardar validação da loja';
+      stS.textContent='O comprovativo foi enviado. A loja vai validar em breve.';
+    }else{
+      upload.style.display='block';
+      stIc.className='fa-solid fa-clock';
+      stT.textContent='A aguardar o comprovativo';
+      stS.textContent='Encomenda registada. Faz o pagamento e anexa aqui o comprovativo.';
+    }
+  }else{
+    stopPoll();
+    upload.style.display='none';
+    stIc.className='fa-solid fa-circle-info';
+    stT.textContent='Estado: '+SALE.status_reason||st;
+    stS.textContent='Estado da encomenda: '+st;
+  }
+}
+
+function startPoll(){
+  stopPoll();
+  timer=setInterval(function(){
+    API.getSale(SALE.ref).then(function(r){
+      if(!r||!r.ok)return;
+      SALE.status=r.status; SALE.status_reason=r.status_reason; SALE.has_comprovativo=r.has_comprovativo;
+      applyStatus();
+    }).catch(function(){});
+  },4000);
+}
+function stopPoll(){
+  if(timer){clearInterval(timer);timer=null;}
+}
+
+function autoOpenOnce(){
+  try{
+    var w=window.open(waUrl(),"_blank");
+    if(w)w.focus();
+  }catch(e){}
+}
+function waUrl(){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){u=null}
+  var sum=0;(SALE.items||[]).forEach(function(it){sum+=Number(it.qty||1)*(Number(it.price)||0)});
+  var tx="";(SALE.items||[]).forEach(function(it){tx+=it.qty+"x "+it.name+" ("+fmt(it.qty*it.price)+"), "});
+  var d=SALE.delivery||{};
+  var endereco="Província: "+d.province+"\nMunicípio: "+d.municipality+"\nBairro: "+d.neighborhood+"\nRua: "+d.street+(d.reference?"\nReferência: "+d.reference:"");
+  var msg="✅ PAGAMENTO COMPROVADO ✓\n\nOlá! Comprei no Ya o bisno e o pagamento já foi validado pela loja.\n\n—— ITENS ——\n"+tx+"\nTotal: "+fmt(sum)+"\nProteção (5%): "+fmt(Math.round(sum*0.05))+", Total pago: "+fmt(SALE.amount)+"\n\n—— MORADA DE ENTREGA ——\n"+endereco+"\n\n—— COMPRADOR ——\nNome: "+(u?u.name:'')+"\nTel: "+(u?u.phone:'')+"\nEmail: "+(u?u.email:'')+"\n\nRef: "+SALE.ref;
+  return "https://wa.me/351920488724?text="+encodeURIComponent(msg);
+}
+function openWhatsApp(){
+  try{window.open(waUrl(),"_blank")}catch(e){toast("Abre o WhatsApp para finalizar")}
+}
+
+/* Upload / compressão */
+function pickFile(f){
+  if(!f)return;
+  if(!f.type||f.type.indexOf("image")!==-1){
+    downscale(f,function(b64){
+      receiptImage=b64;
+      byId("previewImg").src=b64;
+      byId("previewBox").style.display='block';
+      byId("sendBtn").style.display='flex';
+    });
+  }else toast("Escolhe uma imagem");
+}
+function downscale(file,cb){
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=1000;
+      var scale=Math.min(1,MAX/Math.max(img.width,img.height));
+      var w=Math.round(img.width*scale),h=Math.round(img.height*scale);
+      var cv=document.createElement("canvas");
+      cv.width=w;cv.height=h;
+      cv.getContext("2d").drawImage(img,0,0,w,h);
+      cb(cv.toDataURL("image/jpeg",0.8));
+    };
+    img.onerror=function(){toast("Não foi possível ler a imagem");cb(null)};
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function sendReceipt(){
+  if(!receiptImage)return;
+  var btn=byId("sendBtn");
+  var sendingEl=byId("sending"),waitEl=byId("waitingBox");
+  btn.style.display='none';
+  sendingEl.style.display='flex';
+  var texto=byId("receiptText").value.trim();
+  API.sendComprovativo(SALE.ref,receiptImage,texto).then(function(r){
+    sendingEl.style.display='none';
+    if(r&&r.ok){
+      toast("Comprovativo enviado! A aguardar validação.");
+      SALE.has_comprovativo=true;SALE.status=r.status||'pendente';
+      applyStatus();
+      if(String(SALE.status||'')!=='pago')startPoll();
+    }else{
+      btn.style.display='flex';
+      toast((r&&r.error)||'Falha ao enviar comprovativo');
+    }
+  }).catch(function(){
+    sendingEl.style.display='none';btn.style.display='flex';
+    toast('Erro de ligação ao enviar');
+  });
+}
+
+function loadAccountDetails(){
+  API.getSettings().then(function(r){
+    var body=byId("accountBody");
+    var v=(r&&r.settings&&r.settings.pagamento_detalhes)||'';
+    if(!v||!String(v).trim()){
+      body.textContent='Fala com a loja no WhatsApp para saberes a conta para pagamento.';
+    }else{
+      body.textContent='Paga o total de '+fmt(SALE.amount)+' para a conta abaixo e anexa a seguir o comprovativo.\n\n'+v;
+    }
+  }).catch(function(){});
+}
+
+function init(){
+  var ref=qp("ref");
+  if(!ref){
+    byId("errorMsg").textContent='Falta a referência da encomenda.';
+    showView();byId("errorBox").style.display='block';byId("accountCard").style.display='none';byId("uploadCard").style.display='none';
+    return;
+  }
+  API.getSale(ref).then(function(r){
+    if(!r||!r.ok){
+      byId("errorMsg").textContent=(r&&r.error)||'Encomenda não encontrada.';
+      showView();byId("errorBox").style.display='block';byId("accountCard").style.display='none';byId("uploadCard").style.display='none';
+      return;
+    }
+    SALE=r;
+    renderSimpl();
+    loadAccountDetails();
+    applyStatus();
+    if(String(r.status||'')==='pendente'&&!r.has_comprovativo)startPoll();
+  }).catch(function(){
+    byId("errorMsg").textContent='Erro de ligação. Tenta de novo.';
+    showView();byId("errorBox").style.display='block';byId("accountCard").style.display='none';byId("uploadCard").style.display='none';
+  });
+}
+
+var dz=byId("dropZone");
+function bindEvents(){
+  var fi=byId("fileInput");
+  fi.onchange=function(){pickFile(fi.files&&fi.files[0])};
+  if(dz){
+    dz.addEventListener("dragover",function(e){e.preventDefault();dz.classList.add("drag-over")});
+    dz.addEventListener("dragleave",function(){dz.classList.remove("drag-over")});
+    dz.addEventListener("drop",function(e){
+      e.preventDefault();dz.classList.remove("drag-over");
+      pickFile(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]);
+    });
+  }
+  byId("sendBtn").onclick=sendReceipt;
+  try{
+    var u=JSON.parse(localStorage.getItem("yabisno_user"));
+    if(!u){toast("Sessão terminada. Faz login e reabre o comprovativo.")}
+  }catch(e){}
+}
+bindEvents();
+init();
+</script>
+</body>
+</html>

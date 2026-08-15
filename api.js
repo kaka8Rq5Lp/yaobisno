@@ -120,6 +120,18 @@ var API = (function(){
   function recordWhatsappOrder(data){
     return api('/api/sales/whatsapp', {method:'POST', body:data});
   }
+  function getSale(ref){
+    return api('/api/sale/'+encodeURIComponent(ref));
+  }
+  function sendComprovativo(ref, image, texto){
+    return api('/api/sales/'+encodeURIComponent(ref)+'/comprovativo', {method:'POST', body:{image:image, texto:texto||''}});
+  }
+  function getSettings(){
+    return api('/api/settings');
+  }
+  function saveSettings(data){
+    return api('/api/admin/settings', {method:'PUT', body:data});
+  }
 
   // ─── Admin (painel separado) ──────────────────────────────────────
 
@@ -179,6 +191,10 @@ var API = (function(){
     getPayment: getPayment,
     refreshPayment: refreshPayment,
     recordWhatsappOrder: recordWhatsappOrder,
+    getSale: getSale,
+    sendComprovativo: sendComprovativo,
+    getSettings: getSettings,
+    saveSettings: saveSettings,
     adminLogin: adminLogin,
     adminMe: adminMe,
     listAdmins: listAdmins,

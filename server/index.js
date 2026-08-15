@@ -722,6 +722,79 @@ app.post('/api/sales/whatsapp', authRequired, async (req, res) => {
   } catch (e) { console.error('[whatsapp sale] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
+// Estado da venda para o cliente (usado pela página do comprovativo)
+app.get('/api/sale/:ref', authRequired, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM payments WHERE ref=?', [req.params.ref]);
+    if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
+    const p = rows[0];
+    if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
+      return res.status(403).json({ ok: false, error: 'Acesso negado' });
+    let items = [];
+    try { items = JSON.parse(p.items || '[]'); } catch (_) { items = []; }
+    let delivery = {};
+    try { delivery = JSON.parse(p.delivery || '{}'); } catch (_) { delivery = {}; }
+    res.json({
+      ok: true,
+      ref: p.ref,
+      mobile: p.mobile,
+      amount: Number(p.amount),
+      items: items,
+      delivery: delivery,
+      status: p.status,
+      status_reason: p.status_reason || null,
+      has_comprovativo: !!(p.comprovativo),
+      created_at: p.created_at
+    });
+  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
+// Receptor do comprovativo — o cliente anexa a foto/ID do pagamento
+app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
+  try {
+    const { image, texto } = req.body;
+    if (!image || typeof image !== 'string' || image.length > 5 * 1024 * 1024)
+      return res.json({ ok: false, error: 'Comprovativo inválido ou demasiado grande' });
+    const key = 'comprovativo:' + String(req.auth.email).toLowerCase() + ':' + req.params.ref;
+    if (!rateLimit(key, 12, 15 * 60 * 1000).allowed)
+      return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tenta de novo dentro de 15 minutos.' });
+    const [rows] = await db.query('SELECT id,buyer_email,status FROM payments WHERE ref=?', [req.params.ref]);
+    if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
+    const p = rows[0];
+    if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
+      return res.status(403).json({ ok: false, error: 'Acesso negado' });
+    if (String(p.status) === 'pago')
+      return res.json({ ok: false, error: 'Pagamento já validado' });
+    const extra = texto && typeof texto === 'string' ? texto.slice(0, 500) : null;
+    await db.query("UPDATE payments SET comprovativo=?, status='pago', status_reason='comprovativo recebido' WHERE id=?",
+      [JSON.stringify({ image: image, texto: extra, at: new Date().toISOString() }), p.id]);
+    res.json({ ok: true, status: 'pago' });
+  } catch (e) { console.error('[comprovativo] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
+// Detalhes de pagamento da loja (público — página do comprovativo)
+app.get('/api/settings', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT skey,svalue FROM settings');
+    const out = {};
+    for (const r of rows) out[r.skey] = r.svalue;
+    res.json({ ok: true, settings: out });
+  } catch (e) { res.status(500).json({ ok: false, settings: {} }); }
+});
+
+app.put('/api/admin/settings', authAdmin, async (req, res) => {
+  try {
+    const allowed = ['pagamento_detalhes'];
+    for (const k of allowed) {
+      if (req.body[k] !== undefined) {
+        const v = typeof req.body[k] === 'string' ? req.body[k].slice(0, 4000) : '';
+        await db.query('INSERT INTO settings (skey,svalue) VALUES (?,?) ON DUPLICATE KEY UPDATE svalue=VALUES(svalue)', [k, v]);
+      }
+    }
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ ok: false }); }
+});
+
 // ─── Admin ─────────────────────────────────────────────────────────
 
 app.delete('/api/admin/user/:email', authAdmin, async (req, res) => {
@@ -790,7 +863,7 @@ app.get('/api/admin/cart', authAdmin, async (req, res) => {
 
 app.get('/api/admin/sales', authAdmin, async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM payments WHERE status IN ('accepted','finalizado','vendido','concluido','pendente') ORDER BY id DESC");
+    const [rows] = await db.query("SELECT * FROM payments WHERE status IN ('accepted','finalizado','vendido','concluido','pendente','pago') ORDER BY id DESC");
     const out = [];
     for (const p of rows) {
       let items = [];
@@ -817,6 +890,8 @@ app.get('/api/admin/sales', authAdmin, async (req, res) => {
         status: p.status,
         method: p.method || 'mcx',
         delivery: delivery,
+        has_comprovativo: !!(p.comprovativo),
+        comprovativo: (function(){try{return p.comprovativo ? JSON.parse(p.comprovativo) : null}catch(_){return null}})(),
         created_at: p.created_at
       });
     }
@@ -977,6 +1052,14 @@ async function initDB() {
     if (!payCols.includes('delivery')) {
       await db.query(`ALTER TABLE payments ADD COLUMN delivery TEXT`);
     }
+    if (!payCols.includes('comprovativo')) {
+      await db.query(`ALTER TABLE payments ADD COLUMN comprovativo LONGTEXT`);
+    }
+    await db.query(`CREATE TABLE IF NOT EXISTS settings (
+      skey VARCHAR(64) PRIMARY KEY,
+      svalue LONGTEXT,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`);
     // admin auto: promoção via env
     if (process.env.ADMIN_EMAIL) {
       const [r] = await db.query('UPDATE users SET role=? WHERE email=? AND (role IS NULL OR role != ?)', ['admin', process.env.ADMIN_EMAIL, 'admin']);

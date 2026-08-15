@@ -369,7 +369,7 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
         <div class="space-y-2 pt-1">
           <button type="button" id="payMCXBtn" onclick="payWithMCX()" class="w-full h-[39px] rounded-[12px] bg-[#0F3D2E] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#0C3226] transition shadow-[0_8px_20px_rgba(15,61,46,0.25)]"><i class="fa-solid fa-mobile-screen-button"></i> Pagar com Multicaixa Express</button>
 
-          <button type="submit" id="btnZap" class="w-full h-[39px] rounded-[12px] bg-[#FF5F1F] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#E8541B] transition shadow-[0_8px_20px_rgba(255,95,31,0.25)]"><i class="fa-brands fa-whatsapp text-[16px]"></i> Finalizar no WhatsApp</button>
+          <button type="submit" id="btnZap" class="w-full h-[39px] rounded-[12px] bg-[#FF5F1F] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#E8541B] transition shadow-[0_8px_20px_rgba(255,95,31,0.25)]"><i class="fa-brands fa-whatsapp text-[16px]"></i> Encomendar e enviar comprovativo</button>
 
           <div class="flex items-center justify-center gap-3 pt-0.5">
             <span class="text-[10px] text-[#9CA3AF]"><i class="fa-solid fa-shield-halved mr-1"></i>Pagamento 100% seguro</span>
@@ -943,15 +943,22 @@ function handleCheckout(e){
     closeModal("checkoutModal");
     try{window.open("https://wa.me/351920488724?text="+encodeURIComponent(msg),"_blank")}catch(ex){toast("Abre o WhatsApp para finalizar")}
   }
+  function openComprovativo(ref){
+    closeModal("checkoutModal");
+    var url="comprovativo.html?ref="+encodeURIComponent(ref);
+    var w=null;
+    try{w=window.open(url,"_blank")}catch(ex){w=null}
+    if(!w)try{w=window.open(url,"_self")}catch(ex){}
+    if(!w)toast("Abre o link: "+url);
+  }
   function clearCartNow(){
     cart=[];syncLocal();updateCart();API.clearCart(u.email);
   }
   function done(){if(btnZ)btnZ.disabled=false}
   if(typeof API.recordWhatsappOrder==="function"){
     API.recordWhatsappOrder({mobile:u.phone||"",amount:amount,items:items,delivery:delivery}).then(function(r){
-      openWa();
-      if(r&&r.ok){clearCartNow();}
-      else toast("Encomenda enviada no WhatsApp, mas não foi gravada no servidor. Tenta de novo.");
+      if(r&&r.ok&&r.ref){clearCartNow();openComprovativo(r.ref);}
+      else{openWa();toast("Encomenda enviada no WhatsApp, mas não foi gravada no servidor. Tenta de novo.");}
       done();
     }).catch(function(){
       openWa();
