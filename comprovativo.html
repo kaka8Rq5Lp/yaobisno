@@ -262,6 +262,13 @@ function waUrl(){
 }
 function openWhatsApp(){
   try{window.open(waUrl(),"_blank")}catch(e){toast("Abre o WhatsApp para finalizar")}
+  setTimeout(function(){leavePaymentPage()},400);
+}
+function leavePaymentPage(){
+  try{
+    if(window.opener&&!window.opener.closed){window.close();return}
+  }catch(e){}
+  window.location.href='main.html';
 }
 
 /* Upload / compressão — aceita imagens e PDF */
