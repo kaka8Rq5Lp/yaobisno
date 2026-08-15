@@ -766,7 +766,7 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
     if (String(p.status) === 'pago')
       return res.json({ ok: false, error: 'Pagamento já validado' });
     const extra = texto && typeof texto === 'string' ? texto.slice(0, 500) : null;
-    await db.query("UPDATE payments SET comprovativo=?, status='pago', status_reason='comprovativo recebido' WHERE id=?",
+    await db.query("UPDATE payments SET comprovativo=?, status='pago', status_reason='comprovativo' WHERE id=?",
       [JSON.stringify({ image: image, texto: extra, at: new Date().toISOString() }), p.id]);
     res.json({ ok: true, status: 'pago' });
   } catch (e) { console.error('[comprovativo] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
