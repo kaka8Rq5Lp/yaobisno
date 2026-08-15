@@ -936,7 +936,7 @@ app.post('/api/admin/sales/:ref/confirm', authAdmin, async (req, res) => {
 
 app.delete('/api/admin/sales/:ref', authAdmin, async (req, res) => {
   try {
-    const [r] = await db.query('DELETE FROM payments WHERE ref=? AND method=?', [req.params.ref, 'whatsapp']);
+    const [r] = await db.query('DELETE FROM payments WHERE ref=?', [req.params.ref]);
     res.json({ ok: true, deleted: r.affectedRows > 0 });
   } catch (e) { console.error('[admin delete sale] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro ao remover' }); }
 });
