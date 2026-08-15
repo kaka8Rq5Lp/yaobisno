@@ -768,7 +768,7 @@ function exportPdf(){
         doc.text('Gerado em '+new Date().toLocaleString('pt-PT')+' · Total: '+d.rows.length,14,23);
         var head, body;
         if(isUsers){
-          head=[['#','Nome','Email','Telefone','Tipo','Verif.','Criado em']];
+          head=[['#','Nome','Email','Telefone','Tipo','Verif.','Registo']];
           body=d.rows.map(function(r,i){return [i+1,String(r.name||''),String(r.email||''),String(r.phone||''),String(r.role||''),r.verified?'Sim':'Não',String(r.created_at||'').slice(0,10)]});
         }else{
           head=[['Ref','Cliente','Telefone','Valor (Kz)','Status','Método','Fatura','Data','Comp.']];

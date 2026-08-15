@@ -870,7 +870,7 @@ app.get('/api/admin/products', authAdmin, async (req, res) => {
 
 app.get('/api/admin/users', authAdmin, async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT id,name,email,phone,role,verified,province,municipality,neighborhood FROM users ORDER BY id');
+    const [rows] = await db.query('SELECT id,name,email,phone,role,verified,province,municipality,neighborhood,created_at FROM users ORDER BY id');
     res.json(rows);
   } catch (e) { res.status(500).json([]); }
 });
@@ -1161,6 +1161,9 @@ async function initDB() {
     const userCols = cols[0].map(c => c.COLUMN_NAME);
     if (!userCols.includes('verified')) {
       await db.query(`ALTER TABLE users ADD COLUMN verified TINYINT(1) DEFAULT 1 AFTER role`);
+    }
+    if (!userCols.includes('created_at')) {
+      await db.query(`ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
     }
     const pCols = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products'`);
     const prodCols = pCols[0].map(c => c.COLUMN_NAME);
