@@ -774,7 +774,7 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
     const key = 'comprovativo:' + String(req.auth.email).toLowerCase() + ':' + req.params.ref;
     if (!rateLimit(key, 12, 15 * 60 * 1000).allowed)
       return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tenta de novo dentro de 15 minutos.' });
-    const [rows] = await db.query('SELECT id,buyer_email,status,amount FROM payments WHERE ref=?', [req.params.ref]);
+    const [rows] = await db.query('SELECT id,buyer_email,status,amount,fatura FROM payments WHERE ref=?', [req.params.ref]);
     if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
     const p = rows[0];
     if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
@@ -782,7 +782,7 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
     if (String(p.status) === 'pago')
       return res.json({ ok: false, error: 'Pagamento já validado' });
     const t = (req.body && typeof req.body.texto === 'object') ? (req.body.texto || {}) : {};
-    const fatura = String(t.fatura || p.fatura || '').trim().slice(0, 80);
+    const fatura = String(p.fatura || t.fatura || '').trim().slice(0, 80);
     const iban = String(t.iban || '').replace(/\s+/g, '').toUpperCase().slice(0, 40);
     const valor = Number(t.valor);
     const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);

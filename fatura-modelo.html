@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Modelo de Fatura / Comprovativo — Ya o bisno</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:#e8e6e1;padding:24px 12px;display:flex;flex-direction:column;align-items:center;gap:18px}
+  .page{background:#fff;width:100%;max-width:420px;padding:28px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111;padding-bottom:14px;margin-bottom:14px}
+  .logo{font-weight:800;font-size:18px}
+  .logo small{display:block;font-weight:400;font-size:11px;color:#777}
+  .meta{text-align:right;font-size:11px;color:#444;line-height:1.5}
+  .rec{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#c0392b}
+  h2{font-size:20px;margin:14px 0 4px}
+  .sub{font-size:11px;color:#777;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px}
+  th{text-align:left;font-size:10px;text-transform:uppercase;color:#888;border-bottom:1px solid #ddd;padding:6px 4px}
+  td{padding:8px 4px;border-bottom:1px dotted #ddd}
+  .totals{margin-top:10px;text-align:right;font-size:12px;line-height:1.8}
+  .totals .grand{font-size:17px;font-weight:800;color:#c0392b}
+  .paga{display:flex;align-items:center;gap:8px;background:#f3fbf5;border:1px solid #9fdcb4;border-radius:10px;padding:10px 12px;margin:14px 0;font-size:12px;font-weight:700;color:#1a7f37}
+  .iban{background:#f5f4f0;border-radius:8px;padding:10px;font-family:Consolas,monospace;font-size:13px;text-align:center;margin:10px 0;line-height:1.6}
+  .iban b{display:block;color:#1a1a1a}
+  .iban small{font-family:'Segoe UI',system-ui;font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px}
+  .note{font-size:10px;color:#999;text-align:center;margin-top:14px;line-height:1.5}
+  .tag{display:inline-block;background:#111;color:#fff;font-size:10px;padding:3px 8px;border-radius:999px;margin-top:4px}
+  .btn{display:inline-block;background:#FF6B00;color:#fff;border:none;border-radius:999px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
+  .btn.ghost{background:#eee;color:#333}
+  .info{background:#fff8ee;border:1px solid #f2d9a9;border-radius:10px;padding:12px;font-size:12px;line-height:1.6;color:#7a4a10;max-width:420px;width:100%}
+  .info b{color:#c0392b}
+</style>
+</head>
+<body>
+
+<div class="page" id="fatPage">
+  <div class="head">
+    <div class="logo">Ya o bisno <small>Marketplace · Luanda, Angola</small></div>
+    <div class="meta">
+      <div class="rec">RECIBO / FATURA</div>
+      Nº <b id="fNum">FT2026-0001</b><br>
+      Data: <span id="fDate">15/08/2026 10:30</span>
+    </div>
+  </div>
+
+  <div class="paga">✓ PAGAMENTO COMPROVADO (AUTOMÁTICO)</div>
+
+  <h2>Detalhes da operação</h2>
+  <div class="sub">Comprovativo de transferência emitido pelo banco</div>
+
+  <table>
+    <tr><th>Nº da fatura/recibo</th><th>Valor</th></tr>
+    <tr><td id="tFatura">FT2026-0001</td><td id="tValor" style="font-weight:800">525 Kz</td></tr>
+  </table>
+
+  <div class="iban">
+    <small>IBAN da conta para pagamento</small>
+    <b id="tIban">AO06 0000 0000 0000 0000 0000 1</b>
+  </div>
+
+  <table>
+    <tr><th>Descrição</th><th>Qtd</th><th>Total</th></tr>
+    <tr><td>Camisola Ya o bisno (teste)</td><td>1</td><td>500 Kz</td></tr>
+  </table>
+
+  <div class="totals">
+    Subtotal: 500 Kz<br>
+    Proteção (5%): 25 Kz<br>
+    <span class="grand">TOTAL: 525 Kz</span>
+  </div>
+
+  <div class="note">
+    Este documento é um M O D E L O para testar a aceitação do comprovativo.<br>
+    Abre <b>comprovativo.html?ref=REF_DA_VENDA</b> e usa estes dados.
+  </div>
+</div>
+
+<div class="info" id="help">
+  <b>Como simular no site:</b>
+  <ol style="padding-left:16px;margin-top:6px">
+    <li>Faz logout e entra na loja — faz a tua encomenda até à página Comprovativo.</li>
+    <li>Anexa uma foto deste documento (faz print / screenshot).</li>
+    <li>Preenche no site: <b>Nº Fatura</b> = <span id="hF">FT2026-0001</span> · <b>IBAN</b> = <span id="hI">AO06000000000000000000001</span></li>
+    <li>O <b>Valor</b> vem preenchido com o total da encomenda — não o mudes.</li>
+    <li>Clica em Enviar → o pagamento deve passar a <span style="color:#1a7f37"><b>PAGO</b></span>.</li>
+  </ol>
+</div>
+
+<div style="display:flex;gap:10px">
+  <button class="btn ghost" onclick="window.print()">Imprimir / PDF</button>
+  <button class="btn" onclick="downloadTxt()">Baixar dados (TXT)</button>
+</div>
+
+<script>
+function downloadTxt(){
+  var txt=[
+    'FATURA / RECIBO — Ya o bisno (MODELO DE TESTE)',
+    '',
+    'Nº da fatura: '+(byId('fNum').textContent),
+    'Data: '+byId('fDate').textContent,
+    'IBAN: '+byId('tIban').textContent.replace(/\s/g,''),
+    'Valor: '+byId('tValor').textContent,
+    '',
+    'Usa estes 3 dados na página do comprovativo.'
+  ].join('\n');
+  var a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
+  a.download='fatura-modelo.txt';a.click();
+}
+function byId(id){return document.getElementById(id)}
+</script>
+</body>
+</html>
