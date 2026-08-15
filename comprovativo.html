@@ -272,6 +272,15 @@ function leavePaymentPage(){
   window.location.href='main.html';
 }
 
+/* Scroll automático até ao botão "Enviar comprovativo" após anexar o ficheiro */
+function scrollToSend(){
+  var sb=byId("sendBtn");if(!sb)return;
+  var t=sb.getBoundingClientRect().top+window.pageYOffset||(window.scrollY||0);
+  var y=t-(window.innerHeight*.32);
+  if(y<0)y=0;
+  try{window.scrollTo({top:y,behavior:"smooth"})}catch(e){window.scrollTo(0,y)}
+}
+
 /* Upload / compressão — aceita imagens e PDF */
 function pickFile(f){
   if(!f)return;
@@ -288,6 +297,7 @@ function pickFile(f){
       byId("previewPdf").style.display='flex';
       byId("previewBox").style.display='block';
       byId("sendBtn").style.display='flex';
+      scrollToSend();
     };
     reader.readAsDataURL(f);
     return;
@@ -298,6 +308,7 @@ function pickFile(f){
       byId("previewImg").src=b64;
       byId("previewBox").style.display='block';
       byId("sendBtn").style.display='flex';
+      scrollToSend();
     });
   }else toast("Escolhe uma imagem");
 }
