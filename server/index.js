@@ -726,11 +726,11 @@ app.post('/api/sales/whatsapp', authRequired, async (req, res) => {
     if (list.length === 0) return res.json({ ok: false, error: 'Cesto vazio' });
     const val = Number(amount);
     if (!val || val <= 0) return res.json({ ok: false, error: 'Montante inválido' });
-    const ref = 'YAWA' + Date.now().toString(36).toUpperCase() + crypto.randomInt(100, 999);
     const fatura = await nextFatura();
+    const ref = fatura;
     await db.query('INSERT INTO payments (ref,buyer_email,mobile,amount,items,status,status_reason,method,delivery,fatura) VALUES (?,?,?,?,?,?,?,?,?,?)',
       [ref, req.auth.email, String(mobile || ''), val, JSON.stringify(list), 'pendente', 'aguarda confirmacao', 'whatsapp', JSON.stringify(delivery || {}), fatura]);
-    res.json({ ok: true, ref });
+    res.json({ ok: true, ref, fatura });
   } catch (e) { console.error('[whatsapp sale] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 

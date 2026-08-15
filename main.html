@@ -961,7 +961,12 @@ function handleCheckout(e){
   function done(){if(btnZ)btnZ.disabled=false}
   if(typeof API.recordWhatsappOrder==="function"){
     API.recordWhatsappOrder({mobile:u.phone||"",amount:amount,items:items,delivery:delivery}).then(function(r){
-      if(r&&r.ok&&r.ref){clearCartNow();openComprovativo(r.ref);}
+      if(r&&r.ok&&r.ref){
+        clearCartNow();
+        msg+="\n\n—— REFERÊNCIA DO PAGAMENTO ——\nReferência (nº da fatura): "+r.ref+"\nUsa esta referência ao fazeres o pagamento e anexa o comprovativo no link.";
+        openWa();
+        openComprovativo(r.ref);
+      }
       else{openWa();toast("Encomenda enviada no WhatsApp, mas não foi gravada no servidor. Tenta de novo.");}
       done();
     }).catch(function(){

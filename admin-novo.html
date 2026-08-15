@@ -537,9 +537,9 @@ function renderSales(){
         +'<td style="font-size:12px;color:#8a8578">'+esc(s.mobile||'—')+'</td>'
         +'<td><span class="t-price">'+fmt(s.amount)+'</span></td>'
         +'<td style="font-size:12px;color:#8a8578">'+esc(fmtMorada(s.delivery)||'—')+'</td>'
-        +'<td>'+(isPaid
-            ?(comp?'<span class="badge paid" style="margin-right:6px">Pago</span><button class="btn second" style="padding:3px 10px;font-size:10.5px" onclick="viewReceipt(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-image"></i> Ver</button>':'<span class="badge paid">Pago</span>')
-            :'<span class="badge warn"><i class="fa-solid fa-clock"></i>A aguardar anexo</span>')+'</td>'
+        +'<td>'+(comp
+            ?'<span class="badge '+(isPaid?'paid':'warn')+'" style="margin-right:6px">'+(isPaid?'Pago':'Comprovativo')+'</span><button class="btn second" style="padding:3px 10px;font-size:10.5px" onclick="viewReceipt(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-image"></i> Ver</button>'
+            :(isPaid?'<span class="badge paid">Pago</span>':'<span class="badge warn"><i class="fa-solid fa-clock"></i>A aguardar anexo</span>'))+'</td>'
         +'<td style="font-size:12px;color:#8a8578">'+saleDate(s.created_at)+'</td>'
         +'<td>'+(isPaid
             ?'<button class="btn" style="margin-right:6px" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>Validar</button>'
