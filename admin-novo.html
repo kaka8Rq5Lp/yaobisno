@@ -210,6 +210,7 @@ tbody tr.row:hover{background:#fffaf5}
       <button class="side-tab active" data-tab="kpis" onclick="setTab('kpis')"><i class="fa-solid fa-gauge-high"></i>Painel</button>
       <button class="side-tab" data-tab="users" onclick="setTab('users')"><i class="fa-solid fa-users"></i>Users<span class="cnt" id="cntUsers">0</span></button>
       <button class="side-tab" data-tab="products" onclick="setTab('products')"><i class="fa-solid fa-box-open"></i>Produtos<span class="cnt" id="cntProducts">0</span></button>
+      <button class="side-tab" data-tab="sales" onclick="setTab('sales')"><i class="fa-solid fa-circle-check"></i>Vendas<span class="cnt" id="cntSales">0</span></button>
       <button class="side-tab" data-tab="chats" onclick="setTab('chats')"><i class="fa-solid fa-comment-dots"></i>Chats<span class="cnt" id="cntChats">0</span></button>
       <button class="side-tab" data-tab="cart" onclick="setTab('cart')"><i class="fa-solid fa-cart-shopping"></i>Carrinho<span class="cnt" id="cntCart">0</span></button>
     </div>
@@ -356,7 +357,7 @@ function loadAll(){
   req('/api/admin/products').then(function(d){products=d||[];byId('cntProducts').textContent=products.length;if(activeTab==='products')renderProducts();if(activeTab==='kpis')renderKpis()});
   req('/api/admin/chats').then(function(d){chats=d||[];byId('cntChats').textContent=chats.length;if(activeTab==='chats')renderChats();refreshDrawerChat()});
   req('/api/admin/cart').then(function(d){cart=d||[];byId('cntCart').textContent=cart.length;if(activeTab==='cart')renderCart()});
-  req('/api/admin/sales').then(function(d){sales=(d&&d.sales)||[];if(activeTab==='kpis')renderKpis()});
+  req('/api/admin/sales').then(function(d){sales=(d&&d.sales)||[];byId('cntSales').textContent=sales.length;if(activeTab==='kpis')renderKpis();if(activeTab==='sales')renderSales()});
 }
 function refreshDrawerChat(){
   var el=document.querySelector('.drawer-body');
@@ -475,7 +476,7 @@ function renderKpis(){
 function setTab(t){
   activeTab=t;
   document.querySelectorAll('.side-tab').forEach(function(x){x.classList.toggle('active',x.dataset.tab===t)});
-  var ttl={kpis:['Painel de Controlo','Visão geral da plataforma'],users:['Users','Gestão de utilizadores'],products:['Produtos','Aprovação e gestão de anúncios'],chats:['Chats','Conversas entre compradores e vendedores'],cart:['Carrinho','Itens adicionados ao carrinho']};
+  var ttl={kpis:['Painel de Controlo','Visão geral da plataforma'],users:['Users','Gestão de utilizadores'],products:['Produtos','Aprovação e gestão de anúncios'],sales:['Vendas','Vendas pendentes e finalizadas'],chats:['Chats','Conversas entre compradores e vendedores'],cart:['Carrinho','Itens adicionados ao carrinho']};
   var tk=ttl[t]||ttl.kpis;
   byId('tbTitle').textContent=tk[0];
   byId('tbCrumb').textContent=tk[1];
@@ -503,6 +504,7 @@ function renderTab(){
   if(activeTab==='kpis')renderKpis();
   else if(activeTab==='users')renderUsers();
   else if(activeTab==='products')renderProducts();
+  else if(activeTab==='sales')renderSales();
   else if(activeTab==='chats')renderChats();
   else renderCart();
 }
