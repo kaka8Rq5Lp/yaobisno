@@ -941,6 +941,108 @@ app.delete('/api/admin/sales/:ref', authAdmin, async (req, res) => {
   } catch (e) { console.error('[admin delete sale] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro ao remover' }); }
 });
 
+// ─── Importar dados no admin (users e vendas) ──────────────────────
+function parseRowValue(v, target) {
+  if (v === undefined || v === null || v === '') return target === 'arr' ? [] : (target === 'obj' ? {} : null);
+  if (typeof v === 'string') {
+    if (target === 'str') return v;
+    try { return JSON.parse(v); } catch (_) {
+      return target === 'arr'
+        ? String(v.split(',')).replace(/^\[|\]$/g, '').split(',').map(x => x.trim()).filter(Boolean)
+        : {};
+    }
+  }
+  return target === 'arr' ? (Array.isArray(v) ? v : []) : (target === 'obj' ? (typeof v === 'object' ? v : {}) : v);
+}
+
+app.post('/api/admin/import', authAdmin, async (req, res) => {
+  try {
+    const { kind, rows } = req.body || {};
+    const list = Array.isArray(rows) ? rows : [];
+    if (!kind || !list.length) return res.json({ ok: false, error: 'Sem dados para importar' });
+    const MAX_ROW = 2000;
+    if (list.length > MAX_ROW) return res.json({ ok: false, error: 'Máximo de ' + MAX_ROW + ' registos por importação' });
+    let ins = 0, upd = 0, errs = 0;
+
+    if (kind === 'users') {
+      for (const raw of list) {
+        try {
+          const email = String(raw.email || raw.Email || raw.EMAIL || '').trim().toLowerCase();
+          const name = String(raw.name || raw.Name || raw.nome).trim();
+          if (!email || !name) { errs++; continue; }
+          const phone = String(raw.phone || raw.Phone || raw.telefone || '').trim().slice(0, 50);
+          const role = String(raw.role || raw.Role || raw.tipo || 'comprador').trim().slice(0, 50);
+          const password = String(raw.password || raw.Password || '');
+          const [ex] = await db.query('SELECT id FROM users WHERE email=?', [email]);
+          if (ex.length) {
+            await db.query('UPDATE users SET name=?, phone=?, role=? WHERE id=?', [name, phone, role, ex[0].id]);
+            upd++;
+          } else {
+            const finalPass = password.length >= 6 ? password : 'yaobisno' + String(crypto.randomInt(1000, 9999));
+            const hash = await bcrypt.hash(finalPass, 10);
+            await db.query('INSERT INTO users (name,email,phone,password,role) VALUES (?,?,?,?,?)', [name, email, phone, hash, role]);
+            ins++;
+          }
+        } catch (e) { errs++; }
+      }
+    } else if (kind === 'sales') {
+      for (const raw of list) {
+        try {
+          const ref = String(raw.ref || raw.Ref || '').trim();
+          const buyer_email = String(raw.buyer_email || raw.email || raw.Email || '').trim().toLowerCase();
+          const mobile = String(raw.mobile || raw.phone || raw.Phone || raw.telefone || '').trim().slice(0, 20);
+          const amount = Number(raw.amount || raw.valor || 0);
+          if (!buyer_email || !amount || amount <= 0) { errs++; continue; }
+          const rowsArr = parseRowValue(raw.items, 'arr');
+          if (raw.product_id && !rowsArr.length) rowsArr.push({ id: Number(raw.product_id) || null, name: raw.product_name || 'Produto', price: amount, qty: 1 });
+          const delivery = parseRowValue(raw.delivery, 'obj');
+          const status = String(raw.status || raw.Status || 'finalizado').trim().slice(0, 20);
+          const method = String(raw.method || raw.Método || raw.Metodo || (status === 'pendente' ? 'whatsapp' : 'mcx')).trim().slice(0, 20);
+          const finalRef = ref || ('IMP' + Date.now().toString(36).toUpperCase() + crypto.randomInt(100, 999));
+          const now = new Date();
+          const created = raw.created_at || raw.data ? new Date(String(raw.created_at || raw.data)) : now;
+          const createdSql = isNaN(created.getTime()) ? now : created;
+          const [ex] = await db.query('SELECT id FROM payments WHERE ref=?', [finalRef]);
+          const values = [finalRef, buyer_email, mobile, amount, JSON.stringify(rowsArr), status, method, JSON.stringify(delivery)];
+          if (ex.length) {
+            await db.query("UPDATE payments SET buyer_email=?, mobile=?, amount=?, items=?, status=?, method=?, delivery=?, status_reason='importado' WHERE id=?", [...values, ex[0].id]);
+            upd++;
+          } else {
+            await db.query('INSERT INTO payments (ref,buyer_email,mobile,amount,items,status,method,delivery) VALUES (?,?,?,?,?,?,?,?)', values);
+            ins++;
+          }
+        } catch (e) { errs++; }
+      }
+    } else {
+      return res.json({ ok: false, error: 'Tipo inválido (users|sales)' });
+    }
+    res.json({ ok: true, inserted: ins, updated: upd, errors: errs, total: list.length });
+  } catch (e) { console.error('[admin import] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro ao importar' }); }
+});
+
+// ─── Exportar dados do admin (users e vendas) ──────────────────────
+app.get('/api/admin/export/:kind', authAdmin, async (req, res) => {
+  try {
+    const kind = req.params.kind;
+    if (kind === 'users') {
+      const [rows] = await db.query('SELECT id,name,email,phone,role,verified,created_at FROM users ORDER BY id');
+      return res.json({ ok: true, kind: 'users', rows });
+    }
+    if (kind === 'sales') {
+      const [rows] = await db.query("SELECT id,ref,buyer_email,mobile,amount,items,status,method,delivery,fatura,comprovativo,created_at FROM payments ORDER BY id");
+      const out = rows.map(p => ({
+        id: p.id, ref: p.ref, buyer_email: p.buyer_email, mobile: p.mobile,
+        amount: Number(p.amount), status: p.status, method: p.method,
+        items: (function(){try{return JSON.parse(p.items||'')}catch(_){return []}})(),
+        delivery: (function(){try{return JSON.parse(p.delivery||'')}catch(_){return {}}})(),
+        fatura: p.fatura || null, created_at: p.created_at, has_comprovativo: !!p.comprovativo
+      }));
+      return res.json({ ok: true, kind: 'sales', rows: out });
+    }
+    res.json({ ok: false, error: 'Tipo inválido (users|sales)' });
+  } catch (e) { res.status(500).json({ ok: false, error: 'Erro ao exportar' }); }
+});
+
 app.get('/api/admin/stats', authAdmin, async (req, res) => {
   try {
     const [u] = await db.query('SELECT COUNT(*) AS c FROM users');

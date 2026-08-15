@@ -233,6 +233,7 @@ button.btn.second:hover{background:#e6e4db}
       <button class="side-tab" data-tab="chats" onclick="setTab('chats')"><i class="fa-solid fa-comment-dots"></i>Chats<span class="cnt" id="cntChats">0</span></button>
       <button class="side-tab" data-tab="cart" onclick="setTab('cart')"><i class="fa-solid fa-cart-shopping"></i>Carrinho<span class="cnt" id="cntCart">0</span></button>
       <button class="side-tab" data-tab="admins" onclick="setTab('admins')"><i class="fa-solid fa-shield-halved"></i>Admins<span class="cnt" id="cntAdmins">0</span></button>
+      <button class="side-tab" data-tab="import" onclick="setTab('import')"><i class="fa-solid fa-file-import"></i>Importar/Exportar</button>
     </div>
     <div class="side-foot">
       <div class="admin"><div class="avatar" id="sideAvatar">A</div><div style="min-width:0"><div class="nm" id="sideName">Admin</div><div class="em" id="sideEmail">…</div></div></div>
@@ -654,6 +655,95 @@ function savePayDetails(){
     else toast('Falha a guardar','err');
   }).catch(function(){toast('Erro a guardar','err')});
 }
+function renderImport(){
+  var sel='<div style="display:flex;gap:8px;margin-bottom:16px">'
+    +'<button class="btn '+(impKind==='users'?'':'')+'" style="'+(impKind==='users'?'background:#FF6B00;color:#fff;border-color:#FF6B00;':'')+'" onclick="impKind=\'users\';renderImport()"><i class="fa-solid fa-users"></i>Utilizadores</button>'
+    +'<button class="btn '+(impKind==='sales'?'':'')+'" style="'+(impKind==='sales'?'background:#FF6B00;color:#fff;border-color:#FF6B00;':'')+'" onclick="impKind=\'sales\';renderImport()"><i class="fa-solid fa-circle-check"></i>Vendas</button>'
+    +'</div>';
+  if(impKind==='users'){
+    sel+='<div class="info" style="background:#eef6ff;border:1px solid #cfe4ff;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.7;margin-bottom:14px;color:#1b4a7a">'
+      +'<b>Formato:</b> JSON ou CSV. Colunas: <code>name, email, phone, role, password</code> (role: comprador/vendedor/admin).<br>'
+      +'<b>Exemplo JSON:</b> <code>[{"name":"João","email":"joao@ex.com","phone":"900000000","role":"comprador"}]</code><br>'
+      +'<b>Exemplo CSV:</b> <code>name,email,phone,role,password</code>'+(importTip?importTip:'')+'</div>';
+  }else{
+    sel+='<div class="info" style="background:#eef6ff;border:1px solid #cfe4ff;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.7;margin-bottom:14px;color:#1b4a7a">'
+      +'<b>Formato:</b> JSON ou CSV. Colunas: <code>ref, buyer_email, mobile, amount, items, status, method, delivery</code>.<br>'
+      +'Ex. CSV: <code>ref,buyer_email,mobile,amount,status,method</code> · <b>amount</b> e <b>buyer_email</b> são obrigatórios.<br>'
+      +'<b>Exemplo JSON:</b> <code>[{"buyer_email":"c@ex.com","mobile":"900000","amount":"10500","items":[{"name":"Tshirt","price":10000,"qty":1}]}]</code>'+(importTip?importTip:'')+'</div>';
+  }
+  sel+='<div class="toolbar">'
+    +'<label class="btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px"><i class="fa-solid fa-file-csv"></i>Escolher ficheiro .json/.csv<input type="file" accept=".json,.csv,application/json,text/csv,text/plain" style="display:none" onchange="impFile(this.files)"></label>'
+    +'<button class="btn" onclick="exportData()"><i class="fa-solid fa-download"></i>Exportar '+impKind+'</button>'
+    +'</div>'
+    +'<div class="table-card" style="padding:18px">'
+    +'<div style="font-size:12.5px;font-weight:700;margin-bottom:8px">Ou cola aqui os dados (JSON ou CSV)</div>'
+    +'<textarea id="impText" placeholder="['+(impKind==='users'?'{"name":"João","email":"joao@ex.com","phone":"900000000","role":"comprador"}':'"buyer_email":"c@ex.com","mobile":"900000000","amount":"10500"')+'...]" style="width:100%;min-height:180px;border:1.5px solid #e6e2d9;border-radius:12px;padding:12px;font-size:12px;font-family:Consolas,monospace;resize:vertical">'+impTextValue+'</textarea>'
+    +'<div class="row" style="margin-top:14px"><button class="btn" style="background:#0a9e4e" onclick="runImport()"><i class="fa-solid fa-file-import"></i>Importar '+impKind+'</button><button class="btn second" onclick="impTextValue=\'\';byId(\'impText\').value=\'\';byId(\'impErr\').textContent=\'\'">Limpar</button></div>'
+    +'<div class="err" id="impErr"></div>'
+    +'<div id="impResult"></div>'
+    +'</div>';
+  byId('mainContent').innerHTML=sel;
+}
+var impKind='users', impTextValue='', importTip='';
+function parseImportData(txt,kind){
+  var s=String(txt||'').trim();
+  if(!s)throw new Error('Dados vazios');
+  if(s.charAt(0)==='['||s.charAt(0)==='{')return JSON.parse(s);
+  // CSV
+  var lines=s.split(/\r?\n/).map(function(l){return l.trim()}).filter(Boolean);
+  if(lines.length<2)throw new Error('CSV precisa de cabeçalho + pelo menos 1 linha');
+  var sep=lines[0].indexOf('\t')>-1?'\t':(lines[0].indexOf(';')>-1?';':',');
+  var head=lines[0].split(sep).map(function(h){return h.trim()});
+  var out=[];
+  for(var i=1;i<lines.length;i++){
+    var cells=lines[i].split(sep);
+    var row={};
+    for(var j=0;j<head.length;j++){
+      var hk=head[j].toLowerCase().replace(/["']/g,'');
+      if(hk)row[hk]=cells[j]!==undefined?cells[j].trim():'';
+    }
+    if(Object.keys(row).length)out.push(row);
+  }
+  if(!out.length)throw new Error('Nenhuma linha para importar');
+  return out;
+}
+function impFile(files){
+  var f=files&&files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){impTextValue=r.result;renderImport()};
+  r.readAsText(f,'utf-8');
+}
+function runImport(){
+  var txt=byId('impText').value||'';
+  impTextValue=txt;
+  var err=byId('impErr'),res=byId('impResult');
+  err.textContent='';res.innerHTML='';
+  if(!txt.trim()){err.textContent='Cola os dados ou escolhe um ficheiro.';return}
+  var rows;
+  try{rows=parseImportData(txt,impKind)}catch(e){err.textContent='Erro a ler: '+e.message;return}
+  res.innerHTML='<p style="font-size:12px;color:#9aa0a6;padding:8px 0"><i class="fa-solid fa-circle-notch fa-spin"></i> A importar '+rows.length+' registo(s)...</p>';
+  req('/api/admin/import','POST',{kind:impKind,rows:rows}).then(function(d){
+    if(d&&d.ok){
+      res.innerHTML='<div style="margin-top:12px;background:#eefaf1;border:1px solid #cdeeda;border-radius:12px;padding:14px;font-size:13px;color:#14532d">'
+        +'<div style="font-weight:800;margin-bottom:6px"><i class="fa-solid fa-circle-check"></i> Importação concluída</div>'
+        +'Inseridos: <b>'+d.inserted+'</b> · Atualizados: <b>'+d.updated+'</b> · Erros: <b>'+(d.errors||0)+'</b> · Total: '+d.total+'</div>';
+      loadAll();
+    }else{
+      res.innerHTML='';err.textContent=(d&&d.error)||'Falha a importar';
+    }
+  }).catch(function(){res.innerHTML='';err.textContent='Erro de ligação a importar'});
+}
+function exportData(){
+  req('/api/admin/export/'+impKind).then(function(d){
+    if(!d||!d.ok||!d.rows){toast('Falha a exportar','err');return}
+    var blob=new Blob([JSON.stringify(d.rows,null,2)],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='yaobisno-'+impKind+'-'+new Date().toISOString().slice(0,10)+'.json';
+    a.click();
+    toast('Exportados '+d.rows.length+' registos','ok');
+  }).catch(function(){toast('Erro a exportar','err')});
+}
 function renderKpis(){
   var pend=products.filter(function(p){return (p.status||'active')==='pending'}).length;
   var totalUsers=users.length||0;
@@ -676,7 +766,7 @@ function renderKpis(){
 function setTab(t){
   activeTab=t;
   document.querySelectorAll('.side-tab').forEach(function(x){x.classList.toggle('active',x.dataset.tab===t)});
-  var ttl={kpis:['Painel de Controlo','Visão geral da plataforma'],users:['Users','Gestão de utilizadores'],products:['Produtos','Aprovação e gestão de anúncios'],sales:['Vendas','Vendas pendentes e finalizadas'],chats:['Chats','Conversas entre compradores e vendedores'],cart:['Carrinho','Itens adicionados ao carrinho'],admins:['Admins','Gestão de acessos ao painel']};
+  var ttl={kpis:['Painel de Controlo','Visão geral da plataforma'],users:['Users','Gestão de utilizadores'],products:['Produtos','Aprovação e gestão de anúncios'],sales:['Vendas','Vendas pendentes e finalizadas'],chats:['Chats','Conversas entre compradores e vendedores'],cart:['Carrinho','Itens adicionados ao carrinho'],admins:['Admins','Gestão de acessos ao painel'],import:['Importar/Exportar','Importar ou exportar utilizadores e vendas']};
   var tk=ttl[t]||ttl.kpis;
   byId('tbTitle').textContent=tk[0];
   byId('tbCrumb').textContent=tk[1];
@@ -707,6 +797,7 @@ function renderTab(){
   else if(activeTab==='sales')renderSalesTab();
   else if(activeTab==='chats')renderChats();
   else if(activeTab==='admins')renderAdmins();
+  else if(activeTab==='import')renderImport();
   else renderCart();
 }
 function onSearch(){renderTab()}
