@@ -50,6 +50,17 @@ function rateLimit(key, max, windowMs) {
   return { allowed: true, count: bucket.count };
 }
 
+// ─── Nº de fatura sequencial (FT-AAAA-NNNN) ─────────────────────────
+const FATURA_KEY = 'fatura_seq';
+async function nextFatura() {
+  const [rows] = await db.query('SELECT svalue FROM settings WHERE skey=?', [FATURA_KEY]);
+  let seq = (rows.length && parseInt(rows[0].svalue, 10)) || 0;
+  seq += 1;
+  await db.query('INSERT INTO settings (skey,svalue) VALUES (?,?) ON DUPLICATE KEY UPDATE svalue=VALUES(svalue)', [FATURA_KEY, String(seq)]);
+  const ano = new Date().getFullYear();
+  return 'FT-' + ano + '-' + String(seq).padStart(4, '0');
+}
+
 // ─── Mailer ─────────────────────────────────────────────────────────
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_USER = process.env.SMTP_USER;
@@ -716,8 +727,9 @@ app.post('/api/sales/whatsapp', authRequired, async (req, res) => {
     const val = Number(amount);
     if (!val || val <= 0) return res.json({ ok: false, error: 'Montante inválido' });
     const ref = 'YAWA' + Date.now().toString(36).toUpperCase() + crypto.randomInt(100, 999);
-    await db.query('INSERT INTO payments (ref,buyer_email,mobile,amount,items,status,status_reason,method,delivery) VALUES (?,?,?,?,?,?,?,?,?)',
-      [ref, req.auth.email, String(mobile || ''), val, JSON.stringify(list), 'pendente', 'aguarda confirmacao', 'whatsapp', JSON.stringify(delivery || {})]);
+    const fatura = await nextFatura();
+    await db.query('INSERT INTO payments (ref,buyer_email,mobile,amount,items,status,status_reason,method,delivery,fatura) VALUES (?,?,?,?,?,?,?,?,?,?)',
+      [ref, req.auth.email, String(mobile || ''), val, JSON.stringify(list), 'pendente', 'aguarda confirmacao', 'whatsapp', JSON.stringify(delivery || {}), fatura]);
     res.json({ ok: true, ref });
   } catch (e) { console.error('[whatsapp sale] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
@@ -730,6 +742,8 @@ app.get('/api/sale/:ref', authRequired, async (req, res) => {
     const p = rows[0];
     if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
       return res.status(403).json({ ok: false, error: 'Acesso negado' });
+    const [sR] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
+    const storeIban = ((sR.length && sR[0].svalue) || 'AO06000000000000000000000').replace(/\s+/g, '').toUpperCase();
     let items = [];
     try { items = JSON.parse(p.items || '[]'); } catch (_) { items = []; }
     let delivery = {};
@@ -737,8 +751,10 @@ app.get('/api/sale/:ref', authRequired, async (req, res) => {
     res.json({
       ok: true,
       ref: p.ref,
+      fatura: p.fatura || ('FT-' + new Date(p.created_at || Date.now()).getFullYear() + '-0000'),
       mobile: p.mobile,
       amount: Number(p.amount),
+      iban: storeIban,
       items: items,
       delivery: delivery,
       status: p.status,
@@ -766,11 +782,14 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
     if (String(p.status) === 'pago')
       return res.json({ ok: false, error: 'Pagamento já validado' });
     const t = (req.body && typeof req.body.texto === 'object') ? (req.body.texto || {}) : {};
-    const fatura = String(t.fatura || '').trim().slice(0, 80);
+    const fatura = String(t.fatura || p.fatura || '').trim().slice(0, 80);
     const iban = String(t.iban || '').replace(/\s+/g, '').toUpperCase().slice(0, 40);
     const valor = Number(t.valor);
+    const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
+    const storeIban = (keep.length && keep[0].svalue) || 'AO06000000000000000000000';
+    const ibanLoja = storeIban.replace(/\s+/g, '').toUpperCase().slice(0, 40);
     if (!fatura) return res.json({ ok: false, error: 'Indica o nº da fatura/recibo' });
-    if (!/^AO\d{23}$/.test(iban)) return res.json({ ok: false, error: 'IBAN inválido (formato AO + 23 dígitos)' });
+    if (iban !== ibanLoja || !/^AO\d{23}$/.test(iban)) return res.json({ ok: false, error: 'O IBAN não corresponde ao da loja' });
     if (!valor || valor <= 0) return res.json({ ok: false, error: 'Indica o valor pago' });
     const esperado = Number(p.amount) || 0;
     if (esperado > 0 && valor < Math.round(esperado * 0.99))
@@ -793,7 +812,7 @@ app.get('/api/settings', async (req, res) => {
 
 app.put('/api/admin/settings', authAdmin, async (req, res) => {
   try {
-    const allowed = ['pagamento_detalhes'];
+    const allowed = ['pagamento_detalhes', 'pagamento_iban'];
     for (const k of allowed) {
       if (req.body[k] !== undefined) {
         const v = typeof req.body[k] === 'string' ? req.body[k].slice(0, 4000) : '';
@@ -1063,6 +1082,9 @@ async function initDB() {
     }
     if (!payCols.includes('comprovativo')) {
       await db.query(`ALTER TABLE payments ADD COLUMN comprovativo LONGTEXT`);
+    }
+    if (!payCols.includes('fatura')) {
+      await db.query(`ALTER TABLE payments ADD COLUMN fatura VARCHAR(40)`);
     }
     await db.query(`CREATE TABLE IF NOT EXISTS settings (
       skey VARCHAR(64) PRIMARY KEY,
