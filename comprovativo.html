@@ -208,7 +208,7 @@ function applyStatus(){
   var st=String(SALE.status||'');
   STATUS=st;
   var done=byId("doneBox"), upload=byId("uploadCard"), stIc=byId("stateIcon"), stT=byId("stateTitle"), stS=byId("stateSub");
-  if(st==='pago'){
+  if(st==='pago'||st==='finalizado'||st==='accepted'){
     stopPoll();
     upload.style.display='none';
     done.style.display='block';
@@ -406,7 +406,7 @@ function init(){
     renderSimpl();
     loadAccountDetails();
     applyStatus();
-    if(String(r.status||'')==='pendente'&&!r.has_comprovativo)startPoll();
+    if(String(r.status||'')==='pendente')startPoll();
   }).catch(function(){
     byId("errorMsg").textContent='Erro de ligação. Tenta de novo.';
     showView();byId("errorBox").style.display='block';byId("accountCard").style.display='none';byId("uploadCard").style.display='none';
