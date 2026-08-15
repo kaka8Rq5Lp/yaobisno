@@ -937,7 +937,7 @@ function handleCheckout(e){
   var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
   var tx="";for(var i=0;i<cart.length;i++)tx+=cart[i].qty+"x "+cart[i].name+" ("+fmt(cart[i].price*cart[i].qty)+"), ";
   var endereco="Província: "+province+"\nMunicípio: "+municipality+"\nBairro: "+neighborhood+"\nRua: "+street+(reference?"\nReferência: "+reference:"");
-  var msg="Olá! Quero finalizar a compra no Ya o bisno.\n\n—— ITENS ——\n"+tx+"\nTotal: "+fmt(t)+"\nProteção (5%): "+fmt(Math.round(t*0.05))+"\n\n—— MORADA DE ENTREGA ——\n"+endereco+"\n\n—— COMPRADOR ——\nNome: "+u.name+"\nTel: "+u.phone+"\nEmail: "+u.email;
+  var msg="Olá! Quero finalizar a compra no Ya o bisno.\n\n—— ITENS ——\n"+tx+"\nSubtotal: "+fmt(t)+"\nProteção (5%): "+fmt(Math.round(t*0.05))+"\n**TOTAL A PAGAR: "+fmt(Math.round(t*1.05))+"**\n\n—— MORADA DE ENTREGA ——\n"+endereco+"\n\n—— COMPRADOR ——\nNome: "+u.name+"\nTel: "+u.phone+"\nEmail: "+u.email;
   var items=cart.map(function(c){return {id:c.id,name:c.name,qty:c.qty,price:c.price}});
   var amount=Math.round(t*1.05);
   var delivery={province:province,municipality:municipality,neighborhood:neighborhood,street:street,reference:reference};

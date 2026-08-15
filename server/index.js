@@ -782,18 +782,21 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
     if (String(p.status) === 'pago')
       return res.json({ ok: false, error: 'Pagamento já validado' });
     const t = (req.body && typeof req.body.texto === 'object') ? (req.body.texto || {}) : {};
-    const fatura = String(p.fatura || t.fatura || '').trim().slice(0, 80);
+    const fatura = String(t.fatura || '').trim().slice(0, 80);
+    const faturaEsperada = String(p.fatura || '').trim();
     const iban = String(t.iban || '').replace(/\s+/g, '').toUpperCase().slice(0, 40);
     const valor = Number(t.valor);
     const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
     const storeIban = (keep.length && keep[0].svalue) || 'AO06000000000000000000000';
     const ibanLoja = storeIban.replace(/\s+/g, '').toUpperCase().slice(0, 40);
     if (!fatura) return res.json({ ok: false, error: 'Indica o nº da fatura/recibo' });
+    if (faturaEsperada && fatura !== faturaEsperada)
+      return res.json({ ok: false, error: 'O nº da fatura não corresponde a esta encomenda' });
     if (iban !== ibanLoja || !/^AO\d{23}$/.test(iban)) return res.json({ ok: false, error: 'O IBAN não corresponde ao da loja' });
     if (!valor || valor <= 0) return res.json({ ok: false, error: 'Indica o valor pago' });
     const esperado = Number(p.amount) || 0;
-    if (esperado > 0 && valor < Math.round(esperado * 0.99))
-      return res.json({ ok: false, error: 'Valor pago inferior ao total da encomenda' });
+    if (esperado > 0 && Number(valor) !== esperado)
+      return res.json({ ok: false, error: 'O valor pago não corresponde ao total da encomenda' });
     await db.query("UPDATE payments SET comprovativo=?, status='pago', status_reason='comprovativo' WHERE id=?",
       [JSON.stringify({ image: image, fatura: fatura, iban: iban, valor: valor, at: new Date().toISOString() }), p.id]);
     res.json({ ok: true, status: 'pago' });
