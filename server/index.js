@@ -69,21 +69,56 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
   });
 }
 
+function mailHtml(code) {
+  return '<div style="font-family:Arial,sans-serif;background:#f6f7f9;padding:24px"><div style="max-width:420px;margin:auto;background:#fff;border-radius:16px;padding:28px;border:1px solid #eee">'
+    + '<div style="font-size:20px;font-weight:800;color:#FF6B00">ya <span style="color:#aaa;font-weight:500">o bisno</span></div>'
+    + '<p style="color:#333;font-size:14px;margin:18px 0 6px">O teu código de verificação:</p>'
+    + '<div style="font-size:34px;font-weight:800;letter-spacing:8px;color:#111317;background:#f6f7f9;border-radius:12px;text-align:center;padding:14px">' + code + '</div>'
+    + '<p style="color:#888;font-size:12px;margin:14px 0 0">Válido por 10 minutos. Se não pediste isto, ignora este email.</p></div></div>';
+}
+
+async function sendBrevoApi(email, code) {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) return null;
+  try {
+    const res = await withTimeout(fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': apiKey, 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify({
+        sender: { email: SMTP_FROM, name: 'ya o bisno' },
+        to: [{ email }],
+        subject: 'Ya o bisno — Código de verificação',
+        htmlContent: mailHtml(code)
+      })
+    }), 30000);
+    if (!res.ok) {
+      const t = await res.text();
+      console.error('[BREVO API] ' + res.status + ' ' + t);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('[BREVO API] Erro: ' + e.message);
+    return false;
+  }
+}
+
 async function sendCode(email, code) {
   const dev = process.env.NODE_ENV !== 'production';
-  if (!transporter) { if (dev) console.log('[EMAIL OFF] Código de verificação para ' + email + ': ' + code); return; }
-  // Dev: imprimir o código no console para teste local
   if (dev) console.log('[EMAIL] Código de verificação para ' + email + ': ' + code);
+  const viaApi = await sendBrevoApi(email, code);
+  if (viaApi) return true;
+  if (!transporter) {
+    console.warn('[EMAIL] Sem serviço de email configurado — código NÃO enviado para ' + email + '. Define BREVO_API_KEY ou SMTP_HOST/USER/PASS no Render.');
+    if (dev) console.log('[SMTP OFF] Código de verificação para ' + email + ': ' + code);
+    return false;
+  }
   try {
     await withTimeout(transporter.sendMail({
       from: SMTP_FROM,
       to: email,
       subject: 'Ya o bisno — Código de verificação',
-      html: '<div style="font-family:Arial,sans-serif;background:#f6f7f9;padding:24px"><div style="max-width:420px;margin:auto;background:#fff;border-radius:16px;padding:28px;border:1px solid #eee">'
-        + '<div style="font-size:20px;font-weight:800;color:#FF6B00">ya <span style="color:#aaa;font-weight:500">o bisno</span></div>'
-        + '<p style="color:#333;font-size:14px;margin:18px 0 6px">O teu código de verificação:</p>'
-        + '<div style="font-size:34px;font-weight:800;letter-spacing:8px;color:#111317;background:#f6f7f9;border-radius:12px;text-align:center;padding:14px">' + code + '</div>'
-        + '<p style="color:#888;font-size:12px;margin:14px 0 0">Válido por 10 minutos. Se não pediste isto, ignora este email.</p></div></div>'
+      html: mailHtml(code)
     }), 30000);
     return true;
   } catch (e) {
@@ -771,6 +806,10 @@ initDB().then(() => {
     console.warn('⚠ Aviso: JWT_SECRET a usar o valor de desenvolvimento (define env JWT_SECRET em produção)');
   if (!transporter)
     console.warn('⚠ Aviso: SMTP não configurado — os códigos vão aparecer no console (define SMTP_HOST/USER/PASS para enviar emails reais)');
+  if (process.env.BREVO_API_KEY)
+    console.log('[MAIL] Brevo API configurado para envio de códigos.');
+  if (!process.env.BREVO_API_KEY && !transporter)
+    console.warn('🚨 NENHUM serviço de email configurado (BREVO_API_KEY ou SMTP_HOST/USER/PASS). Os códigos de recuperação de password NÃO serão entregues aos utilizadores.');
   app.listen(PORT, () => {
     console.log('Servidor a correr em http://localhost:' + PORT);
   });
