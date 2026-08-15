@@ -934,6 +934,13 @@ app.post('/api/admin/sales/:ref/confirm', authAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false }); }
 });
 
+app.delete('/api/admin/sales/:ref', authAdmin, async (req, res) => {
+  try {
+    const [r] = await db.query('DELETE FROM payments WHERE ref=? AND method=?', [req.params.ref, 'whatsapp']);
+    res.json({ ok: true, deleted: r.affectedRows > 0 });
+  } catch (e) { console.error('[admin delete sale] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro ao remover' }); }
+});
+
 app.get('/api/admin/stats', authAdmin, async (req, res) => {
   try {
     const [u] = await db.query('SELECT COUNT(*) AS c FROM users');

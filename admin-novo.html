@@ -311,12 +311,15 @@ button.btn.second:hover{background:#e6e4db}
     <p id="receiptMeta"></p>
     <div id="receiptBody" style="background:#f6f7f9;border-radius:14px;padding:10px;text-align:center;max-height:50vh;overflow:auto"></div>
     <div class="err" id="receiptErr"></div>
-    <div class="row"><button class="btn second" onclick="closeReceipt()">Fechar</button></div>
+    <div class="row" style="justify-content:space-between">
+      <button class="btn" style="background:#dc2626" onclick="deleteSale(currentReceiptRef)"><i class="fa-solid fa-trash"></i>Remover venda</button>
+      <button class="btn second" onclick="closeReceipt()">Fechar</button>
+    </div>
   </div>
 </div>
 
 <script>
-var TOKEN='', products=[], users=[], chats=[], cart=[], sales=[], admins=[], settings={};
+var TOKEN='', products=[], users=[], chats=[], cart=[], sales=[], admins=[], settings={}, currentReceiptRef='';
 var activeTab='kpis', searchQ='', pFilterStatus='', pFilterCat='';
 var delTarget=null, drawerIdx=0;
 var ADMIN_EMAIL='';
@@ -608,12 +611,23 @@ function viewReceipt(ref){
   html+='<p style="margin-top:10px;font-size:11px;color:#9aa0a6">'+esc(at||'')+'</p>';
   body.innerHTML=html;
   byId('receiptMeta').textContent='Ref: '+ref+' · '+esc(s.buyer_email||'');
+  currentReceiptRef=ref;
   byId('receiptErr').textContent='';
   byId('receiptModal').classList.add('open');
 }
 function closeReceipt(){
   byId('receiptModal').classList.remove('open');
   byId('receiptBody').innerHTML='';
+  currentReceiptRef='';
+}
+function deleteSale(ref){
+  if(!ref){toast('Falta a referência','err');return}
+  if(!confirm('Apagar a venda '+ref+' e o seu comprovativo? Esta ação é definitiva.'))return;
+  req('/api/admin/sales/'+encodeURIComponent(ref),'DELETE').then(function(d){
+    if(d&&d.ok&&d.deleted){toast('Venda eliminada','ok');closeReceipt();loadAll();}
+    else if(d&&d.ok&&!d.deleted)toast('Venda não encontrada','err');
+    else toast((d&&d.error)||'Falha a apagar','err');
+  }).catch(function(){toast('Erro a apagar','err')});
 }
 function openPayModal(){
   var cur=settings['pagamento_detalhes']||'';
