@@ -215,7 +215,6 @@ function applyStatus(){
     stT.textContent='Pagamento confirmado';
     stS.textContent='A loja já validou o teu comprovativo. Envia a mensagem no WhatsApp.';
     try{byId("accountCard").style.display='none'}catch(e){}
-    autoOpenOnce();
   }else if(st==='pendente'){
     if(SALE.has_comprovativo){
       upload.style.display='none';
@@ -252,12 +251,6 @@ function stopPoll(){
   if(timer){clearInterval(timer);timer=null;}
 }
 
-function autoOpenOnce(){
-  try{
-    var w=window.open(waUrl(),"_blank");
-    if(w)w.focus();
-  }catch(e){}
-}
 function waUrl(){
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){u=null}
   var sum=0;(SALE.items||[]).forEach(function(it){sum+=Number(it.qty||1)*(Number(it.price)||0)});
