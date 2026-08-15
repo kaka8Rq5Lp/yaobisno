@@ -673,7 +673,8 @@ function renderImport(){
   }
   sel+='<div class="toolbar">'
     +'<label class="btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px"><i class="fa-solid fa-file-csv"></i>Escolher ficheiro .json/.csv<input type="file" accept=".json,.csv,application/json,text/csv,text/plain" style="display:none" onchange="impFile(this.files)"></label>'
-    +'<button class="btn" onclick="exportData()"><i class="fa-solid fa-download"></i>Exportar '+impKind+'</button>'
+    +'<button class="btn" onclick="exportData()"><i class="fa-solid fa-download"></i>Exportar JSON</button>'
+    +'<button class="btn" style="background:#c13b3b;color:#fff;border-color:#c13b3b" onclick="exportPdf()"><i class="fa-solid fa-file-pdf"></i>Exportar PDF</button>'
     +'</div>'
     +'<div class="table-card" style="padding:18px">'
     +'<div style="font-size:12.5px;font-weight:700;margin-bottom:8px">Ou cola aqui os dados (JSON ou CSV)</div>'
@@ -743,6 +744,45 @@ function exportData(){
     a.click();
     toast('Exportados '+d.rows.length+' registos','ok');
   }).catch(function(){toast('Erro a exportar','err')});
+}
+function loadPDFLib(){
+  return new Promise(function(res,rej){
+    if(window.jspdf){res();return}
+    var e=document.createElement('script');
+    e.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    e.onload=function(){var t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';t.onload=function(){res()};t.onerror=function(){rej(new Error('lib'))};document.head.appendChild(t)};
+    e.onerror=function(){rej(new Error('lib'))};
+    document.head.appendChild(e);
+  });
+}
+function exportPdf(){
+  loadPDFLib().then(function(){
+    req('/api/admin/export/'+impKind).then(function(d){
+      if(!d||!d.ok||!d.rows){toast('Falha a obter dados','err');return}
+      try{
+        var doc=new window.jspdf.jsPDF({orientation:impKind==='sales'?'landscape':'portrait'});
+        var isUsers=impKind==='users';
+        doc.setFontSize(16);doc.setFont('helvetica','bold');
+        doc.text('Ya o Bisno — Relatório de '+(isUsers?'Utilizadores':'Vendas'),14,16);
+        doc.setFontSize(9);doc.setFont('helvetica','normal');
+        doc.text('Gerado em '+new Date().toLocaleString('pt-PT')+' · Total: '+d.rows.length,14,23);
+        var head, body;
+        if(isUsers){
+          head=[['#','Nome','Email','Telefone','Tipo','Verif.','Criado em']];
+          body=d.rows.map(function(r,i){return [i+1,String(r.name||''),String(r.email||''),String(r.phone||''),String(r.role||''),r.verified?'Sim':'Não',String(r.created_at||'').slice(0,10)]});
+        }else{
+          head=[['Ref','Cliente','Telefone','Valor (Kz)','Status','Método','Fatura','Data','Comp.']];
+          body=d.rows.map(function(r){
+            var items=(r.items||[]).map(function(it){return String(it.name||(it.id?'Produto#'+it.id:'?'))+(it.qty>1?' x'+it.qty:'')}).join('; ');
+            return [String(r.ref||''),String(r.buyer_email||''),String(r.mobile||''),fmt(Number(r.amount)||0),String(r.status||''),String(r.method||''),String(r.fatura||''),String(r.created_at||'').slice(0,10),r.has_comprovativo?'Sim':'Não'];
+          });
+        }
+        doc.autoTable({startY:28,head:head,body:body,theme:'grid',headStyles:{fillColor:[255,107,0],fontSize:8},styles:{fontSize:8,cellPadding:2},alternateRowStyles:{fillColor:[250,247,243]},margin:{left:10,right:10}});
+        doc.save('yaobisno-'+(isUsers?'utilizadores':'vendas')+'-'+new Date().toISOString().slice(0,10)+'.pdf');
+        toast('PDF gerado','ok');
+      }catch(e){toast('Erro ao gerar PDF','err');console.error(e)}
+    }).catch(function(){toast('Erro a obter dados','err')});
+  }).catch(function(){toast('Não deu para carregar a biblioteca de PDF','err')});
 }
 function renderKpis(){
   var pend=products.filter(function(p){return (p.status||'active')==='pending'}).length;
