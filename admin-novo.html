@@ -193,10 +193,23 @@ tbody tr.row:hover{background:#fffaf5}
     <div class="login-logo">ya</div>
     <h2>Painel Admin</h2>
     <p class="subt">Painel de gestão · Ya o Bisno</p>
-    <div class="campo"><label>Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="admin@yaobisno.com"></div>
-    <div class="campo"><label>Palavra-passe</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn" onclick="doLogin()"><i class="fa-solid fa-right-to-bracket" style="margin-right:8px"></i>Entrar</button>
-    <div class="erro" id="loginErr"></div>
+    <div id="loginBox">
+      <div class="campo"><label>Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="admin@yaobisno.com"></div>
+      <div class="campo"><label>Palavra-passe</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn" onclick="doLogin()"><i class="fa-solid fa-right-to-bracket" style="margin-right:8px"></i>Entrar</button>
+      <div style="margin-top:12px;text-align:center"><a href="#" onclick="showRecover();return false" style="font-size:13px;color:#FF6B00;font-weight:600;text-decoration:none">Esqueci a password</a></div>
+      <div class="erro" id="loginErr"></div>
+    </div>
+    <div id="recoverBox" style="display:none">
+      <div class="campo"><label>Email do admin</label><input id="recEmail" type="email" placeholder="admin@yaobisno.com"></div>
+      <div id="recStep2" style="display:none">
+        <div class="campo"><label>Código</label><input id="recCode" type="text" inputmode="numeric" placeholder="000000"></div>
+        <div class="campo"><label>Nova password</label><input id="recPass" type="password" placeholder="••••••••"></div>
+      </div>
+      <button class="btn" id="recBtn" onclick="recNext()"><i class="fa-solid fa-paper-plane" style="margin-right:8px"></i>Enviar código</button>
+      <div style="margin-top:12px;text-align:center"><a href="#" onclick="backToLogin();return false" style="font-size:13px;color:#9aa0a6;font-weight:600;text-decoration:none">← Voltar ao login</a></div>
+      <div class="erro" id="recErr"></div>
+    </div>
   </div>
 </div>
 
@@ -349,6 +362,53 @@ function doLogin(){
     localStorage.setItem('yabisno_admin_user',JSON.stringify(r.user));
     enterApp(r.user);
   });
+}
+function showRecover(){
+  byId('loginBox').style.display='none';
+  byId('recoverBox').style.display='block';
+  byId('recEmail').value='';
+  byId('recCode').value='';
+  byId('recPass').value='';
+  byId('recErr').textContent='';
+  byId('recStep2').style.display='none';
+  byId('recBtn').innerHTML='<i class="fa-solid fa-paper-plane" style="margin-right:8px"></i>Enviar código';
+  setTimeout(function(){byId('recEmail').focus()},50);
+}
+function backToLogin(){
+  byId('recoverBox').style.display='none';
+  byId('loginBox').style.display='block';
+  byId('loginErr').textContent='';
+}
+function recNext(){
+  var em=byId('recEmail').value.trim(),code=byId('recCode').value.trim(),pw=byId('recPass').value;
+  byId('recErr').textContent='';
+  var step2=byId('recStep2').style.display==='block';
+  if(!em){byId('recErr').textContent='Preenche o email';return}
+  if(!step2){
+    API.adminForgotPassword(em).then(function(r){
+      if(r&&r.ok){
+        byId('recStep2').style.display='block';
+        byId('recBtn').innerHTML='<i class="fa-solid fa-key" style="margin-right:8px"></i>Definir nova password';
+        byId('recErr').textContent='Se o email for de um admin, recebes o código por email.';
+        setTimeout(function(){byId('recCode').focus()},50);
+      }else{
+        byId('recErr').textContent='Erro ao pedir o código. Tenta de novo.';
+      }
+    }).catch(function(){byId('recErr').textContent='Erro no servidor'});
+    return;
+  }
+  if(!code||!pw){byId('recErr').textContent='Preenche o código e a nova password';return}
+  if(pw.length<6){byId('recErr').textContent='A nova password tem de ter pelo menos 6 caracteres';return}
+  API.adminResetPassword(em,code,pw).then(function(r){
+    if(r&&r.ok){
+      backToLogin();
+      byId('loginEmail').value=em;
+      byId('loginPass').value='';
+      byId('loginErr').textContent='Password recuperada! Entra com a nova password.';
+    }else{
+      byId('recErr').textContent=(r&&r.error)||'Código inválido ou expirado';
+    }
+  }).catch(function(){byId('recErr').textContent='Erro no servidor'});
 }
 function enterApp(u){
   byId('loginScreen').style.display='none';

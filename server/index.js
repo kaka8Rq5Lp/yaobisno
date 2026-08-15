@@ -320,8 +320,8 @@ app.post('/api/forgot-password', async (req, res) => {
     // resposta sempre igual -> evita enumeração de contas
     if (exist.length === 0) return res.json({ ok: true });
     const code = String(crypto.randomInt(100000, 1000000));
-    await db.query('DELETE FROM verifications WHERE email=? AND used=0', [email]);
-    await db.query('INSERT INTO verifications (email,code,expires_at) VALUES (?,?,DATE_ADD(NOW(), INTERVAL 10 MINUTE))', [email, code]);
+    await db.query('DELETE FROM verifications WHERE email=? AND used=0 AND kind=?', [email, 'user']);
+    await db.query('INSERT INTO verifications (email,code,expires_at,kind) VALUES (?,?,DATE_ADD(NOW(), INTERVAL 10 MINUTE),?)', [email, code, 'user']);
     sendCode(email, code);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
@@ -335,7 +335,7 @@ app.post('/api/reset-password', async (req, res) => {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
     if (!rateLimit('reset:' + ip, 20, 10 * 60 * 1000).allowed)
       return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tenta de novo dentro de 10 minutos.' });
-    const [latest] = await db.query('SELECT * FROM verifications WHERE email = ? AND used = 0 ORDER BY id DESC LIMIT 1', [email]);
+    const [latest] = await db.query('SELECT * FROM verifications WHERE email = ? AND used = 0 AND kind = ? ORDER BY id DESC LIMIT 1', [email, 'user']);
     if (latest.length === 0) return res.json({ ok: false, error: 'Código inválido ou expirado' });
     const v = latest[0];
     const now = new Date();
@@ -350,6 +350,53 @@ app.post('/api/reset-password', async (req, res) => {
     await db.query('UPDATE verifications SET used = 1 WHERE id = ?', [v.id]);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
+// Recuperação de password do ADMIN (painel) — fluxo igual ao do site, tabela admins
+app.post('/api/admin/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const rl = rateLimit('adminforgot:' + ip + ':' + String(email || '').toLowerCase(), 6, 15 * 60 * 1000);
+    if (!rl.allowed) {
+      console.log('[RATE LIMIT] admin forgot-password bloqueado para ' + email + ' (ip ' + ip + ')');
+      return res.json({ ok: true, throttled: true });
+    }
+    if (!email) return res.json({ ok: true });
+    const [exist] = await db.query('SELECT id FROM admins WHERE email = ?', [String(email).toLowerCase()]);
+    // resposta sempre igual -> evita enumeração
+    if (exist.length === 0) return res.json({ ok: true });
+    const code = String(crypto.randomInt(100000, 1000000));
+    await db.query('DELETE FROM verifications WHERE email=? AND used=0 AND kind=?', [email, 'admin']);
+    await db.query('INSERT INTO verifications (email,code,expires_at,kind) VALUES (?,?,DATE_ADD(NOW(), INTERVAL 10 MINUTE),?)', [String(email).toLowerCase(), code, 'admin']);
+    sendCode(String(email).toLowerCase(), code);
+    res.json({ ok: true });
+  } catch (e) { console.error('[admin forgot] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
+app.post('/api/admin/reset-password', async (req, res) => {
+  try {
+    const { email, code, password } = req.body;
+    if (!email || !code) return res.json({ ok: false, error: 'Falta email ou código' });
+    if (!password || String(password).length < 6) return res.json({ ok: false, error: 'A nova password tem de ter pelo menos 6 caracteres' });
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    if (!rateLimit('adminreset:' + ip, 20, 10 * 60 * 1000).allowed)
+      return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tenta de novo dentro de 10 minutos.' });
+    const [latest] = await db.query('SELECT * FROM verifications WHERE email = ? AND used = 0 AND kind = ? ORDER BY id DESC LIMIT 1', [String(email).toLowerCase(), 'admin']);
+    if (latest.length === 0) return res.json({ ok: false, error: 'Código inválido ou expirado' });
+    const v = latest[0];
+    const now = new Date();
+    const expires = v.expires_at instanceof Date ? v.expires_at : new Date(v.expires_at);
+    const valid = expires > now && v.code === String(code).trim() && Number(v.attempts) < 5;
+    if (!valid) {
+      await db.query('UPDATE verifications SET attempts = attempts + 1 WHERE id = ? AND used = 0', [v.id]);
+      return res.json({ ok: false, error: 'Código inválido ou expirado' });
+    }
+    const hash = await bcrypt.hash(password, 10);
+    await db.query('UPDATE admins SET password = ? WHERE email = ?', [hash, String(email).toLowerCase()]);
+    await db.query('UPDATE verifications SET used = 1 WHERE id = ?', [v.id]);
+    res.json({ ok: true });
+  } catch (e) { console.error('[admin reset] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
 app.post('/api/test-email', authAdmin, async (req, res) => {
@@ -918,6 +965,9 @@ async function initDB() {
     const vCols = colVerify[0].map(c => c.COLUMN_NAME);
     if (!vCols.includes('attempts')) {
       await db.query(`ALTER TABLE verifications ADD COLUMN attempts INT DEFAULT 0`);
+    }
+    if (!vCols.includes('kind')) {
+      await db.query(`ALTER TABLE verifications ADD COLUMN kind VARCHAR(10) DEFAULT 'user'`);
     }
     const colPay = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments'`);
     const payCols = colPay[0].map(c => c.COLUMN_NAME);

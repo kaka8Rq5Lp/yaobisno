@@ -141,6 +141,12 @@ var API = (function(){
   function changeAdminPassword(data){
     return api('/api/admin/password', {method:'PUT', body:data});
   }
+  function adminForgotPassword(email){
+    return api('/api/admin/forgot-password', {method:'POST', body:{email}});
+  }
+  function adminResetPassword(email, code, password){
+    return api('/api/admin/reset-password', {method:'POST', body:{email, code, password}});
+  }
   function deleteAdmin(email){
     return api('/api/admin/admins/'+encodeURIComponent(email), {method:'DELETE'});
   }
@@ -178,6 +184,8 @@ var API = (function(){
     listAdmins: listAdmins,
     createAdmin: createAdmin,
     changeAdminPassword: changeAdminPassword,
+    adminForgotPassword: adminForgotPassword,
+    adminResetPassword: adminResetPassword,
     deleteAdmin: deleteAdmin
   };
 })();
