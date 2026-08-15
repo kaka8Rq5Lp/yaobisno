@@ -591,8 +591,10 @@ function viewReceipt(ref){
   var c=s.comprovativo;
   var at=c.at||'';
   var html='';
-  if(image)html+='<img src="'+esc(image)+'" style="max-width:100%;max-height:36vh;border-radius:12px;display:block;margin:0 auto">';
-  else html+='<p style="padding:30px;color:#9aa0a6">Sem imagem anexada</p>';
+  if(image&&/^data:application\/pdf/.test(image))html+='<iframe src="'+esc(image)+'" style="width:100%;min-height:46vh;border:none;border-radius:12px;background:#f7f7f5" title="Comprovativo PDF"></iframe>';
+  else if(image)html+='<img src="'+esc(image)+'" style="max-width:100%;max-height:36vh;border-radius:12px;display:block;margin:0 auto">';
+  else html+='<p style="padding:30px;color:#9aa0a6">Sem comprovativo anexado</p>';
+  if(image)html+='<a href="'+esc(image)+'" download="comprovativo-'+esc(ref)+'" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 14px;background:#0a9e4e;color:#fff;border-radius:10px;font-size:12px;font-weight:600;text-decoration:none"><i class="fa-solid fa-download"></i> Baixar comprovativo</a>';
   if(c.fatura||c.iban||c.valor){
     html+='<div style="margin-top:12px;background:#fff;border-radius:12px;padding:12px;text-align:left;font-size:12.5px">'
       +(c.fatura?'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f2efea"><span style="color:#9aa0a6">Nº fatura</span><b>'+esc(c.fatura)+'</b></div>':'')
