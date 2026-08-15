@@ -198,9 +198,28 @@ app.post('/api/admin/login', async (req, res) => {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
     if (!rateLimit('adminlogin:' + ip, 10, 15 * 60 * 1000).allowed)
       return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tenta de novo dentro de 15 minutos.' });
-    const [rows] = await db.query('SELECT * FROM admins WHERE email = ?', [String(email || '').toLowerCase()]);
-    if (rows.length === 0) return res.json({ ok: false, error: 'Email ou password incorretos' });
-    const a = rows[0];
+    const em = String(email || '').toLowerCase();
+    const [rows] = await db.query('SELECT * FROM admins WHERE email = ?', [em]);
+    let a = rows[0] || null;
+    if (!a) {
+      // Bootstrap: enquanto não existir NENHUM admin, aceita o acesso do dono
+      // (users com role=admin) e sela-o na tabela admins. Depois é só mudar a password no painel.
+      const [cnt] = await db.query('SELECT COUNT(*) AS c FROM admins');
+      if (Number(cnt[0].c) === 0) {
+        const [ur] = await db.query('SELECT * FROM users WHERE email = ?', [em]);
+        if (ur.length === 0 || ur[0].role !== 'admin') return res.json({ ok: false, error: 'Email ou password incorretos' });
+        const u = ur[0];
+        let uok = false;
+        if (u.password && u.password.indexOf('$2') === 0) uok = await bcrypt.compare(password, u.password);
+        else uok = (password === u.password);
+        if (!uok) return res.json({ ok: false, error: 'Email ou password incorretos' });
+        const hash = await bcrypt.hash(password, 10);
+        await db.query('INSERT INTO admins (name,email,password) VALUES (?,?,?)', [u.name, em, hash]);
+        a = { id: 0, name: u.name, email: em, password: hash };
+        console.log('[admin] primeiro admin registado a partir da conta do site: ' + em);
+      }
+    }
+    if (!a) return res.json({ ok: false, error: 'Email ou password incorretos' });
     let ok = false;
     if (a.password && a.password.indexOf('$2') === 0) ok = await bcrypt.compare(password, a.password);
     else ok = (password === a.password);
