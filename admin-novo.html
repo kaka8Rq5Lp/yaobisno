@@ -357,7 +357,7 @@ function loadAll(){
   req('/api/admin/products').then(function(d){products=d||[];byId('cntProducts').textContent=products.length;if(activeTab==='products')renderProducts();if(activeTab==='kpis')renderKpis()});
   req('/api/admin/chats').then(function(d){chats=d||[];byId('cntChats').textContent=chats.length;if(activeTab==='chats')renderChats();refreshDrawerChat()});
   req('/api/admin/cart').then(function(d){cart=d||[];byId('cntCart').textContent=cart.length;if(activeTab==='cart')renderCart()});
-  req('/api/admin/sales').then(function(d){sales=(d&&d.sales)||[];byId('cntSales').textContent=sales.length;if(activeTab==='kpis')renderKpis();if(activeTab==='sales')renderSales()});
+  req('/api/admin/sales').then(function(d){sales=(d&&d.sales)||[];byId('cntSales').textContent=sales.length;if(activeTab==='kpis')renderKpis();if(activeTab==='sales')renderSalesTab()});
 }
 function refreshDrawerChat(){
   var el=document.querySelector('.drawer-body');
@@ -403,7 +403,6 @@ function renderSales(){
   var list=finalizedSales();
   var pend=sales.filter(function(s){return String(s.status||'')==='pendente'});
   var html='';
-  // Vendas pendentes (WhatsApp)
   html+='<div style="margin-top:28px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Vendas pendentes (WhatsApp)</h2></div>';
   if(!pend.length){
     html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem vendas pendentes</p><small>Encomendas fechadas no WhatsApp a aguardar confirmação aparecem aqui</small></div></div>';
@@ -445,6 +444,15 @@ function renderSales(){
   }
   html+='</tbody></table></div></div></div>';
   return html;
+}
+function renderSalesTab(){
+  var pend=sales.filter(function(s){return String(s.status||'')==='pendente'});
+  var list=finalizedSales();
+  var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">'
+    +'<div><h2 style="font-size:18px;font-weight:800">Painel de Vendas</h2><div style="font-size:12.5px;color:#9aa0a6;margin-top:3px">'+pend.length+' pendente'+(pend.length===1?'':'s')+' · '+list.length+' finalizada'+(list.length===1?'':'s')+'</div></div>'
+    +'</div>'
+    +renderSales();
+  byId('mainContent').innerHTML=html;
 }
 function confirmVenda(ref){
   if(!ref)return;
@@ -504,7 +512,7 @@ function renderTab(){
   if(activeTab==='kpis')renderKpis();
   else if(activeTab==='users')renderUsers();
   else if(activeTab==='products')renderProducts();
-  else if(activeTab==='sales')renderSales();
+  else if(activeTab==='sales')renderSalesTab();
   else if(activeTab==='chats')renderChats();
   else renderCart();
 }
