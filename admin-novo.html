@@ -588,12 +588,18 @@ function viewReceipt(ref){
   if(!s||!s.comprovativo){toast('Sem comprovativo','err');return}
   var body=byId('receiptBody');
   var image=s.comprovativo.image||'';
-  var texto=s.comprovativo.texto||'';
-  var at=s.comprovativo.at||'';
+  var c=s.comprovativo;
+  var at=c.at||'';
   var html='';
-  if(image)html+='<img src="'+esc(image)+'" style="max-width:100%;max-height:42vh;border-radius:12px;display:block;margin:0 auto">';
+  if(image)html+='<img src="'+esc(image)+'" style="max-width:100%;max-height:36vh;border-radius:12px;display:block;margin:0 auto">';
   else html+='<p style="padding:30px;color:#9aa0a6">Sem imagem anexada</p>';
-  if(texto)html+='<p style="margin-top:10px;font-size:12.5px;color:#374151;background:#fff;border-radius:10px;padding:10px"><b>Referência:</b> '+esc(texto)+'</p>';
+  if(c.fatura||c.iban||c.valor){
+    html+='<div style="margin-top:12px;background:#fff;border-radius:12px;padding:12px;text-align:left;font-size:12.5px">'
+      +(c.fatura?'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f2efea"><span style="color:#9aa0a6">Nº fatura</span><b>'+esc(c.fatura)+'</b></div>':'')
+      +(c.iban?'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f2efea"><span style="color:#9aa0a6">IBAN</span><b style="font-family:monospace">'+esc(c.iban)+'</b></div>':'')
+      +(c.valor?'<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#9aa0a6">Valor pago</span><b style="color:#0a9e4e">'+fmt(c.valor)+'</b></div>':'')
+      +'</div>';
+  }
   html+='<p style="margin-top:10px;font-size:11px;color:#9aa0a6">'+esc(at||'')+'</p>';
   body.innerHTML=html;
   byId('receiptMeta').textContent='Ref: '+ref+' · '+esc(s.buyer_email||'');

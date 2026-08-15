@@ -749,25 +749,34 @@ app.get('/api/sale/:ref', authRequired, async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
-// Receptor do comprovativo — o cliente anexa a foto/ID do pagamento
+// Receptor do comprovativo — o cliente anexa a foto do pagamento + nº fatura, IBAN e valor
 app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
   try {
-    const { image, texto } = req.body;
+    const { image } = req.body;
     if (!image || typeof image !== 'string' || image.length > 5 * 1024 * 1024)
       return res.json({ ok: false, error: 'Comprovativo inválido ou demasiado grande' });
     const key = 'comprovativo:' + String(req.auth.email).toLowerCase() + ':' + req.params.ref;
     if (!rateLimit(key, 12, 15 * 60 * 1000).allowed)
       return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tenta de novo dentro de 15 minutos.' });
-    const [rows] = await db.query('SELECT id,buyer_email,status FROM payments WHERE ref=?', [req.params.ref]);
+    const [rows] = await db.query('SELECT id,buyer_email,status,amount FROM payments WHERE ref=?', [req.params.ref]);
     if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
     const p = rows[0];
     if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
       return res.status(403).json({ ok: false, error: 'Acesso negado' });
     if (String(p.status) === 'pago')
       return res.json({ ok: false, error: 'Pagamento já validado' });
-    const extra = texto && typeof texto === 'string' ? texto.slice(0, 500) : null;
+    const t = (req.body && typeof req.body.texto === 'object') ? (req.body.texto || {}) : {};
+    const fatura = String(t.fatura || '').trim().slice(0, 80);
+    const iban = String(t.iban || '').replace(/\s+/g, '').toUpperCase().slice(0, 40);
+    const valor = Number(t.valor);
+    if (!fatura) return res.json({ ok: false, error: 'Indica o nº da fatura/recibo' });
+    if (!/^AO\d{23}$/.test(iban)) return res.json({ ok: false, error: 'IBAN inválido (formato AO + 23 dígitos)' });
+    if (!valor || valor <= 0) return res.json({ ok: false, error: 'Indica o valor pago' });
+    const esperado = Number(p.amount) || 0;
+    if (esperado > 0 && valor < Math.round(esperado * 0.99))
+      return res.json({ ok: false, error: 'Valor pago inferior ao total da encomenda' });
     await db.query("UPDATE payments SET comprovativo=?, status='pago', status_reason='comprovativo' WHERE id=?",
-      [JSON.stringify({ image: image, texto: extra, at: new Date().toISOString() }), p.id]);
+      [JSON.stringify({ image: image, fatura: fatura, iban: iban, valor: valor, at: new Date().toISOString() }), p.id]);
     res.json({ ok: true, status: 'pago' });
   } catch (e) { console.error('[comprovativo] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });

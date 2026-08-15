@@ -99,7 +99,15 @@ input[type="text"],input[type="file"]{border-radius:12px;width:100%;font-size:.9
       <div id="previewBox" class="hidden mt-3">
         <img id="previewImg" class="w-full max-h-[300px] object-contain rounded-[14px] border border-[#F0F0ED] bg-white">
       </div>
-      <input id="receiptText" type="text" placeholder="Referência / ID do pagamento (opcional)" class="mt-3 text-[13px] px-3.5 h-11">
+      <div class="mt-3 space-y-2.5" id="receiptFields">
+        <input id="receiptFatura" type="text" placeholder="Nº da fatura / recibo (obrigatório)" class="text-[13px] px-3.5 h-11">
+        <div class="flex items-center gap-2 text-[13px] px-3.5 h-11" style="border:1px solid #0000001a;border-radius:12px;background:#fff">
+          <label for="receiptIban" class="text-[#6B7280] whitespace-nowrap">IBAN</label>
+          <input id="receiptIban" type="text" inputmode="text" placeholder="AO06 ..." style="border:none;box-shadow:none;padding:0;font-size:13px">
+        </div>
+        <input id="receiptValor" type="text" inputmode="decimal" placeholder="Valor pago (Kz)" class="text-[13px] px-3.5 h-11">
+        <p class="text-[11px] text-[#9CA3AF]">O valor deve corresponder ao total a pagar.</p>
+      </div>
       <button id="sendBtn" class="hidden mt-3 w-full h-11 rounded-[14px] bg-[#FF6B00] text-white text-[13.5px] font-bold flex items-center justify-center gap-2 hover:bg-[#e65f00] active:scale-[0.98] transition"><i class="fa-solid fa-paper-plane"></i> Enviar comprovativo</button>
 
       <div id="sending" class="hidden mt-3 flex items-center justify-center gap-2 py-3 text-[13px] font-semibold text-[#FF6B00]">
@@ -176,6 +184,8 @@ function renderSimpl(){
   byId("sumTotal").textContent=fmt(sum);
   byId("sumProt").textContent=fmt(Math.round(sum*0.05));
   byId("sumAmount").textContent=fmt(tot);
+  var valorEl=byId("receiptValor");
+  if(valorEl&&!valorEl.value)valorEl.value=tot?String(tot):'';
   var d=SALE.delivery||{};
   var morada=[d.province,d.municipality,d.neighborhood,d.street].filter(function(x){return x}).join(' • ');
   if(d.reference)morada+=' ('+d.reference+')';
@@ -288,12 +298,19 @@ function downscale(file,cb){
 
 function sendReceipt(){
   if(!receiptImage)return;
+  var fatura=byId("receiptFatura").value.trim();
+  var iban=byId("receiptIban").value.trim().replace(/\s+/g,'').toUpperCase();
+  var valor=Number(String(byId("receiptValor").value).replace(/[^\d.]/g,''));
+  if(!fatura){toast("Escreve o nº da fatura / recibo");return}
+  if(!/^AO\d{23}$/.test(iban)){toast("Escreve um IBAN válido (AO + 23 dígitos)");return}
+  if(!valor||valor<=0){toast("Escreve o valor pago");return}
+  var esperado=Number(SALE.amount)||0;
+  if(esperado>0&&valor<Math.round(esperado*0.99)){toast("O valor pago é inferior ao total da encomenda ("+fmt(esperado)+")");return}
   var btn=byId("sendBtn");
   var sendingEl=byId("sending"),waitEl=byId("waitingBox");
   btn.style.display='none';
   sendingEl.style.display='flex';
-  var texto=byId("receiptText").value.trim();
-  API.sendComprovativo(SALE.ref,receiptImage,texto).then(function(r){
+  API.sendComprovativo(SALE.ref,receiptImage,{fatura:fatura,iban:iban,valor:String(valor)}).then(function(r){
     sendingEl.style.display='none';
     if(r&&r.ok){
       toast("Comprovativo enviado! A aguardar validação.");
