@@ -386,28 +386,72 @@ function saleDate(iso){
   if(!iso)return '—';
   try{var d=new Date(iso);return d.toLocaleDateString('pt-PT')+' '+d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})}catch(e){return '—'}
 }
+function methodBadge(m){
+  var wa=String(m||'').toLowerCase()==='whatsapp';
+  return wa
+    ?'<span class="badge" style="background:#fff1e0;color:#FF6B00"><i class="fa-brands fa-whatsapp"></i>WhatsApp</span>'
+    :'<span class="badge" style="background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-mobile-screen-button"></i>Multicaixa</span>';
+}
+function fmtMorada(d){
+  d=d||{};
+  var p=[d.province,d.municipality,d.neighborhood,d.street].filter(function(x){return x}).join(' • ');
+  if(d.reference)p+=' ('+d.reference+')';
+  return p;
+}
 function renderSales(){
   var list=finalizedSales();
-  var html='<div style="margin-top:28px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-circle-check" style="color:#0a9e4e;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Lista de Vendas Finalizadas</h2></div>'
-    +'<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Produto</th><th>Comprador</th><th>Vendedor</th><th>Valor</th><th>Data</th><th>Status</th></tr></thead><tbody>';
-  if(!list.length){
-    html+='<tr><td colspan="6"><div class="empty"><i class="fa-solid fa-circle-check"></i><p>Sem vendas finalizadas</p><small>As vendas com pagamento Multicaixa confirmado vão aparecer aqui</small></div></td></tr>';
+  var pend=sales.filter(function(s){return String(s.status||'')==='pendente'});
+  var html='';
+  // Vendas pendentes (WhatsApp)
+  html+='<div style="margin-top:28px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Vendas pendentes (WhatsApp)</h2></div>';
+  if(!pend.length){
+    html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem vendas pendentes</p><small>Encomendas fechadas no WhatsApp a aguardar confirmação aparecem aqui</small></div></div>';
+  }else{
+    html+='<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Valor</th><th>Morada</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
+    for(var i=0;i<pend.length;i++){
+      var s=pend[i];
+      html+='<tr>'
+        +'<td><div class="t-owner"><div class="av">'+esc((s.buyer_email||'?').charAt(0)).toUpperCase()+'</div><div>'+esc(s.buyer_email||'—')+'</div></div></td>'
+        +'<td style="font-size:12px;color:#8a8578">'+esc(s.mobile||'—')+'</td>'
+        +'<td><span class="t-price">'+fmt(s.amount)+'</span></td>'
+        +'<td style="font-size:12px;color:#8a8578">'+esc(fmtMorada(s.delivery)||'—')+'</td>'
+        +'<td style="font-size:12px;color:#8a8578">'+saleDate(s.created_at)+'</td>'
+        +'<td><button class="btn" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>Confirmar</button></td>'
+        +'</tr>';
+    }
+    html+='</tbody></table></div></div>';
   }
-  for(var i=0;i<list.length;i++){
-    var s=list[i];
-    var prod=s.product_name||('Vários · '+s.items.length+' item'+(s.items.length>1?'s':''));
-    var qty=(s.qty>1?' '+s.qty+'x':'');
+  html+='</div>';
+  // Vendas finalizadas
+  html+='<div style="margin-top:28px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-circle-check" style="color:#0a9e4e;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Lista de Vendas Finalizadas</h2></div>'
+    +'<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Produto</th><th>Comprador</th><th>Vendedor</th><th>Valor</th><th>Método</th><th>Data</th><th>Status</th></tr></thead><tbody>';
+  if(!list.length){
+    html+='<tr><td colspan="7"><div class="empty"><i class="fa-solid fa-circle-check"></i><p>Sem vendas finalizadas</p><small>Pagamentos Multicaixa confirmados e vendas WhatsApp confirmadas vão aparecer aqui</small></div></td></tr>';
+  }
+  for(var j=0;j<list.length;j++){
+    var k=list[j];
+    var prod=k.product_name||('Vários · '+k.items.length+' item'+(k.items.length>1?'s':''));
+    var qty=(k.qty>1?' '+k.qty+'x':'');
     html+='<tr>'
-      +'<td><div class="t-prod"><div class="t-thumb" style="display:flex;align-items:center;justify-content:center;background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-bag-shopping"></i></div><div><div class="nm">'+esc(prod)+qty+'</div><div class="ct">#'+s.id+' · '+esc(s.ref||'')+'</div></div></div></td>'
-      +'<td><div class="t-owner"><div class="av">'+esc((s.buyer_email||'?').charAt(0)).toUpperCase()+'</div><div>'+esc(s.buyer_email||'—')+(s.mobile?'<div style="font-size:10.5px;color:#9aa0a6">'+esc(s.mobile)+'</div>':'')+'</div></div></td>'
-      +'<td><div class="t-owner"><div class="av">'+esc((s.seller||s.seller_email||'?').charAt(0)).toUpperCase()+'</div><div>'+esc(s.seller||'Vendedor')+'<div style="font-size:10.5px;color:#9aa0a6">'+esc(s.seller_email||'')+'</div></div></div></td>'
-      +'<td><span class="t-price">'+fmt(s.amount)+'</span></td>'
-      +'<td style="font-size:12px;color:#8a8578">'+saleDate(s.created_at)+'</td>'
-      +'<td>'+saleStatusBadge(s.status)+'</td>'
+      +'<td><div class="t-prod"><div class="t-thumb" style="display:flex;align-items:center;justify-content:center;background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-bag-shopping"></i></div><div><div class="nm">'+esc(prod)+qty+'</div><div class="ct">#'+k.id+' · '+esc(k.ref||'')+'</div></div></div></td>'
+      +'<td><div class="t-owner"><div class="av">'+esc((k.buyer_email||'?').charAt(0)).toUpperCase()+'</div><div>'+esc(k.buyer_email||'—')+(k.mobile?'<div style="font-size:10.5px;color:#9aa0a6">'+esc(k.mobile)+'</div>':'')+'</div></div></td>'
+      +'<td><div class="t-owner"><div class="av">'+esc((k.seller||k.seller_email||'?').charAt(0)).toUpperCase()+'</div><div>'+esc(k.seller||'Vendedor')+'<div style="font-size:10.5px;color:#9aa0a6">'+esc(k.seller_email||'')+'</div></div></div></td>'
+      +'<td><span class="t-price">'+fmt(k.amount)+'</span></td>'
+      +'<td>'+methodBadge(k.method)+'</td>'
+      +'<td style="font-size:12px;color:#8a8578">'+saleDate(k.created_at)+'</td>'
+      +'<td>'+saleStatusBadge(k.status)+'</td>'
       +'</tr>';
   }
   html+='</tbody></table></div></div></div>';
   return html;
+}
+function confirmVenda(ref){
+  if(!ref)return;
+  if(!confirm('Confirmar venda '+ref+' como finalizada?'))return;
+  req('/api/admin/sales/'+encodeURIComponent(ref)+'/confirm','POST').then(function(d){
+    if(d&&d.ok){toast('Venda confirmada!','ok');loadAll();}
+    else toast('Falha a confirmar','err');
+  }).catch(function(){toast('Erro a confirmar','err')});
 }
 function renderKpis(){
   var pend=products.filter(function(p){return (p.status||'active')==='pending'}).length;
@@ -420,7 +464,7 @@ function renderKpis(){
     +'<div class="kpi"><div class="tl">Produtos</div><div class="val">'+products.length+(pend>0?'<span class="dot"></span>':'')+'</div><div class="tb">'+(pend>0?pend+' pendente'+(pend>1?'s':'')+' de aprovação':'Todos ativos')+'</div><div class="icn" style="background:#fff1e0;color:#FF6B00"><i class="fa-solid fa-box-open"></i></div></div>'
     +'<div class="kpi"><div class="tl">Chats</div><div class="val">'+chats.length+'</div><div class="tb">Mensagens na plataforma</div><div class="icn" style="background:#efeafe;color:#6d28d9"><i class="fa-solid fa-comment-dots"></i></div></div>'
     +'<div class="kpi"><div class="tl">Carrinho</div><div class="val">'+cart.length+'</div><div class="tb">Itens no carrinho</div><div class="icn" style="background:#e6f1fb;color:#0b6b8f"><i class="fa-solid fa-cart-shopping"></i></div></div>'
-    +'<div class="kpi"><div class="tl">Vendas Finalizadas</div><div class="val">'+fs.length+'</div><div class="tb">Pagamentos Multicaixa confirmados</div><div class="icn" style="background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-circle-check"></i></div></div>'
+    +'<div class="kpi"><div class="tl">Vendas Finalizadas</div><div class="val">'+fs.length+'</div><div class="tb">Multicaixa e WhatsApp concluídos</div><div class="icn" style="background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-circle-check"></i></div></div>'
     +'<div class="kpi"><div class="tl">Total Faturado</div><div class="val">'+fmt(totalFat)+'</div><div class="tb">Receitas de vendas concluídas</div><div class="icn" style="background:#fff1e0;color:#FF6B00"><i class="fa-solid fa-coins"></i></div></div>'
     +'</div>'
     +'<div class="toolbar"><button class="btn" onclick="setTab(\'products\')"><i class="fa-solid fa-box-open"></i>Rever produtos</button><button class="btn" onclick="setTab(\'chats\')"><i class="fa-solid fa-comment-dots"></i>Chats</button><button class="btn" onclick="setTab(\'users\')"><i class="fa-solid fa-users"></i>Users</button></div>'

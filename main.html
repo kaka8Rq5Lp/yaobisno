@@ -934,9 +934,33 @@ function handleCheckout(e){
   var tx="";for(var i=0;i<cart.length;i++)tx+=cart[i].qty+"x "+cart[i].name+" ("+fmt(cart[i].price*cart[i].qty)+"), ";
   var endereco="Província: "+province+"\nMunicípio: "+municipality+"\nBairro: "+neighborhood+"\nRua: "+street+(reference?"\nReferência: "+reference:"");
   var msg="Olá! Quero finalizar a compra no Ya o bisno.\n\n—— ITENS ——\n"+tx+"\nTotal: "+fmt(t)+"\nProteção (5%): "+fmt(Math.round(t*0.05))+"\n\n—— MORADA DE ENTREGA ——\n"+endereco+"\n\n—— COMPRADOR ——\nNome: "+u.name+"\nTel: "+u.phone+"\nEmail: "+u.email;
-  closeModal("checkoutModal");
-  try{window.open("https://wa.me/351920488724?text="+encodeURIComponent(msg),"_blank")}catch(ex){toast("Abre o WhatsApp para finalizar")}
-  cart=[];syncLocal();updateCart();API.clearCart(u.email);
+  var items=cart.map(function(c){return {id:c.id,name:c.name,qty:c.qty,price:c.price}});
+  var amount=Math.round(t*1.05);
+  var delivery={province:province,municipality:municipality,neighborhood:neighborhood,street:street,reference:reference};
+  var btnZ=byId("btnZap");
+  if(btnZ)btnZ.disabled=true;
+  function openWa(){
+    closeModal("checkoutModal");
+    try{window.open("https://wa.me/351920488724?text="+encodeURIComponent(msg),"_blank")}catch(ex){toast("Abre o WhatsApp para finalizar")}
+  }
+  function clearCartNow(){
+    cart=[];syncLocal();updateCart();API.clearCart(u.email);
+  }
+  function done(){if(btnZ)btnZ.disabled=false}
+  if(typeof API.recordWhatsappOrder==="function"){
+    API.recordWhatsappOrder({mobile:u.phone||"",amount:amount,items:items,delivery:delivery}).then(function(r){
+      openWa();
+      if(r&&r.ok){clearCartNow();}
+      else toast("Encomenda enviada no WhatsApp, mas não foi gravada no servidor. Tenta de novo.");
+      done();
+    }).catch(function(){
+      openWa();
+      toast("Erro ao gravar a encomenda no servidor — encomenda enviada no WhatsApp");
+      done();
+    });
+  }else{
+    openWa();clearCartNow();done();
+  }
   return false;
 }
 

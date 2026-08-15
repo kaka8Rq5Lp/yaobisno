@@ -117,6 +117,9 @@ var API = (function(){
   function refreshPayment(ref){
     return api('/api/payment/'+encodeURIComponent(ref)+'/refresh');
   }
+  function recordWhatsappOrder(data){
+    return api('/api/sales/whatsapp', {method:'POST', body:data});
+  }
 
   return {
     setTokenKey: setTokenKey,
@@ -144,6 +147,7 @@ var API = (function(){
     clearCart: clearCart,
     createPayment: createPayment,
     getPayment: getPayment,
-    refreshPayment: refreshPayment
+    refreshPayment: refreshPayment,
+    recordWhatsappOrder: recordWhatsappOrder
   };
 })();

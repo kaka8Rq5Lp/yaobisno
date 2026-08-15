@@ -563,6 +563,21 @@ app.post('/api/payments/webhook', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false }); }
 });
 
+// Venda fechada por WhatsApp (sem gateway) — entra como pendente até confirmação no admin
+app.post('/api/sales/whatsapp', authRequired, async (req, res) => {
+  try {
+    const { mobile, amount, items, delivery } = req.body;
+    const list = Array.isArray(items) ? items : [];
+    if (list.length === 0) return res.json({ ok: false, error: 'Cesto vazio' });
+    const val = Number(amount);
+    if (!val || val <= 0) return res.json({ ok: false, error: 'Montante inválido' });
+    const ref = 'YAWA' + Date.now().toString(36).toUpperCase() + crypto.randomInt(100, 999);
+    await db.query('INSERT INTO payments (ref,buyer_email,mobile,amount,items,status,status_reason,method,delivery) VALUES (?,?,?,?,?,?,?,?,?)',
+      [ref, req.auth.email, String(mobile || ''), val, JSON.stringify(list), 'pendente', 'aguarda confirmacao', 'whatsapp', JSON.stringify(delivery || {})]);
+    res.json({ ok: true, ref });
+  } catch (e) { console.error('[whatsapp sale] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
 // ─── Admin ─────────────────────────────────────────────────────────
 
 app.delete('/api/admin/user/:email', authAdmin, async (req, res) => {
@@ -631,11 +646,13 @@ app.get('/api/admin/cart', authAdmin, async (req, res) => {
 
 app.get('/api/admin/sales', authAdmin, async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM payments WHERE status IN ('accepted','finalizado','vendido','concluido') ORDER BY id DESC");
+    const [rows] = await db.query("SELECT * FROM payments WHERE status IN ('accepted','finalizado','vendido','concluido','pendente') ORDER BY id DESC");
     const out = [];
     for (const p of rows) {
       let items = [];
       try { items = JSON.parse(p.items || '[]'); } catch (_) { items = []; }
+      let delivery = {};
+      try { delivery = JSON.parse(p.delivery || '{}'); } catch (_) { delivery = {}; }
       const first = items[0] || {};
       let seller = null;
       if (first.id) {
@@ -654,11 +671,20 @@ app.get('/api/admin/sales', authAdmin, async (req, res) => {
         seller: seller ? seller.name : null,
         seller_email: seller ? seller.email : null,
         status: p.status,
+        method: p.method || 'mcx',
+        delivery: delivery,
         created_at: p.created_at
       });
     }
     res.json({ ok: true, sales: out });
   } catch (e) { res.status(500).json({ ok: false, sales: [] }); }
+});
+
+app.post('/api/admin/sales/:ref/confirm', authAdmin, async (req, res) => {
+  try {
+    const [r] = await db.query("UPDATE payments SET status='finalizado', status_reason='confirmado no admin' WHERE ref=? AND method='whatsapp'", [req.params.ref]);
+    res.json({ ok: true, changed: r.affectedRows > 0 });
+  } catch (e) { res.status(500).json({ ok: false }); }
 });
 
 app.get('/api/admin/stats', authAdmin, async (req, res) => {
@@ -788,6 +814,14 @@ async function initDB() {
     const vCols = colVerify[0].map(c => c.COLUMN_NAME);
     if (!vCols.includes('attempts')) {
       await db.query(`ALTER TABLE verifications ADD COLUMN attempts INT DEFAULT 0`);
+    }
+    const colPay = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments'`);
+    const payCols = colPay[0].map(c => c.COLUMN_NAME);
+    if (!payCols.includes('method')) {
+      await db.query(`ALTER TABLE payments ADD COLUMN method VARCHAR(20) DEFAULT 'mcx'`);
+    }
+    if (!payCols.includes('delivery')) {
+      await db.query(`ALTER TABLE payments ADD COLUMN delivery TEXT`);
     }
     // admin auto: promoção via env
     if (process.env.ADMIN_EMAIL) {
