@@ -213,6 +213,7 @@ tbody tr.row:hover{background:#fffaf5}
       <button class="side-tab" data-tab="sales" onclick="setTab('sales')"><i class="fa-solid fa-circle-check"></i>Vendas<span class="cnt" id="cntSales">0</span></button>
       <button class="side-tab" data-tab="chats" onclick="setTab('chats')"><i class="fa-solid fa-comment-dots"></i>Chats<span class="cnt" id="cntChats">0</span></button>
       <button class="side-tab" data-tab="cart" onclick="setTab('cart')"><i class="fa-solid fa-cart-shopping"></i>Carrinho<span class="cnt" id="cntCart">0</span></button>
+      <button class="side-tab" data-tab="admins" onclick="setTab('admins')"><i class="fa-solid fa-shield-halved"></i>Admins<span class="cnt" id="cntAdmins">0</span></button>
     </div>
     <div class="side-foot">
       <div class="admin"><div class="avatar" id="sideAvatar">A</div><div style="min-width:0"><div class="nm" id="sideName">Admin</div><div class="em" id="sideEmail">…</div></div></div>
@@ -247,10 +248,33 @@ tbody tr.row:hover{background:#fffaf5}
   </div>
 </div>
 
+<div class="modal-mask" id="adminModal">
+  <div class="modal">
+    <h3><i class="fa-solid fa-user-shield" style="color:#6d28d9"></i>Novo Admin</h3>
+    <p>Cria um novo acesso ao painel com email e password próprios (independente da conta do site).</p>
+    <input id="aName" placeholder="Nome">
+    <input id="aEmail" type="email" placeholder="Email">
+    <input id="aPass" type="password" placeholder="Password (mín. 6)">
+    <div class="err" id="aErr"></div>
+    <div class="row"><button class="btn" style="background:#6d28d9" onclick="confirmAddAdmin()">Criar admin</button><button class="btn second" onclick="closeAdminModal()">Cancelar</button></div>
+  </div>
+</div>
+
+<div class="modal-mask" id="passModal">
+  <div class="modal">
+    <h3><i class="fa-solid fa-key" style="color:#FF6B00"></i>Mudar a minha password</h3>
+    <p>Altera a password deste acesso ao painel.</p>
+    <input id="pCurrent" type="password" placeholder="Password atual">
+    <input id="pNew" type="password" placeholder="Nova password (mín. 6)">
+    <div class="err" id="pErr"></div>
+    <div class="row"><button class="btn" style="background:#FF6B00" onclick="confirmPass()">Guardar</button><button class="btn second" onclick="closePassModal()">Cancelar</button></div>
+  </div>
+</div>
+
 <div class="toasts" id="toasts"></div>
 
 <script>
-var TOKEN='', products=[], users=[], chats=[], cart=[], sales=[];
+var TOKEN='', products=[], users=[], chats=[], cart=[], sales=[], admins=[];
 var activeTab='kpis', searchQ='', pFilterStatus='', pFilterCat='';
 var delTarget=null, drawerIdx=0;
 var ADMIN_EMAIL='';
@@ -317,9 +341,8 @@ function doLogin(){
   if(!em||!pw){byId('loginErr').textContent='Preenche email e password';return}
   byId('loginErr').textContent='';
   API.setTokenKey('yabisno_admin_token');
-  API.login(em,pw).then(function(r){
+  API.adminLogin(em,pw).then(function(r){
     if(!r.ok){byId('loginErr').textContent=r.error||'Login falhou';return}
-    if(!r.user||r.user.role!=='admin'){byId('loginErr').textContent='Esta conta não é admin';return}
     TOKEN=r.token;
     ADMIN_EMAIL=em;
     localStorage.setItem('yabisno_admin_session','1');
@@ -358,6 +381,7 @@ function loadAll(){
   req('/api/admin/chats').then(function(d){chats=d||[];byId('cntChats').textContent=chats.length;if(activeTab==='chats')renderChats();refreshDrawerChat()});
   req('/api/admin/cart').then(function(d){cart=d||[];byId('cntCart').textContent=cart.length;if(activeTab==='cart')renderCart()});
   req('/api/admin/sales').then(function(d){sales=(d&&d.sales)||[];byId('cntSales').textContent=sales.length;if(activeTab==='kpis')renderKpis();if(activeTab==='sales')renderSalesTab()});
+  req('/api/admin/admins').then(function(d){admins=d||[];byId('cntAdmins').textContent=admins.length;if(activeTab==='admins')renderAdmins()});
 }
 function refreshDrawerChat(){
   var el=document.querySelector('.drawer-body');
@@ -484,7 +508,7 @@ function renderKpis(){
 function setTab(t){
   activeTab=t;
   document.querySelectorAll('.side-tab').forEach(function(x){x.classList.toggle('active',x.dataset.tab===t)});
-  var ttl={kpis:['Painel de Controlo','Visão geral da plataforma'],users:['Users','Gestão de utilizadores'],products:['Produtos','Aprovação e gestão de anúncios'],sales:['Vendas','Vendas pendentes e finalizadas'],chats:['Chats','Conversas entre compradores e vendedores'],cart:['Carrinho','Itens adicionados ao carrinho']};
+  var ttl={kpis:['Painel de Controlo','Visão geral da plataforma'],users:['Users','Gestão de utilizadores'],products:['Produtos','Aprovação e gestão de anúncios'],sales:['Vendas','Vendas pendentes e finalizadas'],chats:['Chats','Conversas entre compradores e vendedores'],cart:['Carrinho','Itens adicionados ao carrinho'],admins:['Admins','Gestão de acessos ao painel']};
   var tk=ttl[t]||ttl.kpis;
   byId('tbTitle').textContent=tk[0];
   byId('tbCrumb').textContent=tk[1];
@@ -514,6 +538,7 @@ function renderTab(){
   else if(activeTab==='products')renderProducts();
   else if(activeTab==='sales')renderSalesTab();
   else if(activeTab==='chats')renderChats();
+  else if(activeTab==='admins')renderAdmins();
   else renderCart();
 }
 function onSearch(){renderTab()}
@@ -755,6 +780,71 @@ function renderCart(){
   byId('mainContent').innerHTML=html;
 }
 
+/* ------------ ADMINS ------------ */
+function renderAdmins(){
+  var html='<div class="toolbar">'
+    +'<button class="btn" onclick="openAddAdmin()"><i class="fa-solid fa-user-plus" style="color:#6d28d9"></i>Novo admin</button>'
+    +'<button class="btn" onclick="openPassModal()"><i class="fa-solid fa-key" style="color:#FF6B00"></i>Mudar a minha password</button>'
+    +'</div>';
+  html+='<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Admin</th><th>Email</th><th>Registo</th><th></th></tr></thead><tbody>';
+  if(!admins.length){
+    html+='<tr><td colspan="4"><div class="empty"><i class="fa-solid fa-shield-halved"></i><p>Sem admins</p><small>Os acessos ao painel aparecem aqui</small></div></td></tr>';
+  }
+  for(var i=0;i<admins.length;i++){
+    var a=admins[i];
+    var me=String(a.email||'').toLowerCase()===String(ADMIN_EMAIL||'').toLowerCase();
+    html+='<tr'+(me?' style="background:#fffaf2"':'')+'>'
+      +'<td><div class="t-owner"><div class="av">'+esc((a.name||'?').charAt(0)).toUpperCase()+'</div><div>'+esc(a.name||'Admin')+(me?' <span class="badge active" style="font-size:10px">Tu</span>':'')+'</div></div></td>'
+      +'<td style="font-size:12.5px">'+esc(a.email)+'</td>'
+      +'<td style="font-size:12px;color:#8a8578">'+saleDate(a.created_at)+'</td>'
+      +'<td>'+(me?'':'<div class="actions"><button class="act red" title="Eliminar admin" onclick="delAdmin(\''+esc(String(a.email))+'\')"><i class="fa-solid fa-user-xmark"></i></button></div>')+'</td>'
+      +'</tr>';
+  }
+  html+='</tbody></table></div></div>';
+  byId('mainContent').innerHTML=html;
+}
+function openAddAdmin(){
+  byId('aName').value='';byId('aEmail').value='';byId('aPass').value='';byId('aErr').textContent='';
+  byId('adminModal').classList.add('open');
+  setTimeout(function(){byId('aName').focus()},50);
+}
+function closeAdminModal(){byId('adminModal').classList.remove('open')}
+function confirmAddAdmin(){
+  var name=byId('aName').value.trim(),email=byId('aEmail').value.trim(),pass=byId('aPass').value;
+  if(!name||!email||!pass){byId('aErr').textContent='Preenche nome, email e password';return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){byId('aErr').textContent='Email inválido';return}
+  if(pass.length<6){byId('aErr').textContent='A password tem de ter pelo menos 6 caracteres';return}
+  API.createAdmin({name:name,email:email,password:pass}).then(function(d){
+    if(!d||!d.ok){byId('aErr').textContent=(d&&d.error)||'Erro ao criar';return}
+    closeAdminModal();
+    toast('Admin criado!');
+    loadAll();
+  }).catch(function(){byId('aErr').textContent='Erro no servidor'});
+}
+function openPassModal(){
+  byId('pCurrent').value='';byId('pNew').value='';byId('pErr').textContent='';
+  byId('passModal').classList.add('open');
+}
+function closePassModal(){byId('passModal').classList.remove('open')}
+function confirmPass(){
+  var cur=byId('pCurrent').value,nv=byId('pNew').value;
+  if(!cur||!nv){byId('pErr').textContent='Preenche os dois campos';return}
+  if(nv.length<6){byId('pErr').textContent='A nova password tem de ter pelo menos 6 caracteres';return}
+  API.changeAdminPassword({currentPassword:cur,newPassword:nv}).then(function(d){
+    if(!d||!d.ok){byId('pErr').textContent=(d&&d.error)||'Erro ao mudar';return}
+    closePassModal();
+    toast('Password do painel alterada!','ok');
+  }).catch(function(){byId('pErr').textContent='Erro no servidor'});
+}
+function delAdmin(email){
+  if(!email)return;
+  if(!confirm('Remover o acesso ao painel de '+email+'?'))return;
+  API.deleteAdmin(email).then(function(d){
+    if(d&&d.ok){toast('Admin removido');loadAll();}
+    else toast((d&&d.error)||'Não foi possível remover','err');
+  }).catch(function(){toast('Erro no servidor','err')});
+}
+
 /* ------------ toast ------------ */
 function toast(m,tp){
   var c=byId('toasts'),el=document.createElement('div');
@@ -772,9 +862,10 @@ function init(){
   if(tok&&usr){
     try{
       var em=JSON.parse(usr).email;
-      API.getUser(em).then(function(r){
-        if(r.ok&&r.user&&r.user.role==='admin'){
+      API.adminMe().then(function(r){
+        if(r.ok&&r.user){
           TOKEN=tok;ADMIN_EMAIL=r.user.email;
+          localStorage.setItem('yabisno_admin_user',JSON.stringify(r.user));
           enterApp(r.user);
         }else logout();
       }).catch(function(){logout()});

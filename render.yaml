@@ -27,6 +27,8 @@ services:
         sync: false
       - key: ADMIN_EMAIL
         sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: PAY_URL
         sync: false
       - key: PAY_BEARER_TOKEN

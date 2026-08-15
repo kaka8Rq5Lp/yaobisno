@@ -126,9 +126,8 @@ function adminLogin(){
   if(!email||!pass){byId('loginError').textContent='Preenche email e password';return}
   byId('loginError').textContent='';
   API.setTokenKey('yabisno_admin_token');
-  API.login(email,pass).then(function(r){
+  API.adminLogin(email,pass).then(function(r){
     if(!r.ok){byId('loginError').textContent=r.error||'Login falhou';return}
-    if(r.user.role!=='admin'){byId('loginError').textContent='Esta conta não tem acesso de admin';return}
     ADMIN_TOKEN=r.token;
     byId('adminEmailDisp').textContent=r.user.email;
     localStorage.setItem('yabisno_admin_session','1');
@@ -248,8 +247,8 @@ function init(){
   if(tok&&usr){
     try{
       var email=JSON.parse(usr).email;
-      API.getUser(email).then(function(r){
-        if(r.ok&&r.user&&r.user.role==='admin'){
+      API.adminMe().then(function(r){
+        if(r.ok&&r.user){
           ADMIN_TOKEN=tok;
           enterPanel();
         }else{

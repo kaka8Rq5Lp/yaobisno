@@ -190,6 +190,84 @@ app.post('/api/login', async (req, res) => {
   } catch (e) { console.error('[login] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
+// ─── Admin separado (painel) ─────────────────────────────────────────
+// Login do painel admin: NÃO usa users.password, usa a tabela admins.
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    if (!rateLimit('adminlogin:' + ip, 10, 15 * 60 * 1000).allowed)
+      return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tenta de novo dentro de 15 minutos.' });
+    const [rows] = await db.query('SELECT * FROM admins WHERE email = ?', [String(email || '').toLowerCase()]);
+    if (rows.length === 0) return res.json({ ok: false, error: 'Email ou password incorretos' });
+    const a = rows[0];
+    let ok = false;
+    if (a.password && a.password.indexOf('$2') === 0) ok = await bcrypt.compare(password, a.password);
+    else ok = (password === a.password);
+    if (!ok) return res.json({ ok: false, error: 'Email ou password incorretos' });
+    const user = { name: a.name, email: a.email, role: 'admin' };
+    res.json({ ok: true, user, token: signToken(user) });
+  } catch (e) { console.error('[admin login] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
+// Quem sou eu (valida sessão do painel)
+app.get('/api/admin/me', authAdmin, (req, res) => {
+  res.json({ ok: true, user: { name: req.auth.name, email: req.auth.email, role: 'admin' } });
+});
+
+// Listar admins do painel
+app.get('/api/admin/admins', authAdmin, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT id,name,email,created_at FROM admins ORDER BY id');
+    res.json(rows);
+  } catch (e) { res.status(500).json([]); }
+});
+
+// Criar novo admin
+app.post('/api/admin/admins', authAdmin, async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) return res.json({ ok: false, error: 'Preenche nome, email e password' });
+    if (String(password).length < 6) return res.json({ ok: false, error: 'A password tem de ter pelo menos 6 caracteres' });
+    const hash = await bcrypt.hash(password, 10);
+    await db.query('INSERT INTO admins (name,email,password) VALUES (?,?,?)', [name, String(email).toLowerCase(), hash]);
+    res.json({ ok: true });
+  } catch (e) {
+    const dup = String(e.message).toLowerCase().includes('duplicate');
+    res.status(dup ? 400 : 500).json({ ok: false, error: dup ? 'Email já é admin do painel' : 'Erro no servidor' });
+  }
+});
+
+// Mudar password do admin autenticado
+app.put('/api/admin/password', authAdmin, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.json({ ok: false, error: 'Preenche a password atual e a nova' });
+    if (String(newPassword).length < 6) return res.json({ ok: false, error: 'A nova password tem de ter pelo menos 6 caracteres' });
+    const [rows] = await db.query('SELECT * FROM admins WHERE email = ?', [req.auth.email]);
+    if (rows.length === 0) return res.status(403).json({ ok: false, error: 'Conta não encontrada' });
+    const a = rows[0];
+    let ok = false;
+    if (a.password && a.password.indexOf('$2') === 0) ok = await bcrypt.compare(currentPassword, a.password);
+    else ok = (currentPassword === a.password);
+    if (!ok) return res.json({ ok: false, error: 'Password atual incorreta' });
+    const hash = await bcrypt.hash(newPassword, 10);
+    await db.query('UPDATE admins SET password=? WHERE email=?', [hash, req.auth.email]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
+// Eliminar admin (não pode eliminar-se a si mesmo)
+app.delete('/api/admin/admins/:email', authAdmin, async (req, res) => {
+  try {
+    const email = String(req.params.email).toLowerCase();
+    if (email === String(req.auth.email).toLowerCase())
+      return res.json({ ok: false, error: 'Não podes eliminar a tua própria conta de admin' });
+    const [r] = await db.query('DELETE FROM admins WHERE email=?', [email]);
+    res.json({ ok: true, changed: r.affectedRows > 0 });
+  } catch (e) { res.status(500).json({ ok: false }); }
+});
+
 app.post('/api/register', async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
@@ -739,6 +817,13 @@ async function initDB() {
       street VARCHAR(255) DEFAULT '',
       reference VARCHAR(255) DEFAULT ''
     )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS admins (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
     await db.query(`CREATE TABLE IF NOT EXISTS products (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -827,6 +912,15 @@ async function initDB() {
     if (process.env.ADMIN_EMAIL) {
       const [r] = await db.query('UPDATE users SET role=? WHERE email=? AND (role IS NULL OR role != ?)', ['admin', process.env.ADMIN_EMAIL, 'admin']);
       console.log('ADMIN_EMAIL: ' + process.env.ADMIN_EMAIL + ' verificado' + (r.affectedRows ? ' (promovido)' : ''));
+    }
+    // admin separado (painel): seed inicial a partir do env ADMIN_EMAIL + ADMIN_PASSWORD
+    if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      const [cnt] = await db.query('SELECT COUNT(*) AS c FROM admins');
+      if (Number(cnt[0].c) === 0) {
+        const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+        await db.query('INSERT INTO admins (name,email,password) VALUES (?,?,?)', ['Admin', String(process.env.ADMIN_EMAIL).toLowerCase(), hash]);
+        console.log('Admin do painel criado a partir do env ADMIN_EMAIL/ADMIN_PASSWORD');
+      }
     }
     console.log('Base de dados inicializada');
   } catch (e) {

@@ -121,6 +121,30 @@ var API = (function(){
     return api('/api/sales/whatsapp', {method:'POST', body:data});
   }
 
+  // ─── Admin (painel separado) ──────────────────────────────────────
+
+  function adminLogin(email, password){
+    return api('/api/admin/login', {method:'POST', body:{email,password}}).then(function(r){
+      if(r.ok&&r.token)setToken(r.token);
+      return r;
+    });
+  }
+  function adminMe(){
+    return api('/api/admin/me');
+  }
+  function listAdmins(){
+    return api('/api/admin/admins');
+  }
+  function createAdmin(data){
+    return api('/api/admin/admins', {method:'POST', body:data});
+  }
+  function changeAdminPassword(data){
+    return api('/api/admin/password', {method:'PUT', body:data});
+  }
+  function deleteAdmin(email){
+    return api('/api/admin/admins/'+encodeURIComponent(email), {method:'DELETE'});
+  }
+
   return {
     setTokenKey: setTokenKey,
     login: login,
@@ -148,6 +172,12 @@ var API = (function(){
     createPayment: createPayment,
     getPayment: getPayment,
     refreshPayment: refreshPayment,
-    recordWhatsappOrder: recordWhatsappOrder
+    recordWhatsappOrder: recordWhatsappOrder,
+    adminLogin: adminLogin,
+    adminMe: adminMe,
+    listAdmins: listAdmins,
+    createAdmin: createAdmin,
+    changeAdminPassword: changeAdminPassword,
+    deleteAdmin: deleteAdmin
   };
 })();
