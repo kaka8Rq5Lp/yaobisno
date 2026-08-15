@@ -518,10 +518,12 @@ function fmtMorada(d){
   return p;
 }
 function renderSales(){
-  var list=finalizedSales();
-  var pend=sales.filter(function(s){var st=String(s.status||'');return st==='pendente'||st==='pago'});
+  var all=(activeTab==='sales')?filterSales(sales):sales;
+  var list=all.filter(function(s){var st=String(s.status||'');return st==='accepted'||st==='finalizado'||st==='vendido'||st==='concluido'});
+  var pend=all.filter(function(s){var st=String(s.status||'');return st==='pendente'||st==='pago'});
+  var f=(activeTab==='sales')&&(sf.from||sf.to||sf.status||sfSeller);
   var html='';
-  html+='<div style="margin-top:28px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Vendas a aguardar (WhatsApp)</h2></div>';
+  html+='<div style="margin-top:22px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Vendas a aguardar (WhatsApp)</h2>'+(f?'<span class="badge" style="background:#fff1e0;color:#FF6B00">filtrado</span>':'')+'</div>';
   if(!pend.length){
     html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem vendas pendentes</p><small>Encomendas fechadas no WhatsApp a aguardar comprovativo/confirmação aparecem aqui</small></div></div>';
   }else{
@@ -542,6 +544,7 @@ function renderSales(){
         +'<td>'+(isPaid
             ?'<button class="btn" style="margin-right:6px" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>Validar</button>'
             :'<span style="font-size:10.5px;color:#9aa0a6">/<span>')
+          +'<button class="btn second" style="margin-right:6px" onclick="exportSalePdf(\''+esc(String(s.ref))+'\')" title="Fatura PDF"><i class="fa-solid fa-file-pdf"></i></button>'
           +'<button class="btn second" style="background:#fde8e8;color:#dc2626;border-color:#f5c2c2" onclick="deleteSale(\''+esc(String(s.ref))+'\')" title="Remover venda"><i class="fa-solid fa-trash"></i></button>'
           +'</td>'
         +'</tr>';
@@ -570,6 +573,7 @@ function renderSales(){
       +'<td>'+(k.comprovativo&&k.comprovativo.image
             ?'<button class="btn second" style="margin-right:6px" onclick="viewReceipt(\''+esc(String(k.ref||''))+'\')" title="Ver comprovativo"><i class="fa-solid fa-image"></i> Ver</button>'
             :'') 
+          +'<button class="btn second" style="margin-right:6px" onclick="exportSalePdf(\''+esc(String(k.ref||''))+'\')" title="Fatura PDF"><i class="fa-solid fa-file-pdf"></i></button>'
           +'<button class="btn second" style="background:#fde8e8;color:#dc2626;border-color:#f5c2c2" onclick="deleteSale(\''+esc(String(k.ref||''))+'\')" title="Remover venda"><i class="fa-solid fa-trash"></i></button></td>'
       +'</tr>';
   }
@@ -579,12 +583,56 @@ function renderSales(){
 function renderSalesTab(){
   var pend=sales.filter(function(s){var st=String(s.status||'');return st==='pendente'||st==='pago'});
   var list=finalizedSales();
-  var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">'
+  var sellers={};
+  (pend.concat(list)).forEach(function(k){var v=k.seller||k.seller_email||'—';sellers[v]=1});
+  var selS='<select id="sfSeller" onchange="sfSeller=this.value;renderSalesTab()"><option value="">Todos os vendedores</option>';
+  Object.keys(sellers).forEach(function(v){selS+='<option value="'+esc(v)+'"'+(sfSeller===v?' selected':'')+'>'+esc(v)+'</option>'});
+  selS+='</select>';
+  var selSt='<select id="sfStatus" onchange="sfSeller=\'\';sf.status=this.value;renderSalesTab()"><option value="">Todos os estados</option>'
+    +'<option value="pendente"'+(sf.status==='pendente'?' selected':'')+'>Pendente</option>'
+    +'<option value="pago"'+(sf.status==='pago'?' selected':'')+'>Pago (comp. recebido)</option>'
+    +'<option value="finalizado"'+(sf.status==='finalizado'?' selected':'')+'>Finalizado</option>'
+    +'</select>';
+  var html='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">'
     +'<div><h2 style="font-size:18px;font-weight:800">Painel de Vendas</h2><div style="font-size:12.5px;color:#9aa0a6;margin-top:3px">'+pend.length+' pendente'+(pend.length===1?'':'s')+' · '+list.length+' finalizada'+(list.length===1?'':'s')+'</div></div>'
     +'<button class="btn second" onclick="openPayModal()"><i class="fa-solid fa-building-columns"></i>Conta p/ pagamento</button>'
     +'</div>'
+    +'<div class="table-card" style="padding:14px 0 0"><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:0 16px">'
+    +'<div><div style="font-size:11px;color:#9aa0a6;margin-bottom:4px">De</div><input type="date" id="sfFrom" value="'+((sf.from)||'')+'" style="border:1.5px solid #e6e2d9;border-radius:10px;padding:7px 10px;font-size:12.5px" onchange="sf.from=this.value||\'\';renderSalesTab()"></div>'
+    +'<div><div style="font-size:11px;color:#9aa0a6;margin-bottom:4px">Até</div><input type="date" id="sfTo" value="'+((sf.to)||'')+'" style="border:1.5px solid #e6e2d9;border-radius:10px;padding:7px 10px;font-size:12.5px" onchange="sf.to=this.value||\'\';renderSalesTab()"></div>'
+    +'<div><div style="font-size:11px;color:#9aa0a6;margin-bottom:4px">Estado</div>'+selSt+'</div>'
+    +'<div><div style="font-size:11px;color:#9aa0a6;margin-bottom:4px">Vendedor</div>'+selS+'</div>'
+    +'<button class="btn second" onclick="sf.from=\'\';sf.to=\'\';sf.status=\'\';sfSeller=\'\';renderSalesTab()"><i class="fa-solid fa-rotate-left"></i>Limpar</button>'
+    +'<div style="margin-left:auto;display:flex;gap:14px;font-size:12.5px;padding-bottom:10px"><span>Total filtrado: <b>'+fmt(filterTotal())+'</b></span><span>Vendas: <b>'+filterSales(sales).length+'</b></span></div>'
+    +'</div>'
     +renderSales();
   byId('mainContent').innerHTML=html;
+}
+var sf={from:'',to:'',status:''}, sfSeller='';
+function inDateRange(s){
+  if(!sf.from&&!sf.to&&!sf.status&&!sfSeller)return true;
+  if(sfSeller&&(String(s.seller||s.seller_email||'—')!==sfSeller))return false;
+  if(sf.status){
+    if(sf.status==='finalizado'){if(!(finalizedSales().indexOf(s)>-1))return false}
+    else if(sf.status==='pago'){if(String(s.status||'')!=='pago')return false}
+    else if(String(s.status||'')!==sf.status)return false;
+  }
+  if(sf.from||sf.to){
+    var d=new Date(s.created_at||0);
+    if(isNaN(d.getTime()))return false;
+    var day=d.toISOString().slice(0,10);
+    if(sf.from&&day<sf.from)return false;
+    if(sf.to&&day>sf.to)return false;
+  }
+  return true;
+}
+function filterSales(list){
+  return list.filter(inDateRange);
+}
+function filterTotal(){
+  var t=0;
+  filterSales(sales).forEach(function(s){t+=Number(s.amount)||0});
+  return t;
 }
 function confirmVenda(ref){
   if(!ref)return;
@@ -656,21 +704,35 @@ function savePayDetails(){
   }).catch(function(){toast('Erro a guardar','err')});
 }
 function renderImport(){
-  var sel='<div style="display:flex;gap:8px;margin-bottom:16px">'
-    +'<button class="btn '+(impKind==='users'?'':'')+'" style="'+(impKind==='users'?'background:#FF6B00;color:#fff;border-color:#FF6B00;':'')+'" onclick="impKind=\'users\';renderImport()"><i class="fa-solid fa-users"></i>Utilizadores</button>'
-    +'<button class="btn '+(impKind==='sales'?'':'')+'" style="'+(impKind==='sales'?'background:#FF6B00;color:#fff;border-color:#FF6B00;':'')+'" onclick="impKind=\'sales\';renderImport()"><i class="fa-solid fa-circle-check"></i>Vendas</button>'
+  var sel='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">'
+    +'<button class="btn " style="'+(impKind==='users'?'background:#FF6B00;color:#fff;border-color:#FF6B00;':'')+'" onclick="impKind=\'users\';renderImport()"><i class="fa-solid fa-users"></i>Utilizadores</button>'
+    +'<button class="btn " style="'+(impKind==='sales'?'background:#FF6B00;color:#fff;border-color:#FF6B00;':'')+'" onclick="impKind=\'sales\';renderImport()"><i class="fa-solid fa-circle-check"></i>Vendas</button>'
+    +'<button class="btn " style="'+(impKind==='products'?'background:#FF6B00;color:#fff;border-color:#FF6B00;':'')+'" onclick="impKind=\'products\';renderImport()"><i class="fa-solid fa-box"></i>Produtos</button>'
+    +'<button class="btn " style="'+(impKind==='settings'?'background:#FF6B00;color:#fff;border-color:#FF6B00;':'')+'" onclick="impKind=\'settings\';renderImport()"><i class="fa-solid fa-gear"></i>Configuração</button>'
     +'</div>';
+  var info;
   if(impKind==='users'){
-    sel+='<div class="info" style="background:#eef6ff;border:1px solid #cfe4ff;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.7;margin-bottom:14px;color:#1b4a7a">'
-      +'<b>Formato:</b> JSON ou CSV. Colunas: <code>name, email, phone, role, password</code> (role: comprador/vendedor/admin).<br>'
+    info='<b>Formato:</b> JSON ou CSV. Colunas: <code>name, email, phone, role, password</code> (role: comprador/vendedor/admin).<br>'
       +'<b>Exemplo JSON:</b> <code>[{"name":"João","email":"joao@ex.com","phone":"900000000","role":"comprador"}]</code><br>'
-      +'<b>Exemplo CSV:</b> <code>name,email,phone,role,password</code>'+(importTip?importTip:'')+'</div>';
-  }else{
-    sel+='<div class="info" style="background:#eef6ff;border:1px solid #cfe4ff;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.7;margin-bottom:14px;color:#1b4a7a">'
-      +'<b>Formato:</b> JSON ou CSV. Colunas: <code>ref, buyer_email, mobile, amount, items, status, method, delivery</code>.<br>'
+      +'<b>Exemplo CSV:</b> <code>name,email,phone,role,password</code>';
+  }else if(impKind==='sales'){
+    info='<b>Formato:</b> JSON ou CSV. Colunas: <code>ref, buyer_email, mobile, amount, items, status, method, delivery</code>.<br>'
       +'Ex. CSV: <code>ref,buyer_email,mobile,amount,status,method</code> · <b>amount</b> e <b>buyer_email</b> são obrigatórios.<br>'
-      +'<b>Exemplo JSON:</b> <code>[{"buyer_email":"c@ex.com","mobile":"900000","amount":"10500","items":[{"name":"Tshirt","price":10000,"qty":1}]}]</code>'+(importTip?importTip:'')+'</div>';
+      +'<b>Exemplo JSON:</b> <code>[{"buyer_email":"c@ex.com","mobile":"900000","amount":"10500","items":[{"name":"Tshirt","price":10000,"qty":1}]}]</code>';
+  }else if(impKind==='products'){
+    info='<b>Formato:</b> JSON ou CSV. Colunas: <code>name, price, category, location, images, status</code>.<br>'
+      +'<b>name</b> e <b>price</b> são obrigatórios. Se incluir <code>id</code> atualiza o produto existente; sem id procurar por nome.<br>'
+      +'<b>Exemplo JSON:</b> <code>[{"name":"Tshirt Ya","price":"10000","category":"Roupa","status":"active"}]</code>';
+  }else{
+    info='<b>Formato:</b> JSON ou CSV. Colunas: <code>key, value</code>.<br>'
+      +'Chaves aceites (Config): <code>pagamento_detalhes</code> (conta/pedido de pagamento), <code>pagamento_iban</code> (IBAN da loja), <code>fatura_seq</code> (contador de faturas).<br>'
+      +'<b>Exemplo JSON:</b> <code>[{"key":"pagamento_iban","value":"AO06000000000000000000000"}]</code>';
   }
+  sel+=info?'<div class="info" style="background:#eef6ff;border:1px solid #cfe4ff;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.7;margin-bottom:14px;color:#1b4a7a">'+info+(importTip?importTip:'')+'</div>':'';
+  var exObj=impKind==='users'?'{"name":"João","email":"joao@ex.com","phone":"900000000","role":"comprador"}'
+    :impKind==='sales'?'"buyer_email":"c@ex.com","mobile":"900000000","amount":"10500"'
+    :impKind==='products'?'"name":"Tshirt Ya","price":"10000","category":"Roupa"'
+    :'"key":"pagamento_iban","value":"AO06000000000000000000000"';
   sel+='<div class="toolbar">'
     +'<label class="btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px"><i class="fa-solid fa-file-csv"></i>Escolher ficheiro .json/.csv<input type="file" accept=".json,.csv,application/json,text/csv,text/plain" style="display:none" onchange="impFile(this.files)"></label>'
     +'<button class="btn" onclick="exportData()"><i class="fa-solid fa-download"></i>Exportar JSON</button>'
@@ -678,7 +740,7 @@ function renderImport(){
     +'</div>'
     +'<div class="table-card" style="padding:18px">'
     +'<div style="font-size:12.5px;font-weight:700;margin-bottom:8px">Ou cola aqui os dados (JSON ou CSV)</div>'
-    +'<textarea id="impText" placeholder="['+(impKind==='users'?'{"name":"João","email":"joao@ex.com","phone":"900000000","role":"comprador"}':'"buyer_email":"c@ex.com","mobile":"900000000","amount":"10500"')+'...]" style="width:100%;min-height:180px;border:1.5px solid #e6e2d9;border-radius:12px;padding:12px;font-size:12px;font-family:Consolas,monospace;resize:vertical">'+impTextValue+'</textarea>'
+    +'<textarea id="impText" placeholder="['+exObj+'...]" style="width:100%;min-height:180px;border:1.5px solid #e6e2d9;border-radius:12px;padding:12px;font-size:12px;font-family:Consolas,monospace;resize:vertical">'+impTextValue+'</textarea>'
     +'<div class="row" style="margin-top:14px"><button class="btn" style="background:#0a9e4e" onclick="runImport()"><i class="fa-solid fa-file-import"></i>Importar '+impKind+'</button><button class="btn second" onclick="impTextValue=\'\';byId(\'impText\').value=\'\';byId(\'impErr\').textContent=\'\'">Limpar</button></div>'
     +'<div class="err" id="impErr"></div>'
     +'<div id="impResult"></div>'
@@ -762,14 +824,21 @@ function exportPdf(){
       try{
         var doc=new window.jspdf.jsPDF({orientation:impKind==='sales'?'landscape':'portrait'});
         var isUsers=impKind==='users';
+        var titleMap={users:'Utilizadores',sales:'Vendas',products:'Produtos',settings:'Configuração'};
         doc.setFontSize(16);doc.setFont('helvetica','bold');
-        doc.text('Ya o Bisno — Relatório de '+(isUsers?'Utilizadores':'Vendas'),14,16);
+        doc.text('Ya o Bisno — Relatório de '+(titleMap[impKind]||impKind),14,16);
         doc.setFontSize(9);doc.setFont('helvetica','normal');
         doc.text('Gerado em '+new Date().toLocaleString('pt-PT')+' · Total: '+d.rows.length,14,23);
         var head, body;
         if(isUsers){
           head=[['#','Nome','Email','Telefone','Tipo','Verif.','Registo']];
           body=d.rows.map(function(r,i){return [i+1,String(r.name||''),String(r.email||''),String(r.phone||''),String(r.role||''),r.verified?'Sim':'Não',String(r.created_at||'').slice(0,10)]});
+        }else if(impKind==='products'){
+          head=[['#','Nome','Preço (Kz)','Categoria','Local','Estado','ID']];
+          body=d.rows.map(function(r,i){return [i+1,String(r.name||''),fmt(Number(r.price)||0),String(r.category||''),String(r.location||''),String(r.status||''),Number(r.id)||'']});
+        }else if(impKind==='settings'){
+          head=[['Chave','Valor']];
+          body=d.rows.map(function(r){return [String(r.key||''),String(r.value||'')]});
         }else{
           head=[['Ref','Cliente','Telefone','Valor (Kz)','Status','Método','Fatura','Data','Comp.']];
           body=d.rows.map(function(r){
@@ -778,11 +847,101 @@ function exportPdf(){
           });
         }
         doc.autoTable({startY:28,head:head,body:body,theme:'grid',headStyles:{fillColor:[255,107,0],fontSize:8},styles:{fontSize:8,cellPadding:2},alternateRowStyles:{fillColor:[250,247,243]},margin:{left:10,right:10}});
-        doc.save('yaobisno-'+(isUsers?'utilizadores':'vendas')+'-'+new Date().toISOString().slice(0,10)+'.pdf');
+        doc.save('yaobisno-'+(isUsers?'utilizadores':impKind)+'-'+new Date().toISOString().slice(0,10)+'.pdf');
         toast('PDF gerado','ok');
       }catch(e){toast('Erro ao gerar PDF','err');console.error(e)}
     }).catch(function(){toast('Erro a obter dados','err')});
   }).catch(function(){toast('Não deu para carregar a biblioteca de PDF','err')});
+}
+function exportSalePdf(ref){
+  var s=sales.find(function(x){return String(x.ref)===String(ref)});
+  if(!s){toast('Venda não encontrada','err');return}
+  loadPDFLib().then(function(){
+    try{
+      var doc=new window.jspdf.jsPDF();
+      var y=14;
+      doc.setFillColor(255,107,0);doc.rect(0,0,210,26,'F');
+      doc.setTextColor(255);doc.setFontSize(16);doc.setFont('helvetica','bold');
+      doc.text('Ya o Bisno',14,13);
+      doc.setFontSize(9);doc.setFont('helvetica','normal');
+      doc.text('FACTURA / RECIBO',14,20);
+      doc.text('Ref: '+(s.ref||'')+' · Fatura: '+(s.fatura||'—'),196,20,{align:'right'});
+      doc.setTextColor(20);
+      y=36;
+      doc.setFontSize(10);doc.setFont('helvetica','bold');
+      doc.text('COMPRADOR',14,y);y+=6;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);
+      doc.text('Email: '+(s.buyer_email||'—'),14,y);y+=5;
+      doc.text('Telefone: '+(s.mobile||'—'),14,y);y+=5;
+      doc.text('Data: '+(s.created_at?saleDate(s.created_at):'—'),14,y);y+=5;
+      doc.text('Método: '+(String(s.method||''))+(String(s.status)==='pago'?' · PAGO':''),14,y);y+=10;
+      doc.setFont('helvetica','bold');doc.setFontSize(10);
+      doc.text('ITENS',14,y);y+=5;
+      var items=(s.items||[]).length?s.items:[{name:'Vários',price:s.amount,qty:1}];
+      var head=[['Produto','Qtd','Valor']];
+      var body=items.map(function(it){return [String(it.name||'Produto'),String(it.qty||1),fmt(it.qty*(it.price||0))]});
+      doc.autoTable({startY:y,head:head,body:body,theme:'striped',headStyles:{fillColor:[40,40,42]},styles:{fontSize:9,cellPadding:2.5}});
+      var endY=doc.lastAutoTable.finalY+8;
+      var sum=0;items.forEach(function(it){sum+=Number(it.qty||1)*(Number(it.price)||0)});
+      doc.text('Subtotal: '+fmt(sum),190,endY,{align:'right'});endY+=6;
+      doc.text('Proteção (5%): '+fmt(Math.round(sum*0.05)),190,endY,{align:'right'});endY+=8;
+      doc.setFont('helvetica','bold');doc.setFontSize(12);
+      doc.text('TOTAL: '+fmt(s.amount),190,endY,{align:'right'});
+      if(s.comprovativo&&s.comprovativo.iban){endY+=16;doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(120);
+        doc.text('Nº fatura: '+(s.comprovativo.fatura||'')+' · IBAN: '+(s.comprovativo.iban||'')+' · Valor pago: '+fmt(s.comprovativo.valor),190,endY,{align:'right'});
+      }
+      doc.save('fatura-'+(s.ref||'venda')+'.pdf');
+      toast('Fatura PDF gerada','ok');
+    }catch(e){toast('Erro a gerar fatura','err');console.error(e)}
+  }).catch(function(){toast('Não deu para carregar a biblioteca de PDF','err')});
+}
+function monthlyReport(){
+  var fs=finalizedSales();
+  if(!fs.length)return '<div class="table-card"><div class="empty"><i class="fa-solid fa-chart-line"></i><p>Sem vendas concluídas</p><small>Quando houver vendas finalizadas, aparece aqui o resumo mensal de receitas</small></div></div>';
+  var now=new Date();
+  var y0=now.getFullYear(), m0=String(now.getMonth()+1).padStart(2,'0');
+  var byDay={};
+  var maxV=0;
+  fs.forEach(function(s){
+    var d;
+    try{d=new Date(s.created_at)}catch(e){return}
+    if(isNaN(d.getTime()))return;
+    var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    byDay[k]=byDay[k]||{count:0,total:0};
+    byDay[k].count++;byDay[k].total+=Number(s.amount)||0;
+    if(byDay[k].total>maxV)maxV=byDay[k].total;
+  });
+  var days=Object.keys(byDay).sort();
+  var monthDays=[],monthTotal=0,monthCount=0;
+  days.forEach(function(k){
+    if(k.indexOf(y0+'-'+m0)===0){monthTotal+=byDay[k].total;monthCount+=byDay[k].count;monthDays.push({k:k,d:byDay[k]})}
+  });
+  var bars='';
+  if(monthDays.length){
+    bars='<div style="display:flex;align-items:flex-end;gap:5px;height:110px;margin-top:14px">';
+    monthDays.forEach(function(md){
+      var hd=md.d.total>0?Math.max(12,Math.round(md.d.total/maxV*100)):8;
+      bars+='<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:0"><div style="width:70%;max-width:34px;background:#FF6B00;border-radius:6px 6px 0 0;height:'+hd+'px;line-height:'+hd+'px;color:#fff;font-size:9px;font-weight:700" title="'+fmt(md.d.total)+'">'+md.d.count+'</div><small style="font-size:9.5px;color:#9aa0a6;margin-top:5px">'+md.k.slice(8)+'</small></div>';
+    });
+    bars+='</div>';
+  }
+  var span12=now.toLocaleDateString('pt-PT',{month:'long',year:'numeric'});
+  var body='';
+  if(monthDays.length){
+    monthDays.forEach(function(md){
+      var mt=Number(md.d.total)||0;
+      body+='<tr><td style="font-size:12px;color:#8a8578">'+md.k+'</td><td>'+md.d.count+'</td><td><span class="t-price">'+fmt(mt)+'</span></td><td style="font-size:12px;color:#8a8578">'+fmt(Math.round(mt/Math.max(1,md.d.count)))+'</td></tr>';
+    });
+  }
+  return '<div class="table-card" style="margin-top:22px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">'
+    +'<h2 style="font-size:16px;font-weight:800"><i class="fa-solid fa-chart-line" style="color:#FF6B00;margin-right:6px"></i>Report mensal de receitas</h2>'
+    +'<div style="display:flex;gap:16px;font-size:12.5px"><span>Total <b>'+span12+'</b>: <b style="color:#0a9e4e">'+fmt(monthTotal)+'</b></span><span>Vendas: <b>'+monthCount+'</b></span></div>'
+    +'</div>'
+    +bars
+    +'<div class="table-wrap" style="margin-top:16px"><table><thead><tr><th>Dia</th><th>Vendas</th><th>Total (Kz)</th><th>Média/venda</th></tr></thead><tbody>'
+    +body
+    +'</tbody></table></div></div>';
 }
 function renderKpis(){
   var pend=products.filter(function(p){return (p.status||'active')==='pending'}).length;
@@ -799,6 +958,7 @@ function renderKpis(){
     +'<div class="kpi"><div class="tl">Total Faturado</div><div class="val">'+fmt(totalFat)+'</div><div class="tb">Receitas de vendas concluídas</div><div class="icn" style="background:#fff1e0;color:#FF6B00"><i class="fa-solid fa-coins"></i></div></div>'
     +'</div>'
     +'<div class="toolbar"><button class="btn" onclick="setTab(\'products\')"><i class="fa-solid fa-box-open"></i>Rever produtos</button><button class="btn" onclick="setTab(\'chats\')"><i class="fa-solid fa-comment-dots"></i>Chats</button><button class="btn" onclick="setTab(\'users\')"><i class="fa-solid fa-users"></i>Users</button></div>'
+    +monthlyReport()
     +renderSales();
 }
 

@@ -985,6 +985,51 @@ app.post('/api/admin/import', authAdmin, async (req, res) => {
           }
         } catch (e) { errs++; }
       }
+    } else if (kind === 'products') {
+      for (const raw of list) {
+        try {
+          const name = String(raw.name || raw.Name || raw.nome).trim();
+          const price = Number(raw.price || raw.preco || raw.valor || 0);
+          if (!name || !(price > 0)) { errs++; continue; }
+          const projId = raw.id ? Number(raw.id) : null;
+          const location = String(raw.location || raw.Loc || raw.local || '').slice(0, 255);
+          const category = String(raw.category || raw.Cat || 'Outros').slice(0, 100);
+          let images = raw.images || raw.image || [];
+          if (typeof images === 'string') { try { images = JSON.parse(images); } catch (_) { images = [images]; } }
+          if (!Array.isArray(images)) images = [images];
+          const isNew = raw.isNew ? 1 : (raw.is_new ? 1 : 0);
+          const negotiable = raw.negotiable ? 1 : 0;
+          const boost = raw.boost ? 1 : 0;
+          const status = String(raw.status || 'active').slice(0, 20);
+          const ownerEmail = String(raw.owner_email || raw.owner || '').slice(0, 255);
+          const values = [name, price, location, category, JSON.stringify(images.filter(Boolean)), isNew, negotiable, boost, status, ownerEmail];
+          if (projId) {
+            await db.query('UPDATE products SET name=?,price=?,location=?,category=?,images=?,is_new=?,negotiable=?,boost=?,status=?,owner_email=? WHERE id=?', [...values.slice(0,10), projId]);
+            upd++;
+          } else {
+            const [ex] = await db.query('SELECT id FROM products WHERE name=? AND status<>? LIMIT 1', [name, 'deleted']);
+            if (ex.length) {
+              await db.query('UPDATE products SET name=?,price=?,location=?,category=?,images=?,is_new=?,negotiable=?,boost=?,status=?,owner_email=? WHERE id=?', [...values, ex[0].id]);
+              upd++;
+            } else {
+              await db.query('INSERT INTO products (name,price,location,category,images,is_new,negotiable,boost,status,owner_email) VALUES (?,?,?,?,?,?,?,?,?,?)', values);
+              ins++;
+            }
+          }
+        } catch (e) { errs++; }
+      }
+    } else if (kind === 'settings') {
+      const whitelist = ['pagamento_detalhes', 'pagamento_iban', 'fatura_seq'];
+      for (const raw of list) {
+        const key = String(raw.key || raw.skey || '').trim();
+        if (!whitelist.includes(key)) { continue; }
+        const val = raw.value !== undefined ? String(raw.value) : (key === 'fatura_seq' ? String(Number(raw[key]) || 0) : String(raw[key] ?? ''));
+        if (val === undefined || val === null || val === '') continue;
+        try {
+          await db.query('INSERT INTO settings (skey,svalue) VALUES (?,?) ON DUPLICATE KEY UPDATE svalue=VALUES(svalue)', [key, val]);
+          upd++;
+        } catch (e) { errs++; }
+      }
     } else if (kind === 'sales') {
       for (const raw of list) {
         try {
@@ -1014,9 +1059,9 @@ app.post('/api/admin/import', authAdmin, async (req, res) => {
         } catch (e) { errs++; }
       }
     } else {
-      return res.json({ ok: false, error: 'Tipo inválido (users|sales)' });
+      return res.json({ ok: false, error: 'Tipo inválido (users|sales|products|settings)' });
     }
-    res.json({ ok: true, inserted: ins, updated: upd, errors: errs, total: list.length });
+    res.json({ ok: true, kind: kind, inserted: ins, updated: upd, errors: errs, total: list.length });
   } catch (e) { console.error('[admin import] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro ao importar' }); }
 });
 
@@ -1027,6 +1072,21 @@ app.get('/api/admin/export/:kind', authAdmin, async (req, res) => {
     if (kind === 'users') {
       const [rows] = await db.query('SELECT id,name,email,phone,role,verified,created_at FROM users ORDER BY id');
       return res.json({ ok: true, kind: 'users', rows });
+    }
+    if (kind === 'products') {
+      const [rows] = await db.query('SELECT id,name,price,location,category,images,is_new,negotiable,boost,status,owner_email,created_at FROM products ORDER BY id');
+      const out = rows.map(p => ({
+        id: p.id, name: p.name, price: Number(p.price), location: p.location, category: p.category,
+        images: (function(){try{return JSON.parse(p.images||'')}catch(_){return []}})(),
+        is_new: !!p.is_new, negotiable: !!p.negotiable, boost: !!p.boost,
+        status: p.status, owner_email: p.owner_email, created_at: p.created_at
+      }));
+      return res.json({ ok: true, kind: 'products', rows: out });
+    }
+    if (kind === 'settings') {
+      const [rows] = await db.query('SELECT skey,svalue FROM settings');
+      const out = rows.map(s => ({ key: s.skey, value: s.svalue }));
+      return res.json({ ok: true, kind: 'settings', rows: out });
     }
     if (kind === 'sales') {
       const [rows] = await db.query("SELECT id,ref,buyer_email,mobile,amount,items,status,method,delivery,fatura,comprovativo,created_at FROM payments ORDER BY id");
@@ -1039,7 +1099,7 @@ app.get('/api/admin/export/:kind', authAdmin, async (req, res) => {
       }));
       return res.json({ ok: true, kind: 'sales', rows: out });
     }
-    res.json({ ok: false, error: 'Tipo inválido (users|sales)' });
+    res.json({ ok: false, error: 'Tipo inválido (users|sales|products|settings)' });
   } catch (e) { res.status(500).json({ ok: false, error: 'Erro ao exportar' }); }
 });
 
