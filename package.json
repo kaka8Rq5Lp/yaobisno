@@ -5,6 +5,7 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
+    "build:css": "tailwindcss -i tailwind.src.css -o tailwind.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -19,5 +20,8 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.23.0",
     "nodemailer": "^9.0.5"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   }
 }

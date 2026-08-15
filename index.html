@@ -11,7 +11,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Ya o bisno — Compra e venda em Angola</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="tailwind.css">
+<link rel="stylesheet" href="legacy.css">
 <script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
 <script src="api.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +32,7 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:var(--bg)
 .btn-outline{background:transparent;color:#FF6B00;border:2px solid #FF6B00;border-radius:14px;font-weight:700;transition:all .2s;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;touch-action:manipulation}
 .btn-outline:hover{background:#FF6B00;color:#fff}
 .product-img-wrap{position:relative;width:100%;padding-bottom:75%;background:#fff;overflow:hidden;border-radius:16px}
-.product-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.product-img-wrap img{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:cover}
 .card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;transition:all .3s;overflow:hidden}
 .card:hover{border-color:#FF6B00;box-shadow:0 12px 40px rgba(255,107,0,.1);transform:translateY(-4px)}
 #productsGrid .card{border:none;border-radius:20px;padding:12px;background:var(--bg);box-shadow:10px 10px 20px var(--shadow),-10px -10px 20px var(--light);border:1px solid rgba(255,255,255,.6);transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s cubic-bezier(.4,0,.2,1)}
@@ -39,7 +40,7 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:var(--bg)
 #productsGrid .card .text-orange{color:var(--orange)!important;font-weight:800!important;font-size:16px!important}
 #productsGrid .card .btn-primary{font-size:.85rem!important;border-radius:12px!important;box-shadow:0 4px 12px rgba(255,107,0,.35)!important}
 .badge-orange{background:linear-gradient(135deg,#FF7A1A,#FF6B00);color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:999px;box-shadow:0 4px 10px rgba(255,107,0,.4)}
-.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
 .modal-panel{width:100%;max-width:460px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin-bottom:0}
 .modal.hidden{display:none}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}

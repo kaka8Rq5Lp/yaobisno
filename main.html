@@ -11,7 +11,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Ya o bisno — Marketplace</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="tailwind.css">
+<link rel="stylesheet" href="legacy.css">
 <script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
 <script src="api.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,9 +34,9 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#fff;colo
 .card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;transition:all .3s;overflow:hidden}
 .card:hover{border-color:#FF5F1F;box-shadow:0 12px 40px rgba(255,95,31,.1);transform:translateY(-4px)}
 .product-img-wrap{position:relative;width:100%;padding-bottom:75%;background:#f8f8f8;overflow:hidden}
-.product-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.product-img-wrap img{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:cover}
 .badge-orange{background:#FF5F1F;color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:999px}
-.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
 .modal-panel{width:100%;max-width:480px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin-bottom:0}
 .modal.hidden{display:none}
 .modal-panel.no-pad{padding:0}
@@ -49,7 +50,7 @@ input:focus,select:focus{border-color:#FF5F1F!important;box-shadow:0 0 0 4px rgb
 header{padding-top:0}
 .cart-sidebar{position:fixed;top:0;right:0;height:100%;width:100%;max-width:420px;background:#fff;box-shadow:-10px 0 60px rgba(0,0,0,.15);z-index:70;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
 .cart-sidebar.open{transform:translateX(0)}
-.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:65;display:none}
+.cart-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:65;display:none}
 .cart-overlay.open{display:block;animation:fadeIn .2s ease}
 .filter-btn{transition:all .2s;cursor:pointer;border:2px solid #FF5F1F;color:#FF5F1F;background:transparent;font-weight:600;min-height:40px;touch-action:manipulation}
 .filter-btn:hover{background:rgba(255,95,31,.08)}

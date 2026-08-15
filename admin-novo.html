@@ -14,7 +14,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 input,select{font-family:inherit;outline:none}
 
 /* login */
-.login-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f0f10 0%,#1a1a1c 100%);z-index:50}
+.login-screen{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f0f10 0%,#1a1a1c 100%);z-index:50}
 .login-card{width:100%;max-width:400px;margin:20px;background:#fff;border-radius:24px;padding:40px 34px;box-shadow:0 24px 80px rgba(0,0,0,.5)}
 .login-logo{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#FF6B00,#FF8F3D);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:800;margin-bottom:22px}
 .login-card h2{font-size:22px;font-weight:800}
@@ -90,7 +90,7 @@ tbody tr.row:hover{background:#fffaf5}
 .t-prod{display:flex;align-items:center;gap:12px}
 .t-thumb{position:relative;width:40px;height:40px;border-radius:11px;overflow:hidden;flex-shrink:0;background:#f1efe9}
 .t-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.t-thumb .more{position:absolute;inset:0;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.t-thumb .more{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .t-prod .nm{font-weight:700;font-size:13.5px;line-height:1.3}
 .t-prod .ct{font-size:11.5px;color:#9aa0a6;margin-top:2px}
 .t-price{font-weight:800;color:#FF6B00;font-size:13.5px}
@@ -113,7 +113,7 @@ tbody tr.row:hover{background:#fffaf5}
 .act.gray{color:#6a6a72}.act.gray:hover{background:#ececec}
 
 /* drawer */
-.drawer-mask{position:fixed;inset:0;background:rgba(15,15,16,.45);opacity:0;pointer-events:none;transition:.25s;z-index:60}
+.drawer-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,15,16,.45);opacity:0;pointer-events:none;transition:.25s;z-index:60}
 .drawer-mask.open{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:-460px;width:460px;max-width:94vw;height:100vh;background:#fff;z-index:61;transition:right .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.12)}
 .drawer.open{right:0}
@@ -165,7 +165,7 @@ button.btn.second:hover{background:#e6e4db}
 .switch.on::after{left:18px}
 
 /* modal */
-.modal-mask{position:fixed;inset:0;background:rgba(15,15,16,.5);display:none;align-items:center;justify-content:center;z-index:70;padding:20px}
+.modal-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,15,16,.5);display:none;align-items:center;justify-content:center;z-index:70;padding:20px}
 .modal-mask.open{display:flex}
 .modal{width:100%;max-width:430px;background:#fff;border-radius:22px;padding:30px 28px;box-shadow:0 24px 80px rgba(0,0,0,.2)}
 .modal h3{font-size:18px;font-weight:800;display:flex;align-items:center;gap:10px}

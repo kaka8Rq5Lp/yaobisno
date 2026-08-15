@@ -11,7 +11,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Ya o bisno — Meu Perfil</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="tailwind.css">
+<link rel="stylesheet" href="legacy.css">
 <script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
 <script src="api.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +32,7 @@ button{font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipul
 .btn-light:hover{background:#eceef1}
 .card{background:#fff;border-radius:20px;border:1px solid rgba(0,0,0,.06);box-shadow:0 4px 24px rgba(0,0,0,.04);transition:all .3s;overflow:hidden}
 .card:hover{box-shadow:0 16px 40px rgba(0,0,0,.08);transform:translateY(-1px)}
-.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:60;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center}
 .modal.md{align-items:center;padding:1rem}
 .modal-panel{width:100%;background:#fff;border-radius:24px 24px 0 0;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.24);animation:slideUp .3s ease}
 .modal.md .modal-panel{max-width:520px;border-radius:24px}
