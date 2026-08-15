@@ -112,23 +112,7 @@ input[type="text"],input[type="file"]{border-radius:12px;width:100%;font-size:.9
         </div>
       </div>
       <div class="mt-3" id="receiptFields">
-        <p class="text-[11px] text-[#9CA3AF] mb-2">Preenche os dados que aparecem no comprovativo anexado (devem bater certo com a fatura do site):</p>
-        <div class="space-y-2.5">
-          <div>
-            <label class="block text-[11px] font-semibold text-[#6B7280] mb-1">Nº da fatura/recibo</label>
-            <input id="rfFatura" type="text" placeholder="FT-2026-0001" class="w-full h-11 px-3 rounded-[12px] border border-[#E5E7EB] text-[13px]">
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-[#6B7280] mb-1">IBAN da conta para pagamento</label>
-            <input id="rfIban" type="text" placeholder="AO06 0000 0000 0000 0000 0000 0" class="w-full h-11 px-3 rounded-[12px] border border-[#E5E7EB] text-[12.5px] font-mono">
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-[#6B7280] mb-1">Valor pago (Kz)</label>
-            <input id="rfValor" type="text" inputmode="numeric" placeholder="Ex: 10002 ou 10.002" class="w-full h-11 px-3 rounded-[12px] border border-[#E5E7EB] text-[13px]">
-            <p class="text-[10px] text-[#9CA3AF] mt-1">Escreve o valor exato que aparece no comprovativo (só dígitos, pontos são ignorados).</p>
-          </div>
-        </div>
-        <p class="text-[11px] text-[#9CA3AF] mt-2.5">O comprovativo deve ser um recibo Multicaixa da tua app bancária.</p>
+        <p class="text-[11px] text-[#9CA3AF]">O comprovativo deve ser um recibo Multicaixa da tua app bancária.</p>
       </div>
       <button id="sendBtn" class="hidden mt-3 w-full h-11 rounded-[14px] bg-[#FF6B00] text-white text-[13.5px] font-bold flex items-center justify-center gap-2 hover:bg-[#e65f00] active:scale-[0.98] transition"><i class="fa-solid fa-paper-plane"></i> Enviar comprovativo</button>
 
@@ -349,14 +333,11 @@ function downscale(file,cb){
 
 function sendReceipt(){
   if(!receiptImage)return;
-  var fatura=byId("rfFatura").value.trim();
-  var iban=byId("rfIban").value.trim();
-  var vRaw=String(byId("rfValor").value||'').trim();
-  var vNorm=vRaw.replace(/\./g,'').replace(/ /g,'').replace(/,/g,'.');
-  var valor=Number(vNorm);
-  if(!fatura){toast("Indica o nº da fatura");return}
-  if(!iban){toast("Indica o IBAN");return}
-  if(!valor||valor<=0){toast("Indica o valor pago");return}
+  var fatura=SALE.fatura||'';
+  var iban=SALE.iban||'';
+  var valor=String(Number(SALE.amount)||0);
+  if(!fatura){toast("Falta o nº da fatura");return}
+  if(!iban){toast("Falta o IBAN da loja");return}
   var btn=byId("sendBtn");
   var sendingEl=byId("sending"),waitEl=byId("waitingBox");
   btn.style.display='none';
