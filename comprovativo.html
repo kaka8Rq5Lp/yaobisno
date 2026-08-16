@@ -345,10 +345,9 @@ function sendReceipt(){
   API.sendComprovativo(SALE.ref,receiptImage,{fatura:fatura,iban:iban,valor:valor}).then(function(r){
     sendingEl.style.display='none';
     if(r&&r.ok){
-      toast("Comprovativo enviado! A aguardar validação.");
       SALE.has_comprovativo=true;SALE.status=r.status||'pendente';
-      applyStatus();
-      if(String(SALE.status||'')!=='pago')startPoll();
+      toast("Comprovativo enviado!");
+      setTimeout(function(){leavePaymentPage()},600);
     }else{
       btn.style.display='flex';
       toast((r&&r.error)||'Falha ao enviar comprovativo');
