@@ -360,14 +360,21 @@ function pickFile(f){
     return;
   }
   if(!f.type||f.type.indexOf("image")!==-1){
-    downscale(f,function(b64){
-      receiptImage=b64;
-      byId("previewImg").src=b64;
-      byId("previewBox").style.display='block';
-      byId("sendBtn").style.display='flex';
-      runOcr(b64);
-      scrollToSend();
-    });
+    var r2=new FileReader();
+    r2.onload=function(ev){
+      var rawB64=ev.target.result;
+      if(!rawB64){toast("Não foi possível ler a imagem. Tenta outra.");return}
+      downscale(f,function(b64){
+        if(b64){receiptImage=b64;byId("previewImg").src=b64}
+        else{receiptImage=rawB64;byId("previewImg").src=rawB64}
+        byId("previewBox").style.display='block';
+        byId("sendBtn").style.display='flex';
+        if(b64)runOcr(b64);
+        scrollToSend();
+      });
+    };
+    r2.onerror=function(){toast("Não foi possível ler a imagem. Tenta outra.")};
+    r2.readAsDataURL(f);
   }else toast("Escolhe uma imagem");
 }
 function downscale(file,cb){
@@ -390,7 +397,7 @@ function downscale(file,cb){
 }
 
 function sendReceipt(){
-  if(!receiptImage)return;
+  if(!receiptImage){toast("Anexa primeiro a foto do comprovativo");return}
   var btn=byId("sendBtn");
   var sendingEl=byId("sending");
   btn.style.display='none';
