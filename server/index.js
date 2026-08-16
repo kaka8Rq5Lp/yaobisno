@@ -779,7 +779,7 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
     const p = rows[0];
     if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
       return res.status(403).json({ ok: false, error: 'Acesso negado' });
-    if (String(p.status) === 'pago')
+    if (String(p.status) === 'pago' || String(p.status) === 'finalizado' || String(p.status) === 'accepted')
       return res.json({ ok: false, error: 'Pagamento já validado' });
     const t = (req.body && typeof req.body.texto === 'object') ? (req.body.texto || {}) : {};
     const fatura = String(t.fatura || '').trim().slice(0, 80);
@@ -797,9 +797,9 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
     const esperado = Number(p.amount) || 0;
     if (esperado > 0 && Number(valor) !== esperado)
       return res.json({ ok: false, error: 'O valor pago não corresponde ao total da encomenda' });
-    await db.query("UPDATE payments SET comprovativo=?, status='pago', status_reason='comprovativo' WHERE id=?",
+    await db.query("UPDATE payments SET comprovativo=?, status_reason='aguarda validacao' WHERE id=?",
       [JSON.stringify({ image: image, fatura: fatura, iban: iban, valor: valor, at: new Date().toISOString() }), p.id]);
-    res.json({ ok: true, status: 'pago' });
+    res.json({ ok: true, status: 'pendente' });
   } catch (e) { console.error('[comprovativo] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
