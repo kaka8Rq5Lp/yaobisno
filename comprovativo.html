@@ -25,6 +25,7 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#f6f7f9;c
 button{font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipulation;background:none;border:none;padding:0;color:inherit;line-height:1}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 .toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#111317;color:#fff;padding:.7rem 1.2rem;padding-bottom:calc(.7rem + var(--safe-bottom));border-radius:9999px;font-size:.85rem;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:90;animation:slideUp .25s ease;white-space:nowrap;max-width:90%;display:flex;align-items:center;gap:.5rem}
+.toast.ok{background:#16a34a;color:#fff}
 @media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
 .drag-over{border-color:#FF6B00!important;background:#fff5ec!important}
 input[type="text"],input[type="file"]{border-radius:12px;width:100%;font-size:.9rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
@@ -156,9 +157,9 @@ function fmt(v){
   v=Number(v||0);
   return v.toLocaleString('pt-AO',{minimumFractionDigits:0,maximumFractionDigits:0})+' Kz';
 }
-function toast(m){
+function toast(m,tp){
   var c=byId("toastContainer");if(!c)return;
-  var el=document.createElement("div");el.className="toast";el.textContent=m;
+  var el=document.createElement("div");el.className="toast"+(tp==='ok'?' ok':'');el.textContent=m;
   c.appendChild(el);setTimeout(function(){el.style.transition="opacity .3s";el.style.opacity="0";setTimeout(function(){el.remove()},300)},2600)
 }
 function qp(k){
@@ -346,8 +347,8 @@ function sendReceipt(){
     sendingEl.style.display='none';
     if(r&&r.ok){
       SALE.has_comprovativo=true;SALE.status=r.status||'pendente';
-      toast("Comprovativo enviado!");
-      setTimeout(function(){leavePaymentPage()},600);
+      toast("Comprovativo enviado com sucesso, aguarda validação.",'ok');
+      setTimeout(function(){leavePaymentPage()},2600);
     }else{
       btn.style.display='flex';
       toast((r&&r.error)||'Falha ao enviar comprovativo');
