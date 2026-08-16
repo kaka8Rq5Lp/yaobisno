@@ -29,6 +29,8 @@ button{font-family:inherit;font-size:inherit;cursor:pointer;touch-action:manipul
 @media(min-width:640px){.toast{left:auto;right:1.5rem;bottom:1.5rem;transform:none}}
 .drag-over{border-color:#FF6B00!important;background:#fff5ec!important}
 input[type="text"],input[type="file"]{border-radius:12px;width:100%;font-size:.9rem;transition:all .2s;background:#fff;-webkit-appearance:none;appearance:none}
+#receiptFields input{box-sizing:border-box;border:1.5px solid #E5E7EB;padding:11px 14px;outline:none}
+#receiptFields input:focus{border-color:#FF6B00;box-shadow:0 0 0 3px rgba(255,107,0,.12)}
 </style>
 </head>
 <body class="bg-[#f6f7f9] text-[#111317] selection:bg-[#FF6B00]/20">
@@ -113,7 +115,21 @@ input[type="text"],input[type="file"]{border-radius:12px;width:100%;font-size:.9
         </div>
       </div>
       <div class="mt-3" id="receiptFields">
-        <p class="text-[11px] text-[#9CA3AF]">O comprovativo deve ser um recibo Multicaixa da tua app bancária.</p>
+        <p class="text-[11px] text-[#9CA3AF] mb-2">Escreve os 3 dados tal como aparecem no recibo Multicaixa da tua app bancária:</p>
+        <div class="space-y-2.5">
+          <div>
+            <label class="block text-[11px] font-bold text-[#374151] mb-1.5" for="rfFatura">Nº da fatura no recibo</label>
+            <input id="rfFatura" type="text" placeholder="FT-2026-0001" value="" autocomplete="off">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-[#374151] mb-1.5" for="rfIban">IBAN do beneficiário no recibo</label>
+            <input id="rfIban" type="text" placeholder="AO06 …" value="" autocomplete="off">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-[#374151] mb-1.5" for="rfValor">Valor pago no recibo (Kz)</label>
+            <input id="rfValor" type="text" placeholder="50.000" value="" autocomplete="off">
+          </div>
+        </div>
       </div>
       <button id="sendBtn" class="hidden mt-3 w-full h-11 rounded-[14px] bg-[#FF6B00] text-white text-[13.5px] font-bold flex items-center justify-center gap-2 hover:bg-[#e65f00] active:scale-[0.98] transition"><i class="fa-solid fa-paper-plane"></i> Enviar comprovativo</button>
 
@@ -334,13 +350,14 @@ function downscale(file,cb){
 
 function sendReceipt(){
   if(!receiptImage)return;
-  var fatura=SALE.fatura||'';
-  var iban=SALE.iban||'';
-  var valor=String(Number(SALE.amount)||0);
-  if(!fatura){toast("Falta o nº da fatura");return}
-  if(!iban){toast("Falta o IBAN da loja");return}
+  var fatura=(byId("rfFatura").value||'').trim();
+  var iban=(byId("rfIban").value||'').trim();
+  var valor=(byId("rfValor").value||'').trim();
+  if(!fatura){toast("Escreve o nº da fatura do recibo");byId("rfFatura").focus();return}
+  if(!iban){toast("Escreve o IBAN do beneficiário do recibo");byId("rfIban").focus();return}
+  if(!valor){toast("Escreve o valor pago do recibo");byId("rfValor").focus();return}
   var btn=byId("sendBtn");
-  var sendingEl=byId("sending"),waitEl=byId("waitingBox");
+  var sendingEl=byId("sending");
   btn.style.display='none';
   sendingEl.style.display='flex';
   API.sendComprovativo(SALE.ref,receiptImage,{fatura:fatura,iban:iban,valor:valor}).then(function(r){

@@ -61,6 +61,52 @@ async function nextFatura() {
   return 'FT-' + ano + '-' + String(seq).padStart(4, '0');
 }
 
+// ─── Normalização e validação do comprovativo (3/3) ─────────────────
+function normIban(v){
+  return String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+function normFatura(v){
+  return String(v || '').toUpperCase().trim().replace(/\s+/g, '');
+}
+function normValor(v){
+  if (v === undefined || v === null || v === '') return NaN;
+  let s = String(v).trim().replace(/\s+/g, '').replace(/[^\d.,]/g, '');
+  if (!s) return NaN;
+  const hasDot = s.indexOf('.') > -1, hasComma = s.indexOf(',') > -1;
+  if (hasDot && hasComma) {
+    const lastSep = s.lastIndexOf('.') > s.lastIndexOf(',') ? '.' : ',';
+    if (lastSep === ',') s = s.replace(/\./g, '').replace(',', '.');
+    else s = s.replace(/,/g, '');
+  } else if (hasComma) {
+    const commaIdx = s.lastIndexOf(',');
+    const trailing = s.length - commaIdx - 1;
+    if (trailing >= 1 && trailing <= 2) s = s.replace(',', '.');
+    else s = s.replace(/,/g, '');
+  } else if (hasDot) {
+    const dotIdx = s.lastIndexOf('.');
+    const trailing = s.length - dotIdx - 1;
+    if (!(trailing === 2 && s.indexOf('.') === dotIdx)) s = s.replace(/\./g, '');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? NaN : Math.round(n * 100) / 100;
+}
+function valorIgual(a, b){
+  const na = normValor(a), nb = normValor(b);
+  if (isNaN(na) || isNaN(nb)) return false;
+  return Math.abs(na - nb) < 0.005;
+}
+function validarComprovativoBackend(comp, vendaFatura, vendaIban, vendaValor){
+  const checks = { fatura: false, iban: false, valor: false };
+  if (comp) {
+    const cf = normFatura(comp.fatura);
+    checks.fatura = !!cf && cf === normFatura(vendaFatura);
+    const ci = normIban(comp.iban);
+    checks.iban = !!ci && ci === normIban(vendaIban);
+    checks.valor = comp.valor !== undefined && comp.valor !== null && comp.valor !== '' && valorIgual(comp.valor, vendaValor);
+  }
+  return { validated: checks.fatura && checks.iban && checks.valor, checks: checks };
+}
+
 // ─── Mailer ─────────────────────────────────────────────────────────
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_USER = process.env.SMTP_USER;
@@ -774,7 +820,7 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
     const key = 'comprovativo:' + String(req.auth.email).toLowerCase() + ':' + req.params.ref;
     if (!rateLimit(key, 12, 15 * 60 * 1000).allowed)
       return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tenta de novo dentro de 15 minutos.' });
-    const [rows] = await db.query('SELECT id,buyer_email,status,amount,fatura FROM payments WHERE ref=?', [req.params.ref]);
+    const [rows] = await db.query('SELECT id,buyer_email,status,fatura FROM payments WHERE ref=?', [req.params.ref]);
     if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
     const p = rows[0];
     if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
@@ -783,20 +829,8 @@ app.post('/api/sales/:ref/comprovativo', authRequired, async (req, res) => {
       return res.json({ ok: false, error: 'Pagamento já validado' });
     const t = (req.body && typeof req.body.texto === 'object') ? (req.body.texto || {}) : {};
     const fatura = String(t.fatura || '').trim().slice(0, 80);
-    const faturaEsperada = String(p.fatura || '').trim();
-    const iban = String(t.iban || '').replace(/\s+/g, '').toUpperCase().slice(0, 40);
-    const valor = Number(t.valor);
-    const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
-    const storeIban = (keep.length && keep[0].svalue) || 'AO06000000000000000000000';
-    const ibanLoja = storeIban.replace(/\s+/g, '').toUpperCase().slice(0, 40);
-    if (!fatura) return res.json({ ok: false, error: 'Indica o nº da fatura/recibo' });
-    if (faturaEsperada && fatura !== faturaEsperada)
-      return res.json({ ok: false, error: 'O nº da fatura não corresponde a esta encomenda' });
-    if (iban !== ibanLoja || !/^AO\d{23}$/.test(iban)) return res.json({ ok: false, error: 'O IBAN não corresponde ao da loja' });
-    if (!valor || valor <= 0) return res.json({ ok: false, error: 'Indica o valor pago' });
-    const esperado = Number(p.amount) || 0;
-    if (esperado > 0 && Number(valor) !== esperado)
-      return res.json({ ok: false, error: 'O valor pago não corresponde ao total da encomenda' });
+    const iban = String(t.iban || '').trim().slice(0, 40);
+    const valor = (t.valor === undefined || t.valor === null || t.valor === '') ? '' : String(t.valor).trim().slice(0, 30);
     await db.query("UPDATE payments SET comprovativo=?, status_reason='aguarda validacao' WHERE id=?",
       [JSON.stringify({ image: image, fatura: fatura, iban: iban, valor: valor, at: new Date().toISOString() }), p.id]);
     res.json({ ok: true, status: 'pendente' });
@@ -895,6 +929,8 @@ app.get('/api/admin/cart', authAdmin, async (req, res) => {
 app.get('/api/admin/sales', authAdmin, async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM payments WHERE status IN ('accepted','finalizado','vendido','concluido','pendente','pago') ORDER BY id DESC");
+    const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
+    const storeIban = (keep.length && keep[0].svalue) || 'AO06000000000000000000000';
     const out = [];
     for (const p of rows) {
       let items = [];
@@ -910,6 +946,8 @@ app.get('/api/admin/sales', authAdmin, async (req, res) => {
       out.push({
         id: p.id,
         ref: p.ref,
+        fatura: p.fatura || null,
+        iban: storeIban,
         buyer_email: p.buyer_email,
         mobile: p.mobile,
         amount: Number(p.amount),
@@ -932,9 +970,32 @@ app.get('/api/admin/sales', authAdmin, async (req, res) => {
 
 app.post('/api/admin/sales/:ref/confirm', authAdmin, async (req, res) => {
   try {
-    const [r] = await db.query("UPDATE payments SET status='finalizado', status_reason='confirmado no admin' WHERE ref=? AND method='whatsapp'", [req.params.ref]);
-    res.json({ ok: true, changed: r.affectedRows > 0 });
-  } catch (e) { res.status(500).json({ ok: false }); }
+    const [rows] = await db.query('SELECT id,fatura,amount,status,comprovativo FROM payments WHERE ref=? AND method=?', [req.params.ref, 'whatsapp']);
+    if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
+    const p = rows[0];
+    const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
+    const vendaIban = (keep.length && keep[0].svalue) || 'AO06000000000000000000000';
+    const comp = (function(){ try { return p.comprovativo ? JSON.parse(p.comprovativo) : null; } catch (_) { return null; } })();
+    if (!comp || !comp.image) {
+      return res.json({
+        ok: false,
+        validated: false,
+        error: 'Esta venda ainda não tem comprovativo.',
+        checks: { fatura: false, iban: false, valor: false }
+      });
+    }
+    const r = validarComprovativoBackend(comp, p.fatura, vendaIban, Number(p.amount));
+    if (!r.validated) {
+      return res.json({
+        ok: false,
+        validated: false,
+        error: 'Os dados do comprovativo não correspondem aos dados da venda.',
+        checks: r.checks
+      });
+    }
+    await db.query("UPDATE payments SET status='pago', status_reason='comprovativo validado (fatura, IBAN e valor conferem)' WHERE id=?", [p.id]);
+    res.json({ ok: true, validated: true, checks: r.checks });
+  } catch (e) { console.error('[admin confirm] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
 app.delete('/api/admin/sales/:ref', authAdmin, async (req, res) => {

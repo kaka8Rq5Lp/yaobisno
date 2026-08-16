@@ -532,6 +532,7 @@ function renderSales(){
       var s=pend[i];
       var isPaid=String(s.status||'')==='pago';
       var comp=(s.comprovativo&&s.comprovativo.image)?s.comprovativo.image:null;
+      var hasComp=!!comp;
       html+='<tr>'
         +'<td><div class="t-owner"><div class="av">'+esc((s.buyer_email||'?').charAt(0)).toUpperCase()+'</div><div>'+esc(s.buyer_email||'—')+'</div></div></td>'
         +'<td style="font-size:12px;color:#8a8578">'+esc(s.mobile||'—')+'</td>'
@@ -541,9 +542,9 @@ function renderSales(){
             ?'<span class="badge '+(isPaid?'paid':'warn')+'" style="margin-right:6px">'+(isPaid?'Pago':'Comprovativo')+'</span><button class="btn second" style="padding:3px 10px;font-size:10.5px" onclick="viewReceipt(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-image"></i> Ver</button>'
             :(isPaid?'<span class="badge paid">Pago</span>':'<span class="badge warn"><i class="fa-solid fa-clock"></i>A aguardar anexo</span>'))+'</td>'
         +'<td style="font-size:12px;color:#8a8578">'+saleDate(s.created_at)+'</td>'
-        +'<td>'+(isPaid
-            ?'<button class="btn" style="margin-right:6px" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>Validar</button>'
-            :'<span style="font-size:10.5px;color:#9aa0a6">/<span>')
++'<td>'+(hasComp
+            ?'<button class="btn" style="margin-right:6px" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>'+(isPaid?'Revalidar':'Validar')+'</button>'
+            :'<span style="font-size:10.5px;color:#9aa0a6">/</span>')
           +'<button class="btn second" style="margin-right:6px" onclick="exportSalePdf(\''+esc(String(s.ref))+'\')" title="Fatura PDF"><i class="fa-solid fa-file-pdf"></i></button>'
           +'<button class="btn second" style="background:#fde8e8;color:#dc2626;border-color:#f5c2c2" onclick="deleteSale(\''+esc(String(s.ref))+'\')" title="Remover venda"><i class="fa-solid fa-trash"></i></button>'
           +'</td>'
@@ -634,66 +635,24 @@ function filterTotal(){
   filterSales(sales).forEach(function(s){t+=Number(s.amount)||0});
   return t;
 }
-function normalizarIBAN(v){
-  return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-}
-function normalizarFatura(v){
-  return String(v||'').toUpperCase().trim().replace(/\s+/g,'');
-}
-function normalizarValor(v){
-  var n=Number(String(v||'').replace(/\./g,'').replace(',','.'));
-  return Math.round(n*100)/100;
-}
-function validarComprovativo(s){
-  if(!s){
-    return {ok:false,erro:'Venda não encontrada.'};
-  }
-  if(!s.comprovativo){
-    return {ok:false,erro:'Esta venda ainda não tem comprovativo.'};
-  }
-  var c=s.comprovativo;
-  var faturaVenda=normalizarFatura(s.fatura);
-  var ibanVenda=normalizarIBAN(s.iban);
-  var valorVenda=normalizarValor(s.amount);
-  var faturaComp=normalizarFatura(c.fatura);
-  var ibanComp=normalizarIBAN(c.iban);
-  var valorComp=normalizarValor(c.valor);
-  if(!faturaComp){
-    return {ok:false,erro:'O comprovativo não contém o número da fatura.'};
-  }
-  if(!ibanComp){
-    return {ok:false,erro:'O comprovativo não contém o IBAN.'};
-  }
-  if(c.valor===undefined||c.valor===null||c.valor===''){
-    return {ok:false,erro:'O comprovativo não contém o valor pago.'};
-  }
-  var mesmaFatura=faturaVenda===faturaComp;
-  var mesmoIBAN=ibanVenda===ibanComp;
-  var mesmoValor=valorVenda===valorComp;
-  if(!mesmaFatura){
-    return {ok:false,erro:'Número da fatura diferente. Esperado: '+s.fatura+' | Recebido: '+c.fatura};
-  }
-  if(!mesmoIBAN){
-    return {ok:false,erro:'IBAN diferente. O IBAN do comprovativo não corresponde ao IBAN da venda.'};
-  }
-  if(!mesmoValor){
-    return {ok:false,erro:'Valor diferente. Esperado: '+fmt(s.amount)+' | Recebido: '+fmt(c.valor)};
-  }
-  return {ok:true,fatura:true,iban:true,valor:true};
-}
 function confirmVenda(ref){
   if(!ref){toast('Falta a referência da venda','err');return;}
   var s=sales.find(function(x){return String(x.ref)===String(ref)});
   if(!s){toast('Venda não encontrada','err');return;}
-  var validacao=validarComprovativo(s);
-  if(!validacao.ok){
-    toast('PAGAMENTO NÃO VALIDADO: '+validacao.erro,'err');
-    return;
-  }
-  if(!confirm('Os dados do comprovativo estão corretos.\n\n✓ Nº da fatura: igual\n✓ IBAN: igual\n✓ Valor: igual\n\nConfirmar esta venda como paga/finalizada?'))return;
   req('/api/admin/sales/'+encodeURIComponent(ref)+'/confirm','POST').then(function(d){
-    if(d&&d.ok){toast('Pagamento validado! Fatura, IBAN e valor correspondem.','ok');loadAll();}
-    else toast((d&&d.error)||'O servidor recusou a confirmação.','err');
+    if(d&&d.validated){
+      toast('Pagamento validado! Fatura, IBAN e valor correspondem.','ok');loadAll();
+    }else{
+      var c=(d&&d.checks)?d.checks:null;
+      var msg='PAGAMENTO NÃO VALIDADO';
+      if(c){
+        msg+='\n\nFatura: '+(c.fatura?'✓ corresponde':'✕ diferente')
+           +'\nIBAN: '+(c.iban?'✓ corresponde':'✕ diferente')
+           +'\nValor: '+(c.valor?'✓ corresponde':'✕ diferente');
+      }
+      alert(msg);
+      toast((d&&d.error)||'Pagamento não validado','err');
+    }
   }).catch(function(err){
     console.error(err);
     toast('Erro ao confirmar o pagamento.','err');
