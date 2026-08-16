@@ -1276,7 +1276,7 @@ async function initDB() {
       amount DECIMAL(12,2) NOT NULL,
       items LONGTEXT,
       status VARCHAR(20) DEFAULT 'pending',
-      status_reason VARCHAR(20),
+      status_reason VARCHAR(255),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )`);
@@ -1321,6 +1321,11 @@ async function initDB() {
     }
     if (!payCols.includes('fatura')) {
       await db.query(`ALTER TABLE payments ADD COLUMN fatura VARCHAR(40)`);
+    }
+    const reasonType = await db.query(`SELECT DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments' AND COLUMN_NAME = 'status_reason'`);
+    if (reasonType[0].length && reasonType[0][0].CHARACTER_MAXIMUM_LENGTH < 255) {
+      await db.query(`ALTER TABLE payments MODIFY COLUMN status_reason VARCHAR(255)`);
+      console.log('[migracao] status_reason alargado para VARCHAR(255)');
     }
     await db.query(`CREATE TABLE IF NOT EXISTS settings (
       skey VARCHAR(64) PRIMARY KEY,
