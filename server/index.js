@@ -1313,6 +1313,13 @@ async function initDB() {
     if (!prodCols.includes('views')) {
       await db.query(`ALTER TABLE products ADD COLUMN views INT DEFAULT 0 AFTER status`);
     }
+    // Migração: colunas de imagens podem estar como TEXT na BD real (limite ~64KB),
+    // o que fazia o publish falhar em silêncio com ER_DATA_TOO_LONG. Converter para LONGTEXT.
+    const imgType = await db.query(`SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'images'`);
+    if (imgType[0].length && imgType[0][0].DATA_TYPE !== 'longtext') {
+      await db.query(`ALTER TABLE products MODIFY COLUMN images LONGTEXT`);
+      console.log('[migracao] products.images -> LONGTEXT');
+    }
     const colVerify = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'verifications'`);
     const vCols = colVerify[0].map(c => c.COLUMN_NAME);
     if (!vCols.includes('attempts')) {
@@ -1331,6 +1338,16 @@ async function initDB() {
     }
     if (!payCols.includes('comprovativo')) {
       await db.query(`ALTER TABLE payments ADD COLUMN comprovativo LONGTEXT`);
+    }
+    const payItemsType = await db.query(`SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments' AND COLUMN_NAME = 'items'`);
+    if (payItemsType[0].length && payItemsType[0][0].DATA_TYPE !== 'longtext') {
+      await db.query(`ALTER TABLE payments MODIFY COLUMN items LONGTEXT`);
+      console.log('[migracao] payments.items -> LONGTEXT');
+    }
+    const payCompType = await db.query(`SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments' AND COLUMN_NAME = 'comprovativo'`);
+    if (payCompType[0].length && payCompType[0][0].DATA_TYPE !== 'longtext') {
+      await db.query(`ALTER TABLE payments MODIFY COLUMN comprovativo LONGTEXT`);
+      console.log('[migracao] payments.comprovativo -> LONGTEXT');
     }
     if (!payCols.includes('fatura')) {
       await db.query(`ALTER TABLE payments ADD COLUMN fatura VARCHAR(40)`);

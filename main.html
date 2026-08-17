@@ -983,7 +983,7 @@ function handlePublish(e){
       r.readAsDataURL(f);
     })(files[fi])
   }else if(editingProductId){var ex=products.find(function(p){return p.id===editingProductId});fin(ex?ex.images||[imgPH(ex.name)]:[imgPH(name)])}
-  else{fin([imgPH(name)])}
+  else{var bgd=window.__bgRemovedDataUrl;fin(bgd?[bgd]:[imgPH(name)])}
   }catch(e){try{console.error("handlePublish:",e)}catch(ex){}toast("Erro ao publicar")}
 }
 

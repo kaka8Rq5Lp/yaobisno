@@ -77,12 +77,19 @@
     window.produtoBlobFinal = blob;
     var input = q('pub-image');
 
+    // 0) Sempre guarda o dataURL da foto sem fundo como fallback (usa-se no handlePublish
+    //    se o append ao input falhar — ex.: DataTransfer indisponível/negado em alguns mobiles)
+    window.__bgRemovedDataUrl = null;
+    fileToDataUrl(blob).then(function (d) {
+      window.__bgRemovedDataUrl = d;
+    }).catch(function () {});
     // 1) Anexa o ficheiro ao input (funciona com o fluxo existente de publicar)
     var dtOk = false;
     try {
       if (input && window.DataTransfer && blob) {
-        var name = 'foto-sem-fundo-' + Date.now() + '.png';
-        var file = new File([blob], name, { type: blob.type || 'image/png' });
+        var name = 'foto-sem-fundo-' + Date.now() + '.png',
+            type = (blob.type && blob.type.indexOf('image') === 0) ? blob.type : 'image/png';
+        var file = new File([blob], name, { type: type });
         var dt = new DataTransfer();
         Array.prototype.forEach.call(input.files || [], function (f) { try { dt.items.add(f); } catch (e) {} });
         dt.items.add(file);

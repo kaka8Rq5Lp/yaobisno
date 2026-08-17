@@ -569,7 +569,9 @@ function handlePublish(e){
       var mx=0;for(var i=0;i<products.length;i++){if(products[i].id>mx)mx=products[i].id}
       var p={id:Date.now(),name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name};
       products.unshift(p);
-      API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name});
+      API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name}).then(function(r){
+        if(r&&!r.ok)toast("Aviso: não sincronizado com o servidor (ficará só neste dispositivo)")
+      });
       toast("Produto publicado!")
     }
     try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
@@ -599,7 +601,10 @@ function handlePublish(e){
       r.readAsDataURL(f);
     })(files[fi])
   }else if(editingProductId){var ex=products.find(function(p){return p.id===editingProductId});fin(ex?ex.images||[imgPH(ex.name)]:[imgPH(name)])}
-  else{fin([imgPH(name)])}
+  else{
+    var bgd=window.__bgRemovedDataUrl;
+    if(bgd)fin([bgd]);else fin([imgPH(name)])
+  }
   }catch(e){try{console.error("handlePublish:",e)}catch(ex){}toast("Erro ao publicar")}
 }
 
