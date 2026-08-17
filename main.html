@@ -48,6 +48,25 @@ body.checkout-open{padding-bottom:100px}
 #checkoutModal input,#checkoutModal select{font-size:16px;height:44px}
 #checkoutModal .modal-panel .actions-bar{position:sticky;bottom:0;background:linear-gradient(to top,#fff 60%,rgba(255,255,255,.92) 80%,transparent);z-index:2}
 @media(max-width:360px){.modal{padding:.4rem}#checkoutModal .modal-panel{padding:12px}}
+/* ─── Pagar Express: seg control + modal QR bonito e sem scroll ─── */
+.seg-tabs{display:flex;background:#F3F4F6;border-radius:9999px;padding:3px;gap:2px}
+.seg-tabs .seg-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:34px;border-radius:9999px;font-size:12.5px;font-weight:600;color:#6B7280;border:none;cursor:pointer;touch-action:manipulation}
+.seg-tabs .seg-btn.active{background:#FF6B00;color:#fff;box-shadow:0 2px 10px rgba(255,107,0,.35)}
+#qrModal{background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);align-items:center;overflow:hidden;padding:16px}
+#qrModal .modal-panel{width:90%;max-width:380px;max-height:85vh;max-height:85dvh;background:#fff;border-radius:24px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:12px;margin:auto;overflow:hidden;animation:slideUp .25s ease}
+#qrModal .modal-panel *{scrollbar-width:none}
+#qrModal .modal-panel ::-webkit-scrollbar{display:none}
+#qrModal .modal-panel .qr-body{display:flex;flex-direction:column;align-items:center;gap:12px;flex-shrink:1;min-height:0}
+#qrModal .modal-panel .qr-wrap:not(.hidden){width:196px;height:196px;flex-shrink:0;background:#fff;border:8px solid #fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;margin:0 auto}
+#qrModal .modal-panel .qr-wrap canvas#qrCanvas2{width:180px;height:180px;display:block}
+#qrModal .modal-panel .qr-details:not(.hidden){width:100%;background:#F8F8F8;border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.4;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+#qrModal .modal-panel .qr-details span{white-space:nowrap;color:#6B7280}
+#qrModal .modal-panel .qr-details .qr-fatura b{font-weight:800;color:#111827;text-align:right}
+#qrModal .modal-panel .qr-details .qr-iban b{font-family:monospace;font-size:10px;color:#111827;text-align:right;word-break:break-all}
+#qrModal .modal-panel .qr-details .qr-valor b{color:#FF6B00;font-weight:800;text-align:right}
+#qrModal .modal-panel .qr-actions{position:sticky;bottom:0;background:#fff;display:flex;flex-direction:column;gap:8px}
+#qrModal .modal-panel .qr-actions .qr-done:not(.hidden){height:48px;background:#FF6B00;color:#fff;border-radius:9999px;font-weight:600;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;text-decoration:none;cursor:pointer;touch-action:manipulation}
+#qrModal .modal-panel .qr-actions .qr-close{height:44px;background:#F3F4F6;border:1px solid #E5E7EB;color:#111317;border-radius:9999px;font-weight:700;font-size:13px;width:100%;cursor:pointer;touch-action:manipulation}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 .toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;padding-bottom:calc(.75rem + var(--safe-bottom));border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
@@ -364,7 +383,12 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
             <h2 class="text-[13px] font-bold">Pagar com Multicaixa Express</h2>
           </div>
 
-          <div>
+          <div class="seg-tabs">
+            <button type="button" class="seg-btn active" id="exprTabTel" onclick="switchPayTab('tel')"><i class="fa-solid fa-mobile-screen-button"></i> Telemóvel</button>
+            <button type="button" class="seg-btn" id="exprTabQr" onclick="switchPayTab('qr')"><i class="fa-solid fa-qrcode"></i> QR Code</button>
+          </div>
+
+          <div id="exprViewTel">
             <div class="flex items-center gap-2">
               <label class="text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] shrink-0">Nº MCX</label>
               <div class="relative flex-1">
@@ -374,11 +398,15 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
             </div>
             <p class="mt-1.5 text-[11px] text-[#6B7280]"><i class="fa-solid fa-check text-[#10B981]"></i> Receberás um pedido de pagamento no teu telemóvel</p>
           </div>
+
+          <div id="exprViewQr" class="hidden">
+            <div class="rounded-[12px] border border-dashed border-[#E5E7EB] p-2.5 text-[11px] text-[#6B7280] leading-relaxed"><i class="fa-solid fa-qrcode text-[#FF5F1F] mr-1"></i> Escaneia o QR code com o app do teu banco — a fatura, o IBAN e o valor são gerados automaticamente.</div>
+          </div>
         </div>
 
         <!-- BOTOES -->
         <div class="space-y-2 pt-1 actions-bar">
-          <button type="button" id="payMCXBtn" onclick="payWithMCX()" class="w-full h-[39px] rounded-[12px] bg-[#0F3D2E] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#0C3226] transition shadow-[0_8px_20px_rgba(15,61,46,0.25)]"><i class="fa-solid fa-mobile-screen-button"></i> Pagar com Multicaixa Express</button>
+          <button type="button" id="payMCXBtn" onclick="payWithMCX()" class="w-full h-[39px] rounded-[12px] bg-[#0F3D2E] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#0C3226] transition shadow-[0_8px_20px_rgba(15,61,46,0.25)]"><i class="fa-solid fa-mobile-screen-button"></i> <span id="payMCXLabel">Pagar com Multicaixa Express</span></button>
 
           <button type="button" id="payQRBtn" onclick="payWithQR()" class="w-full h-[39px] rounded-[12px] bg-[#111317] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-black transition shadow-[0_8px_20px_rgba(17,19,23,0.2)]"><i class="fa-solid fa-qrcode text-[15px]"></i> Pagar com QR code</button>
 
@@ -398,8 +426,8 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
 </div>
 
 <div id="qrModal" class="modal hidden">
-  <div class="modal-panel max-w-[420px]">
-    <div class="flex items-center justify-between mb-3">
+  <div class="modal-panel">
+    <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-full bg-[#111317] flex items-center justify-center text-white text-[13px]"><i class="fa-solid fa-qrcode"></i></div>
         <div class="leading-tight">
@@ -409,18 +437,18 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
       </div>
       <button onclick="closeQrModal()" class="text-gray-400 hover:text-orange text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="flex flex-col items-center gap-3 py-3">
+    <div class="qr-body">
       <div id="qrStatus" class="hidden text-[12px] text-[#6B7280] font-medium"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i>A criar a encomenda...</div>
-      <div id="qrWrap2" class="hidden p-4 rounded-[16px] bg-white border border-[#F0F0ED] shadow-sm flex items-center justify-center"><canvas id="qrCanvas2" class="w-[230px] h-[230px] block mx-auto" width="460" height="460"></canvas></div>
-      <div id="qrDetails" class="hidden w-full rounded-[14px] bg-[#FBFBF9] border border-[#F0F0ED] p-3.5 space-y-2 text-[12.5px]">
-        <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">Nº da fatura</span><b id="qrFatura">–</b></div>
-        <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">IBAN</span><b id="qrIban" class="font-mono text-[11px]">–</b></div>
-        <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">Valor</span><b id="qrValor" class="text-[#FF5F1F]">–</b></div>
+      <div id="qrWrap2" class="qr-wrap hidden"><canvas id="qrCanvas2" width="460" height="460"></canvas></div>
+      <div id="qrDetails" class="qr-details hidden">
+        <div class="qr-fatura flex justify-between items-center gap-2"><span>Nº da fatura</span><b id="qrFatura">–</b></div>
+        <div class="qr-iban flex justify-between items-center gap-2"><span>IBAN</span><b id="qrIban">–</b></div>
+        <div class="qr-valor flex justify-between items-center gap-2"><span>Valor</span><b id="qrValor">–</b></div>
       </div>
     </div>
-    <div class="space-y-2">
-      <a id="qrDoneBtn" href="#" onclick="qrAfterPay()" class="hidden w-full h-11 rounded-[12px] bg-[#FF5F1F] text-white text-[13px] font-semibold flex items-center justify-center gap-2"><i class="fa-solid fa-paper-plane"></i> Já paguei — enviar comprovativo</a>
-      <button onclick="closeQrModal()" class="w-full h-11 rounded-[12px] bg-[#F3F4F6] border border-[#E5E7EB] text-[#111317] text-[13px] font-bold">Fechar</button>
+    <div class="qr-actions">
+      <a id="qrDoneBtn" href="#" onclick="qrAfterPay()" class="qr-done hidden"><i class="fa-solid fa-paper-plane"></i> Já paguei — enviar comprovativo</a>
+      <button onclick="closeQrModal()" class="qr-close">Fechar</button>
     </div>
   </div>
 </div>
@@ -1092,6 +1120,17 @@ function stopPayPoll(){
   if(payTimer){clearInterval(payTimer);payTimer=null}
 }
 
+function switchPayTab(which){
+  var telBtn=byId("exprTabTel"),qrBtn=byId("exprTabQr");
+  var telView=byId("exprViewTel"),qrView=byId("exprViewQr");
+  var tel=which==="tel",qr=which==="qr";
+  if(telBtn)telBtn.classList.toggle("active",tel);
+  if(qrBtn)qrBtn.classList.toggle("active",qr);
+  if(telView)telView.classList.toggle("hidden",!tel);
+  if(qrView)qrView.classList.toggle("hidden",!qr);
+  setTimeout(function(){fitCheckout()},50);
+}
+
 var qrRef=null;
 function payWithQR(){
   try{
@@ -1107,7 +1146,7 @@ function payWithQR(){
     var delivery={province:province,municipality:municipality,neighborhood:neighborhood,street:street,reference:reference};
     var qs=byId("qrStatus"),qw=byId("qrWrap2"),qd=byId("qrDetails"),qb=byId("qrDoneBtn");
     closeModal("checkoutModal");
-    openModal("qrModal");document.body.classList.add("checkout-open");
+    openModal("qrModal");
     if(qs)qs.classList.remove("hidden");
     if(qw)qw.classList.add("hidden");
     if(qd)qd.classList.add("hidden");
