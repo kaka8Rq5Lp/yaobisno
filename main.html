@@ -36,11 +36,17 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#fff;colo
 .product-img-wrap{position:relative;width:100%;padding-bottom:75%;background:#f8f8f8;overflow:hidden}
 .product-img-wrap img{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:cover}
 .badge-orange{background:#FF5F1F;color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:999px}
-.modal{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
-.modal-panel{width:100%;max-width:480px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin-bottom:0}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:flex-start;justify-content:center;padding:1rem;z-index:60;background:rgba(0,0,0,.5);animation:fadeIn .15s ease;height:100vh;height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-panel{width:100%;max-width:480px;background:#fff;border-radius:20px;padding:1.75rem;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:slideUp .25s ease;margin:auto;max-height:90vh;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal.hidden{display:none}
 .modal-panel.no-pad{padding:0}
 .modal-panel.no-pad.chat-panel{height:55vh;max-height:70vh;min-height:250px}
+/* ─── Checkout em ecrãs pequenos: não cortar ─── */
+#checkoutPanel{max-height:92vh;max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body.checkout-open{padding-bottom:100px}
+#checkoutModal input,#checkoutModal select{font-size:16px;height:44px}
+#checkoutModal .modal-panel .actions-bar{position:sticky;bottom:0;background:linear-gradient(to top,#fff 60%,rgba(255,255,255,.92) 80%,transparent);z-index:2}
+@media(max-width:360px){.modal{padding:.4rem}#checkoutModal .modal-panel{padding:12px}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 .toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:.75rem 1.5rem;padding-bottom:calc(.75rem + var(--safe-bottom));border-radius:14px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:90;animation:slideUp .3s ease;white-space:nowrap;max-width:90%}
@@ -370,7 +376,7 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
         </div>
 
         <!-- BOTOES -->
-        <div class="space-y-2 pt-1">
+        <div class="space-y-2 pt-1 actions-bar">
           <button type="button" id="payMCXBtn" onclick="payWithMCX()" class="w-full h-[39px] rounded-[12px] bg-[#0F3D2E] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#0C3226] transition shadow-[0_8px_20px_rgba(15,61,46,0.25)]"><i class="fa-solid fa-mobile-screen-button"></i> Pagar com Multicaixa Express</button>
 
           <button type="submit" id="btnZap" class="w-full h-[39px] rounded-[12px] bg-[#FF5F1F] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#E8541B] transition shadow-[0_8px_20px_rgba(255,95,31,0.25)]"><i class="fa-brands fa-whatsapp text-[16px]"></i> Encomendar e enviar comprovativo</button>
@@ -924,7 +930,10 @@ function checkout(){
     }
   });
   openModal("checkoutModal");
+  document.body.classList.add("checkout-open");
   fitCheckout();
+  setTimeout(function(){fitCheckout()},50);
+  setTimeout(function(){fitCheckout()},250);
 }
 
 function handleCheckout(e){
@@ -983,18 +992,16 @@ function handleCheckout(e){
 var payTimer=null;
 function closeCheckoutModal(){
   stopPayPoll();
+  document.body.classList.remove("checkout-open");
   closeModal("checkoutModal");
 }
 
 function fitCheckout(){
   var p=byId("checkoutPanel");if(!p)return;
-  var maxH=Math.min(window.innerHeight||600,document.documentElement.clientHeight||600)*0.94;
-  var cur=p.offsetHeight||maxH;
-  var s=Math.min(1.07,(maxH/cur)*1.07);
-  if(s<0.55)s=0.55;
-  p.style.transformOrigin="top center";
-  p.style.transform="scale("+s+")";
-  p.style.height=Math.round(cur*s)+"px";
+  var maxH=Math.min(window.innerHeight||600,document.documentElement.clientHeight||600)*0.92;
+  p.style.maxHeight=Math.round(maxH)+"px";
+  p.style.transform="none";
+  p.style.height="auto";
 }
 
 function payWithMCX(){
