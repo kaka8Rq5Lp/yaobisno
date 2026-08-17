@@ -339,14 +339,17 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
       <form id="checkoutForm" onsubmit="return false" class="space-y-2">
         <div>
           <label class="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] mb-1">Província</label>
-          <select id="chkProvince" required class="w-full h-[40px] rounded-[12px] border border-[#E5E7EB] bg-white px-3 text-[14px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" style="-webkit-appearance:none;appearance:none">
-            <option value="">Seleciona a província</option>
-            <option>Bengo</option><option>Benguela</option><option>Bié</option><option>Cabinda</option>
-            <option>Cuando Cubango</option><option>Cuanza Norte</option><option>Cuanza Sul</option>
-            <option>Cunene</option><option>Huambo</option><option>Huíla</option><option>Luanda</option>
-            <option>Lunda Norte</option><option>Lunda Sul</option><option>Malanje</option>
-            <option>Moxico</option><option>Namibe</option><option>Uíge</option><option>Zaire</option>
-          </select>
+          <div style="position:relative">
+            <select id="chkProvince" required class="w-full h-[40px] rounded-[12px] border border-[#E5E7EB] bg-white text-[14px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" style="-webkit-appearance:none;appearance:none;box-sizing:border-box;padding-left:16px;padding-right:36px">
+              <option value="">Seleciona a província</option>
+              <option>Bengo</option><option>Benguela</option><option>Bié</option><option>Cabinda</option>
+              <option>Cuando Cubango</option><option>Cuanza Norte</option><option>Cuanza Sul</option>
+              <option>Cunene</option><option>Huambo</option><option>Huíla</option><option>Luanda</option>
+              <option>Lunda Norte</option><option>Lunda Sul</option><option>Malanje</option>
+              <option>Moxico</option><option>Namibe</option><option>Uíge</option><option>Zaire</option>
+            </select>
+            <div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:#9CA3AF"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
