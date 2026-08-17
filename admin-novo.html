@@ -260,9 +260,9 @@ button.btn.second:hover{background:#e6e4db}
 
 <div class="modal-mask" id="delModal">
   <div class="modal">
-    <h3><i class="fa-solid fa-triangle-exclamation" style="color:#dc3023"></i>Eliminar produto</h3>
+    <h3 id="delTitle"><i class="fa-solid fa-triangle-exclamation" style="color:#dc3023"></i>Confirmação</h3>
     <p id="delDesc"></p>
-    <input id="delInput" placeholder="Escreve o nome exacto" onkeydown="if(event.key==='Enter')confirmDel()">
+    <input id="delInput" placeholder="Escreve o texto exacto" autocomplete="off" onkeydown="if(event.key==='Enter')confirmDel()">
     <div class="err" id="delErr"></div>
     <div class="row"><button class="btn" style="background:#dc3023" onclick="confirmDel()">Eliminar</button><button class="btn second" onclick="closeDel()">Cancelar</button></div>
   </div>
@@ -691,12 +691,18 @@ function closeReceipt(){
 }
 function deleteSale(ref){
   if(!ref){toast('Falta a referência','err');return}
-  if(!confirm('Apagar a venda '+ref+' e o seu comprovativo? Esta ação é definitiva.'))return;
-  req('/api/admin/sales/'+encodeURIComponent(ref),'DELETE').then(function(d){
-    if(d&&d.ok&&d.deleted){toast('Venda eliminada','ok');closeReceipt();loadAll();}
-    else if(d&&d.ok&&!d.deleted)toast('Venda não encontrada','err');
-    else toast((d&&d.error)||'Falha a apagar','err');
-  }).catch(function(){toast('Erro a apagar','err')});
+  openDelConfirm({
+    title:'Remover venda',
+    verify:ref,
+    desc:'A venda <b>'+esc(ref)+'</b> e o seu comprovativo serão apagados para sempre.',
+    action:function(){
+      req('/api/admin/sales/'+encodeURIComponent(ref),'DELETE').then(function(d){
+        if(d&&d.ok&&d.deleted){toast('Venda eliminada','ok');closeReceipt();loadAll();}
+        else if(d&&d.ok&&!d.deleted)toast('Venda não encontrada','err');
+        else toast((d&&d.error)||'Falha a apagar','err');
+      }).catch(function(){toast('Erro a apagar','err')});
+    }
+  });
 }
 function openPayModal(){
   var cur=settings['pagamento_detalhes']||'';
@@ -1161,25 +1167,37 @@ function cdNav(dir){
 }
 function closeDrawer(){byId('drawer').classList.remove('open');byId('drawerMask').classList.remove('open');setTimeout(function(){byId('drawerMask').style.display='none'},250)}
 
-/* ------------ DEL MODAL ------------ */
-function openDel(id){
-  var p=findP(id);if(!p)return;
-  delTarget=p;
+/* ------------ DEL MODAL (confirmação por digitação exacta) ------------ */
+function openDelConfirm(task){
+  if(!task)return;
+  delTarget=task;
+  byId('delTitle').innerHTML='<i class="fa-solid fa-triangle-exclamation" style="color:#dc3023"></i>'+esc(task.title||'Confirmação');
   byId('delInput').value='';
   byId('delErr').textContent='';
-  byId('delDesc').innerHTML='O produto <b>'+esc(p.name)+'</b> será eliminado para sempre (carrinho e mensagens incluídos). Escreve o nome exacto para confirmar:';
+  byId('delDesc').innerHTML=task.desc+' Re-escreve exactamente <b style="color:#dc3023;font-family:monospace">'+esc(task.verify)+'</b> para confirmar.';
   byId('delModal').classList.add('open');
   setTimeout(function(){byId('delInput').focus()},50);
 }
-function closeDel(){byId('delModal').classList.remove('open')}
+function closeDel(){byId('delModal').classList.remove('open');delTarget=null}
 function confirmDel(){
   if(!delTarget)return;
-  if(byId('delInput').value.trim()!==delTarget.name){byId('delErr').textContent='Nome não coincide. Escreve exactamente: '+delTarget.name;return}
-  req('/api/admin/product/'+delTarget.id,'DELETE').then(function(d){
-    closeDel();
-    if(d&&d.ok===false){toast('Não foi possível eliminar','err');return}
-    toast('Produto eliminado');
-    poke();setTimeout(loadAll,300);
+  if(byId('delInput').value.trim()!==delTarget.verify){byId('delErr').textContent='Texto não coincide. Escreve exactamente: '+delTarget.verify;return}
+  var t=delTarget;closeDel();
+  t.action();
+}
+function openDel(id){
+  var p=findP(id);if(!p)return;
+  openDelConfirm({
+    title:'Eliminar produto',
+    verify:p.name,
+    desc:'O produto <b>'+esc(p.name)+'</b> será eliminado para sempre (carrinho e mensagens incluídos).',
+    action:function(){
+      req('/api/admin/product/'+p.id,'DELETE').then(function(d){
+        if(d&&d.ok===false){toast('Não foi possível eliminar','err');return}
+        toast('Produto eliminado');
+        poke();setTimeout(loadAll,300);
+      });
+    }
   });
 }
 
@@ -1312,20 +1330,32 @@ function confirmPass(){
 }
 function delAdmin(email){
   if(!email)return;
-  if(!confirm('Remover o acesso ao painel de '+email+'?'))return;
-  API.deleteAdmin(email).then(function(d){
-    if(d&&d.ok){toast('Admin removido');loadAll();}
-    else toast((d&&d.error)||'Não foi possível remover','err');
-  }).catch(function(){toast('Erro no servidor','err')});
+  openDelConfirm({
+    title:'Remover admin',
+    verify:email,
+    desc:'O acesso ao painel de <b>'+esc(email)+'</b> será removido.',
+    action:function(){
+      API.deleteAdmin(email).then(function(d){
+        if(d&&d.ok){toast('Admin removido');loadAll();}
+        else toast((d&&d.error)||'Não foi possível remover','err');
+      }).catch(function(){toast('Erro no servidor','err')});
+    }
+  });
 }
 function delUser(email){
   var u=users.filter(function(x){return String(x.email).toLowerCase()===String(email).toLowerCase()})[0];
   if(!email)return;
-  if(!confirm('Eliminar o utilizador '+(u&&u.name?u.name:email)+' ('+email+')? Também apaga os seus produtos, chats e carrinho. Esta ação é definitiva.'))return;
-  req('/api/admin/user/'+encodeURIComponent(email),'DELETE').then(function(d){
-    if(d&&d.ok){toast('Utilizador eliminado','ok');loadAll();}
-    else toast((d&&d.error)||'Falha ao eliminar','err');
-  }).catch(function(){toast('Erro no servidor','err')});
+  openDelConfirm({
+    title:'Eliminar utilizador',
+    verify:email,
+    desc:'O utilizador <b>'+esc(u&&u.name?u.name:email)+'</b> ('+esc(email)+') será eliminado com os seus produtos, chats e carrinho.',
+    action:function(){
+      req('/api/admin/user/'+encodeURIComponent(email),'DELETE').then(function(d){
+        if(d&&d.ok){toast('Utilizador eliminado','ok');loadAll();}
+        else toast((d&&d.error)||'Falha ao eliminar','err');
+      }).catch(function(){toast('Erro no servidor','err')});
+    }
+  });
 }
 
 /* ------------ toast ------------ */
