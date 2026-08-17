@@ -12,7 +12,6 @@ const DEV_SECRET = 'yaobisno_secret_dev';
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production'
   ? (() => { throw new Error('JWT_SECRET é obrigatório em produção'); })()
   : DEV_SECRET);
-
 app.use(cors());
 app.use(express.json({ limit: '60mb' }));
 app.use(function (err, req, res, next) {
@@ -722,11 +721,16 @@ app.delete('/api/cart/all/:email', authRequired, async (req, res) => {
 
 app.post('/api/payment/create', authRequired, async (req, res) => {
   try {
-    const { mobile, amount, items } = req.body;
+    const { mobile } = req.body;
     const digits = String(mobile || '').replace(/[^\d]/g, '');
     if (!/^9\d{8}$/.test(digits))
       return res.json({ ok: false, error: 'Nº de telemóvel inválido (9 dígitos, começa por 9)' });
-    const val = Number(amount);
+    // O total nunca vem do browser. É recalculado a partir do carrinho do utilizador.
+    const [items] = await db.query(
+      'SELECT c.product_id AS id,c.qty,p.name,p.price FROM cart_items c JOIN products p ON p.id=c.product_id WHERE c.user_email=?',
+      [req.auth.email]
+    );
+    const val = items.reduce((sum, item) => sum + Number(item.price) * Number(item.qty), 0);
     if (!val || val <= 0) return res.json({ ok: false, error: 'Montante inválido' });
     if (!pay.configured()) return res.json({ ok: false, error: 'Pagamento ainda não configurado no servidor' });
     const base = process.env.PAY_CALLBACK_BASE || (req.protocol + '://' + req.get('host'));
@@ -736,20 +740,22 @@ app.post('/api/payment/create', authRequired, async (req, res) => {
       callbackUrl: base + '/api/payments/webhook'
     });
     if (!r.ok) return res.json(r);
+    // O gateway confirma o dinheiro; a base guarda o histórico para o painel admin.
     const ref = 'YA' + Date.now().toString(36).toUpperCase() + crypto.randomInt(100, 999);
-    await db.query('INSERT INTO payments (ref,provider_id,buyer_email,mobile,amount,items,status) VALUES (?,?,?,?,?,?,?)',
-      [ref, r.providerId, req.auth.email, r.mobile || digits, val, JSON.stringify(items || []), 'pending']);
-    res.json({ ok: true, ref, providerId: r.providerId });
+    await db.query(
+      'INSERT INTO payments (ref,provider_id,buyer_email,mobile,amount,items,status,method) VALUES (?,?,?,?,?,?,?,?)',
+      [ref, r.providerId, req.auth.email, r.mobile || digits, val, JSON.stringify(items), 'pending', 'mcx']
+    );
+    res.json({ ok: true, ref, providerId: r.providerId, amount: val });
   } catch (e) { console.error('[payment create] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
 app.get('/api/payment/:ref', authRequired, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT ref,provider_id,buyer_email,mobile,amount,status,status_reason,created_at FROM payments WHERE ref=?', [req.params.ref]);
-    if (rows.length === 0) return res.json({ ok: false, error: 'Pagamento não encontrado' });
+    if (rows.length === 0) return res.status(404).json({ ok: false, error: 'Pagamento não encontrado' });
     const p = rows[0];
-    if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
-      return res.status(403).json({ ok: false, error: 'Acesso negado' });
+    if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase()) return res.status(403).json({ ok: false, error: 'Acesso negado' });
     res.json({ ok: true, ref: p.ref, mobile: p.mobile, amount: Number(p.amount), status: p.status, status_reason: p.status_reason, created_at: p.created_at });
   } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
@@ -757,30 +763,28 @@ app.get('/api/payment/:ref', authRequired, async (req, res) => {
 app.get('/api/payment/:ref/refresh', authRequired, async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM payments WHERE ref=?', [req.params.ref]);
-    if (rows.length === 0) return res.json({ ok: false, error: 'Pagamento não encontrado' });
+    if (rows.length === 0) return res.status(404).json({ ok: false, error: 'Pagamento não encontrado' });
     const p = rows[0];
-    if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
-      return res.status(403).json({ ok: false, error: 'Acesso negado' });
-    if (p.status === 'accepted' || p.status === 'rejected')
-      return res.json({ ok: true, status: p.status, status_reason: p.status_reason || null });
-    if (!p.provider_id) return res.json({ ok: true, status: p.status });
+    if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase()) return res.status(403).json({ ok: false, error: 'Acesso negado' });
+    if (p.status === 'accepted' || p.status === 'rejected') return res.json({ ok: true, status: p.status, status_reason: p.status_reason || null });
     const r = await pay.getTransaction(p.provider_id);
-    if (r.ok && r.transaction && r.transaction.status) {
-      await db.query('UPDATE payments SET status=?, status_reason=? WHERE id=?',
-        [r.transaction.status, r.transaction.status_reason || null, p.id]);
-      return res.json({ ok: true, status: r.transaction.status, status_reason: r.transaction.status_reason || null });
-    }
-    res.json({ ok: true, status: p.status });
+    if (!r.ok) return res.status(502).json({ ok: false, error: r.error || 'Não foi possível consultar o pagamento' });
+    const t = r.transaction;
+    await db.query('UPDATE payments SET status=?, status_reason=? WHERE id=?', [t.status || p.status, t.status_reason || null, p.id]);
+    res.json({ ok: true, status: t.status || p.status, status_reason: t.status_reason || null });
   } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
-// Webhook chamado pelo fornecedor quando a transação é aceite/recusada
+// Webhook chamado pelo fornecedor: actualiza o histórico apresentado no admin.
 app.post('/api/payments/webhook', async (req, res) => {
   try {
     const t = req.body || {};
     if (!t.id || !t.status) return res.status(400).json({ ok: false });
+    const result = await pay.getTransaction(t.id);
+    if (!result.ok) return res.status(400).json({ ok: false });
+    const transaction = result.transaction || {};
     await db.query('UPDATE payments SET status=?, status_reason=? WHERE provider_id=?',
-      [t.status, t.status_reason || null, t.id]);
+      [transaction.status || t.status, transaction.status_reason || t.status_reason || null, t.id]);
     res.status(200).json({ ok: true });
   } catch (e) { res.status(500).json({ ok: false }); }
 });
@@ -951,7 +955,8 @@ app.get('/api/admin/cart', authAdmin, async (req, res) => {
 
 app.get('/api/admin/sales', authAdmin, async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM payments WHERE status IN ('accepted','finalizado','vendido','concluido','pendente','pago') ORDER BY id DESC");
+    // O admin precisa ver também pagamentos pendentes e recusados, não apenas os concluídos.
+    const [rows] = await db.query('SELECT * FROM payments ORDER BY id DESC');
     const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
     const storeIban = (keep.length && keep[0].svalue) || 'AO06000600008585965830114';
     const out = [];

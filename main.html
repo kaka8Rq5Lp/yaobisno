@@ -1046,12 +1046,10 @@ function payWithMCX(){
   var phone=byId("chkPhone").value.replace(/[^\d]/g,"");
   if(!/^9\d{8}$/.test(phone)){toast("Introduz um nº de Multicaixa Express válido (9 dígitos)");return}
   API.saveAddress(u.email,province,municipality,neighborhood,street,reference);
-  var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
-  if(t<=0){toast("Cesto vazio");return}
-  var items=cart.map(function(c){return {id:c.id,name:c.name,qty:c.qty,price:c.price}});
   var btn=byId("payMCXBtn");
   if(btn){btn.disabled=true;btn.textContent="A processar..."}
-  API.createPayment({mobile:phone,amount:t,items:items}).then(function(r){
+  // O servidor calcula o total pelo carrinho autenticado; valores do browser não são confiáveis.
+  API.createPayment({mobile:phone}).then(function(r){
     if(!r.ok){showPayStatus(r.error||"Erro ao iniciar o pagamento","erro");toast(r.error||"Erro ao iniciar o pagamento");if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}return}
     showPayStatus("Confirma o pagamento no app Multicaixa Express. Aguardando...","aguarda");
     var start=Date.now();

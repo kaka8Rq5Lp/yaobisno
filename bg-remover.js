@@ -103,9 +103,6 @@
     //    (usa-se no handlePublish se o append ao input falhar — ex.: DataTransfer
     //    indisponível/negado em alguns mobiles). JPEG 800px garante que o POST é leve.
     window.__bgRemovedDataUrl = null;
-    resizedDataUrl(blob, 800, 0.6).then(function (d) {
-      window.__bgRemovedDataUrl = d || null;
-    }).catch(function () {});
     // 1) Anexa o ficheiro ao input (funciona com o fluxo existente de publicar)
     var dtOk = false;
     try {
@@ -126,7 +123,13 @@
       appendThumb(d);
     }).catch(function () {});
 
-    return dtOk;
+    // Só consideramos a foto pronta depois de o fallback também estar pronto.
+    // Sem isto, em browsers sem DataTransfer o utilizador podia publicar antes
+    // de a imagem processada existir e o anúncio era enviado sem a foto.
+    return resizedDataUrl(blob, 800, 0.6).then(function (d) {
+      window.__bgRemovedDataUrl = d || null;
+      return dtOk || !!window.__bgRemovedDataUrl;
+    }).catch(function () { return dtOk; });
   }
 
   var state = { el: null, busy: false };
@@ -221,10 +224,17 @@
 
   function useIt() {
     if (!window.__pendingRemovedBlob) return;
-    var ok = useImage(window.__pendingRemovedBlob);
-    close();
-    toast(ok ? 'Foto sem fundo pronta a publicar!' : 'Foto guardada. Publica para usares esta imagem.');
+    var blob = window.__pendingRemovedBlob;
     window.__pendingRemovedBlob = null;
+    q('bgR_use').disabled = true;
+    q('bgR_use').textContent = 'A preparar foto...';
+    useImage(blob).then(function (ok) {
+      close();
+      toast(ok ? 'Foto sem fundo pronta a publicar!' : 'Não foi possível preparar a foto. Tenta de novo.');
+    }).finally(function () {
+      var b = q('bgR_use');
+      if (b) { b.disabled = false; b.innerHTML = '<i class="fa-solid fa-check"></i> Usar esta foto no Ya o Bisno'; }
+    });
   }
 
   function buildButton(input) {
