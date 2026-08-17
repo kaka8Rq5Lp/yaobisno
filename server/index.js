@@ -14,7 +14,13 @@ const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'producti
   : DEV_SECRET);
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '60mb' }));
+app.use(function (err, req, res, next) {
+  if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+    return res.status(413).json({ ok: false, error: 'Imagens demasiado grandes. Escolhe fotos mais pequenas ou menos de 3 de cada vez.' });
+  }
+  next(err);
+});
 
 // Bloqueia ficheiros sensíveis ficando inacessíveis via static (sem afetar a app)
 const SENSITIVE = [
@@ -565,8 +571,8 @@ app.post('/api/products', authRequired, async (req, res) => {
     res.json({ ok: true, id: r.insertId });
   } catch (e) {
     const imgSizes = Array.isArray(req.body && req.body.images) ? req.body.images.map(function (x) { return x ? x.length : 0; }) : [];
-    console.error('[products:insert]', e && (e.code || e.message), 'imgs=', JSON.stringify(imgSizes));
-    res.status(500).json({ ok: false });
+    console.error('[products:insert]', (e && (e.code || e.message)) + ' | ' + (e && e.message ? e.message : ''), 'imgs=', JSON.stringify(imgSizes));
+    res.status(500).json({ ok: false, error: (e && e.code === 'ER_DATA_TOO_LONG') ? 'Imagens demasiado grandes para a base de dados' : 'Erro ao guardar no servidor' });
   }
 });
 

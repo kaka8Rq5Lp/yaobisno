@@ -73,15 +73,38 @@
     prev.appendChild(d);
   }
 
+  // Redimensiona um blob para JPEG de até MAX px (igual ao clamp do handlePublish) e devolve dataURL.
+  // Usa-se no fallback de store para o POST nunca enviar o PNG a resolução total (que podia
+  // ultrapassar o limite do servidor e nunca chegar à BD).
+  function resizedDataUrl(blob, MAX, quality) {
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+          if (w > MAX || h > MAX) { if (w > h) { h = Math.round(h * MAX / w); w = MAX; } else { w = Math.round(w * MAX / h); h = MAX; } }
+          var c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          var d = c.toDataURL('image/jpeg', quality);
+          resolve((d && d.indexOf('data:image') === 0) ? d : '');
+        } catch (e) { resolve(''); }
+      };
+      img.onerror = function () { resolve(''); };
+      img.src = URL.createObjectURL(blob);
+    });
+  }
+
   function useImage(blob) {
     window.produtoBlobFinal = blob;
     var input = q('pub-image');
 
-    // 0) Sempre guarda o dataURL da foto sem fundo como fallback (usa-se no handlePublish
-    //    se o append ao input falhar — ex.: DataTransfer indisponível/negado em alguns mobiles)
+    // 0) Sempre guarda o dataURL da foto sem fundo REDIMENSIONADO como fallback
+    //    (usa-se no handlePublish se o append ao input falhar — ex.: DataTransfer
+    //    indisponível/negado em alguns mobiles). JPEG 800px garante que o POST é leve.
     window.__bgRemovedDataUrl = null;
-    fileToDataUrl(blob).then(function (d) {
-      window.__bgRemovedDataUrl = d;
+    resizedDataUrl(blob, 800, 0.6).then(function (d) {
+      window.__bgRemovedDataUrl = d || null;
     }).catch(function () {});
     // 1) Anexa o ficheiro ao input (funciona com o fluxo existente de publicar)
     var dtOk = false;

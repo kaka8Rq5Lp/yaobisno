@@ -570,16 +570,27 @@ function handlePublish(e){
       var p={id:Date.now(),name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name};
       products.unshift(p);
       API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name}).then(function(r){
-        if(r&&!r.ok)toast("Aviso: não sincronizado com o servidor (ficará só neste dispositivo)")
-      });
+        if(r&&!r.ok)toast("Imagem não foi para o servidor: "+(r.error||"tenta de novo"))}).then(undefined,function(){toast("Sem ligação ao servidor")});
       toast("Produto publicado!")
     }
     try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
     renderStats();renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pv=byId("pub-image-preview");if(pf)pf.reset();if(pv)pv.innerHTML=""
   }
+  function rin(handler){
+    var bgd=window.__bgRemovedDataUrl;
+    if(bgd){handler([bgd])}
+    else if(editingProductId){var ex=products.find(function(p){return p.id===editingProductId});handler(ex?ex.images||[imgPH(ex.name)]:[imgPH(name)])}
+    else{handler([imgPH(name)])}
+  }
   if(files&&files.length>0){
     var loaded=[],toLoad=Math.min(files.length,10),cnt=0;
-    function doneOne(){cnt++;if(cnt>=toLoad)fin(loaded)}
+    function doneOne(){
+      cnt++;
+      if(cnt>=toLoad){
+        if(loaded.length>0)fin(loaded);
+        else rin(fin);
+      }
+    }
     for(var fi=0;fi<toLoad;fi++)(function(f){
       var r=new FileReader();
       r.onload=function(ev){
@@ -600,11 +611,7 @@ function handlePublish(e){
       r.onerror=function(){doneOne()};
       r.readAsDataURL(f);
     })(files[fi])
-  }else if(editingProductId){var ex=products.find(function(p){return p.id===editingProductId});fin(ex?ex.images||[imgPH(ex.name)]:[imgPH(name)])}
-  else{
-    var bgd=window.__bgRemovedDataUrl;
-    if(bgd)fin([bgd]);else fin([imgPH(name)])
-  }
+  }else{rin(fin)}
   }catch(e){try{console.error("handlePublish:",e)}catch(ex){}toast("Erro ao publicar")}
 }
 

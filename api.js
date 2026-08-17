@@ -19,7 +19,14 @@ var API = (function(){
       method: opts.method || 'GET',
       headers: headers,
       body: opts.body ? JSON.stringify(opts.body) : undefined
-    }).then(function(r){return r.json()}).catch(function(){return {ok:false}});
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(data){
+        data._status = r.status;
+        return data;
+      });
+    }).catch(function(){
+      return {ok:false, error:'Sem ligação ao servidor'};
+    });
   }
 
   // ─── Auth ─────────────────────────────────────────────
