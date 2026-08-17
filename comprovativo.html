@@ -74,7 +74,7 @@ input[type="file"]{border-radius:12px;width:100%;font-size:.9rem;transition:all 
         <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">Valor a pagar</span><b id="payValor" class="text-[#FF6B00]">–</b></div>
       </div>
       <div class="mt-4 flex flex-col items-center gap-1.5">
-        <div id="qrWrap" class="hidden p-2.5 rounded-[14px] bg-white border border-[#F0F0ED] shadow-sm"><canvas id="qrCanvas" class="w-[180px] h-[180px] block" width="360" height="360"></canvas></div>
+        <div id="qrWrap" class="hidden p-4 rounded-[14px] bg-white border border-[#F0F0ED] shadow-sm flex items-center justify-center"><canvas id="qrCanvas" class="w-[200px] h-[200px] block mx-auto" width="400" height="400"></canvas></div>
         <p class="text-[10.5px] text-[#9CA3AF] font-medium">Escaneia com o app do teu banco para copiar os dados</p>
       </div>
       <button id="copyBtn" class="mt-3 w-full h-11 rounded-[14px] bg-[#F3F4F6] border border-[#E5E7EB] text-[#111317] text-[13.5px] font-bold flex items-center justify-center gap-2 hover:bg-[#E8EAED] active:scale-[0.98] transition"><i class="fa-solid fa-copy"></i> Copiar dados de pagamento</button>
@@ -223,7 +223,7 @@ function renderQr(){
     var fatura=(SALE.fatura||SALE.ref||'').trim(),iban=(SALE.iban||'').trim(),valor=Number(SALE.amount||0);
     if(!fatura&&!iban&&!valor)return;
     var lines=['YA O BISNO','FATURA: '+fatura,'IBAN: '+iban,'VALOR: '+valor.toFixed(2)+' KZ'];
-    QRCode.toCanvas(cv,lines.join('\n'),{width:360,margin:1,errorCorrectionLevel:'M'},function(err){
+    QRCode.toCanvas(cv,lines.join('\n'),{width:400,margin:4,errorCorrectionLevel:'M'},function(err){
       if(err)return;
       w.classList.remove("hidden");
     });

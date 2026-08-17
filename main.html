@@ -411,7 +411,7 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
     </div>
     <div class="flex flex-col items-center gap-3 py-3">
       <div id="qrStatus" class="hidden text-[12px] text-[#6B7280] font-medium"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i>A criar a encomenda...</div>
-      <div id="qrWrap2" class="hidden p-3 rounded-[16px] bg-white border border-[#F0F0ED] shadow-sm"><canvas id="qrCanvas2" class="w-[220px] h-[220px] block" width="440" height="440"></canvas></div>
+      <div id="qrWrap2" class="hidden p-4 rounded-[16px] bg-white border border-[#F0F0ED] shadow-sm flex items-center justify-center"><canvas id="qrCanvas2" class="w-[230px] h-[230px] block mx-auto" width="460" height="460"></canvas></div>
       <div id="qrDetails" class="hidden w-full rounded-[14px] bg-[#FBFBF9] border border-[#F0F0ED] p-3.5 space-y-2 text-[12.5px]">
         <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">Nº da fatura</span><b id="qrFatura">–</b></div>
         <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">IBAN</span><b id="qrIban" class="font-mono text-[11px]">–</b></div>
@@ -1115,7 +1115,7 @@ function payWithQR(){
         byId("qrValor").textContent=fmt(amount);
         var ql='YA O BISNO\nFATURA: '+fatura+'\nIBAN: '+iban+'\nVALOR: '+Number(amount).toFixed(2)+' KZ';
         try{
-          QRCode.toCanvas(byId("qrCanvas2"),ql,{width:440,margin:1,errorCorrectionLevel:'M'},function(err){
+          QRCode.toCanvas(byId("qrCanvas2"),ql,{width:460,margin:4,errorCorrectionLevel:'M'},function(err){
             if(!err){if(qw)qw.classList.remove("hidden");if(qd)qd.classList.remove("hidden");if(qb)qb.classList.remove("hidden")}
             else{if(qs){qs.textContent='Não foi possível gerar o QR. Tenta de novo.';qs.classList.remove("hidden")}}
           });
