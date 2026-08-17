@@ -553,25 +553,28 @@ function handlePublish(e){
   var pn=byId("pub-name"),pp=byId("pub-price"),pl=byId("pub-location"),pc=byId("pub-category"),pnew=byId("pub-new"),pneg=byId("pub-neg"),pi=byId("pub-image");
   if(!pn||!pp||!pl||!pc){toast("Erro no formulário");return}
   var name=pn.value.trim(),price=parseFloat(pp.value)||0;
-  var loc=pl.value.trim(),cat=pc.value||"Outros";
+  var loc=(pl.value.trim()).slice(0,500),cat=pc.value||"Outros";
   var inew=pnew?pnew.checked:false,neg=pneg?pneg.checked:false;
   if(!name||!price||!loc){toast("Preenche os campos");return}
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(!u){toast("Precisas estar logado");return}
   var files=pi?pi.files:null;
   function fin(imgs){
+    window.__bgRemovedDataUrl=null;
     if(editingProductId){
       var idx=products.findIndex(function(p){return p.id===editingProductId});
       if(idx>-1){products[idx].name=name;products[idx].price=price;products[idx].location=loc;products[idx].category=cat;if(imgs&&imgs.length>0)products[idx].images=imgs;products[idx].isNew=inew;products[idx].negotiable=neg;toast("Atualizado!")}
       API.updateProduct(editingProductId,{name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg});
       editingProductId=null
     }else{
-      var mx=0;for(var i=0;i<products.length;i++){if(products[i].id>mx)mx=products[i].id}
       var p={id:Date.now(),name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name};
-      products.unshift(p);
       API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name}).then(function(r){
-        if(r&&!r.ok)toast("Imagem não foi para o servidor: "+(r.error||"tenta de novo"))}).then(undefined,function(){toast("Sem ligação ao servidor")});
-      toast("Produto publicado!")
+        if(!r||!r.ok){toast("Produto não foi guardado: "+((r&&r.error)||"tenta de novo"));return}
+        p.id=r.id;products.unshift(p);
+        try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
+        renderStats();renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pv=byId("pub-image-preview");if(pf)pf.reset();if(pv)pv.innerHTML="";toast("Produto publicado!")
+      }).catch(function(){toast("Sem ligação ao servidor. O produto não foi publicado.")});
+      return;
     }
     try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
     renderStats();renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pv=byId("pub-image-preview");if(pf)pf.reset();if(pv)pv.innerHTML=""

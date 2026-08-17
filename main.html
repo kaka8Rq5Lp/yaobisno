@@ -934,27 +934,29 @@ function handlePublish(e){
   var elN=byId("pub-name"),elP=byId("pub-price"),elL=byId("pub-location"),elC=byId("pub-category"),elNew=byId("pub-new"),elNeg=byId("pub-neg");
   if(!elN||!elP||!elL||!elC)return;
   var name=elN.value.trim(),price=parseFloat(elP.value)||0;
-  var loc=elL.value.trim(),cat=elC.value||"Outros";
+  var loc=(elL.value.trim()).slice(0,500),cat=elC.value||"Outros";
   var inew=elNew?elNew.checked:false,neg=elNeg?elNeg.checked:false;
   if(!name||!price||!loc){toast("Preenche os campos");return}
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(!u){toast("Precisas estar logado");return}
   var files=byId("pub-image").files;
   function fin(imgs){
+    window.__bgRemovedDataUrl=null;
     if(editingProductId){
       var idx=products.findIndex(function(p){return p.id===editingProductId});
       if(idx>-1){products[idx].name=name;products[idx].price=price;products[idx].location=loc;products[idx].category=cat;if(imgs&&imgs.length>0)products[idx].images=imgs;products[idx].isNew=inew;products[idx].negotiable=neg;toast("Atualizado!")}
       API.updateProduct(editingProductId,{name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg});
       editingProductId=null
     }else{
-      var mx=0;for(var i=0;i<products.length;i++){if(products[i].id>mx)mx=products[i].id}
       var p={id:Date.now(),name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name};
-      products.unshift(p);
       API.saveProduct({name,price,location,category:cat,images:imgs,isNew:inew,negotiable:neg,ownerEmail:u.email,owner_name:u.name}).then(function(r){
-        if(r&&!r.ok)toast("Imagem não foi para o servidor: "+(r.error||"tenta de novo"))}).then(undefined,function(){toast("Sem ligação ao servidor")});
-      searchQuery="";currentFilter="";document.querySelectorAll(".filter-btn").forEach(function(x){x.classList.remove("active")});
-      var si=byId("searchInput"),sm=byId("searchInputMobile");if(si)si.value="";if(sm)sm.value="";
-      toast("Produto publicado!")
+        if(!r||!r.ok){toast("Produto não foi guardado: "+((r&&r.error)||"tenta de novo"));return}
+        p.id=r.id;products.unshift(p);
+        searchQuery="";currentFilter="";document.querySelectorAll(".filter-btn").forEach(function(x){x.classList.remove("active")});
+        var si=byId("searchInput"),sm=byId("searchInputMobile");if(si)si.value="";if(sm)sm.value="";
+        syncLocal();renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pp=byId("pub-image-preview");if(pf)pf.reset();if(pp)pp.innerHTML="";toast("Produto publicado!")
+      }).catch(function(){toast("Sem ligação ao servidor. O produto não foi publicado.")});
+      return;
     }
       syncLocal();renderProducts();closeModal("publishModal");var pf=byId("publishForm"),pp=byId("pub-image-preview");if(pf)pf.reset();if(pp)pp.innerHTML=""
   }

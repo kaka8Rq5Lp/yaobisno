@@ -554,8 +554,8 @@ app.get('/api/products', async (req, res) => {
 });
 
 function strLoc(v){
-  if (typeof v === 'string') return v;
-  if (v && typeof v === 'object') { try { return JSON.stringify(v); } catch (e) { return ''; } }
+  if (typeof v === 'string') return v.slice(0, 500);
+  if (v && typeof v === 'object') { try { var s = JSON.stringify(v); return (s || '').slice(0, 500); } catch (e) { return ''; } }
   return '';
 }
 
@@ -1329,6 +1329,12 @@ async function initDB() {
     if (imgType[0].length && imgType[0][0].DATA_TYPE !== 'longtext') {
       await db.query(`ALTER TABLE products MODIFY COLUMN images LONGTEXT`);
       console.log('[migracao] products.images -> LONGTEXT');
+    }
+    // Migração: location a VARCHAR(255) rebentava com moradas longas (ER_DATA_TOO_LONG).
+    const locType = await db.query(`SELECT CHARACTER_MAXIMUM_LENGTH FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'location'`);
+    if (locType[0].length && (locType[0][0].CHARACTER_MAXIMUM_LENGTH || 0) < 500) {
+      await db.query(`ALTER TABLE products MODIFY COLUMN location VARCHAR(500)`);
+      console.log('[migracao] products.location -> VARCHAR(500)');
     }
     const colVerify = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'verifications'`);
     const vCols = colVerify[0].map(c => c.COLUMN_NAME);
