@@ -500,6 +500,17 @@ app.put('/api/user/address', authRequired, async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
+app.put('/api/user/phone', authRequired, async (req, res) => {
+  try {
+    const { email, phone } = req.body;
+    if (email !== req.auth.email) return res.status(403).json({ ok: false, error: 'Acesso negado' });
+    const p = String(phone || '').trim().replace(/\s+/g, ' ');
+    if (p.length > 40) return res.status(400).json({ ok: false, error: 'Telefone demasiado longo' });
+    await db.query('UPDATE users SET phone=? WHERE email=?', [p, email]);
+    res.json({ ok: true, phone: p });
+  } catch (e) { res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
 app.post('/api/avatar', authRequired, async (req, res) => {
   try {
     const { email, avatar } = req.body;

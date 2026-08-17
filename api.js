@@ -60,6 +60,9 @@ var API = (function(){
   function saveAddress(email, province, municipality, neighborhood, street, reference){
     return api('/api/user/address', {method:'PUT', body:{email, province, municipality, neighborhood, street, reference}});
   }
+  function savePhone(email, phone){
+    return api('/api/user/phone', {method:'PUT', body:{email, phone}});
+  }
 
   // ─── Products ──────────────────────────────────────────────
 

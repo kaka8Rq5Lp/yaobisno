@@ -92,7 +92,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black text-white text-[10px] font-semibold"><i class="fa-solid fa-check w-3 h-3"></i> VERIFICADO</span>
         </div>
         <div class="mt-2.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-[13.5px]">
-          <span id="profilePhone" class="inline-flex items-center gap-1.5 text-black/60 font-medium"></span>
+          <span class="inline-flex items-center gap-1.5 text-black/60 font-medium"><span id="profilePhone" class="inline-flex items-center gap-1.5 text-black/60 font-medium"></span><button id="editPhoneBtn" onclick="openPhoneEdit()" class="owner-only w-6 h-6 rounded-full bg-[#f6f7f9] border border-black/10 flex items-center justify-center text-black/40 hover:text-black hover:bg-black/5 transition" title="Editar telefone"><i class="fa-solid fa-pen w-2 h-2"></i></button></span>
           <span class="hidden sm:block w-1 h-1 rounded-full bg-black/20"></span>
           <span class="inline-flex items-center gap-1.5 text-black/60"><i class="fa-solid fa-star text-[#FF6B00]"></i> 4.9 • <span id="ratingCount">0</span> avaliações</span>
           <span class="hidden sm:block w-1 h-1 rounded-full bg-black/20"></span>
@@ -208,6 +208,25 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="mt-6 flex gap-2.5">
         <button onclick="closeModal('editModal')" class="flex-1 h-11 rounded-[12px] bg-[#f6f7f9] border border-black/10 text-[14px] font-semibold hover:bg-black/[0.06] transition">Cancelar</button>
         <button onclick="saveEdit()" class="flex-1 h-11 rounded-[12px] bg-[#111317] text-white text-[14px] font-semibold hover:bg-black transition">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="phoneModal" class="modal hidden">
+  <div class="modal-panel max-w-[420px] mx-auto">
+    <div class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div><div class="text-[11px] font-bold tracking-widest text-[#FF6B00]">PERFIL</div><h3 class="mt-1 text-[18px] font-bold tracking-tight leading-tight">Editar telefone</h3></div>
+        <button onclick="closeModal('phoneModal')" class="w-8 h-8 rounded-full bg-[#f6f7f9] flex items-center justify-center hover:bg-black/5 transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mt-5">
+        <label class="text-[12px] font-semibold text-black/60">Telefone</label>
+        <input id="phoneEditInput" type="tel" maxlength="40" inputmode="tel" placeholder="+244 900 000 000" class="mt-1.5 w-full h-11 px-3.5 rounded-[12px] bg-[#f6f7f9] border border-black/10 text-[14px] font-semibold outline-none focus:border-[#FF6B00]/30 focus:bg-white transition">
+      </div>
+      <div class="mt-6 flex gap-2.5">
+        <button onclick="closeModal('phoneModal')" class="flex-1 h-11 rounded-[12px] bg-[#f6f7f9] border border-black/10 text-[14px] font-semibold hover:bg-black/[0.06] transition">Cancelar</button>
+        <button onclick="savePhoneEdit()" class="flex-1 h-11 rounded-[12px] bg-[#111317] text-white text-[14px] font-semibold hover:bg-black transition">Guardar</button>
       </div>
     </div>
   </div>
@@ -390,6 +409,29 @@ function myProducts(){
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
   if(!u)return [];
   return products.filter(function(p){return(p.ownerEmail||"").toLowerCase()===(u.email||"").toLowerCase()});
+}
+
+function openPhoneEdit(){
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u)return;
+  var input=byId("phoneEditInput"),modal=byId("phoneModal");
+  if(input)input.value=u.phone||"";
+  if(modal)modal.classList.remove("hidden");
+  if(input){input.focus();input.select()}
+}
+
+function savePhoneEdit(){
+  var input=byId("phoneEditInput");if(!input)return;
+  var phone=String(input.value||"").trim().replace(/\s+/g," ");
+  if(phone.length>40){toast("Telefone demasiado longo");return}
+  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+  if(!u)return;
+  API.savePhone(u.email,phone).then(function(r){
+    if(!r||!r.ok){toast((r&&r.error)||"Não foi possível guardar");return}
+    u.phone=r.phone||phone;
+    try{localStorage.setItem("yabisno_user",JSON.stringify(u))}catch(e){}
+    renderUser();closeModal("phoneModal");toast("Telefone atualizado!");
+  }).catch(function(){toast("Erro de ligação. Tenta de novo.")});
 }
 
 function renderStats(){
