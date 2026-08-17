@@ -1187,8 +1187,8 @@ function confirmDel(){
 function renderUsers(){
   var q=(byId('globalSearch').value||'').trim().toLowerCase();
   var list=users.filter(function(u){return !q||String(u.name).toLowerCase().indexOf(q)>=0||String(u.email).toLowerCase().indexOf(q)>=0});
-  var html='<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Utilizador</th><th>Email</th><th>Role</th><th>Telefone</th><th>Verificado</th><th>Produtos</th><th>Registo</th></tr></thead><tbody>';
-  if(!list.length)html+='<tr><td colspan="7"><div class="empty"><i class="fa-solid fa-users"></i><p>Sem utilizadores</p></div></td></tr>';
+  var html='<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Utilizador</th><th>Email</th><th>Role</th><th>Telefone</th><th>Verificado</th><th>Produtos</th><th>Registo</th><th></th></tr></thead><tbody>';
+  if(!list.length)html+='<tr><td colspan="8"><div class="empty"><i class="fa-solid fa-users"></i><p>Sem utilizadores</p></div></td></tr>';
   for(var i=0;i<list.length;i++){
     var u=list[i],isAdmin=String(u.email).toLowerCase()===String(ADMIN_EMAIL).toLowerCase();
     var pc=(products||[]).filter(function(p){return String(p.owner_email).toLowerCase()===String(u.email).toLowerCase()}).length;
@@ -1201,6 +1201,7 @@ function renderUsers(){
       +'<td>'+(u.verified?'<span style="color:#0a9e4e"><i class="fa-solid fa-circle-check"></i> Sim</span>':'<span style="color:#dc3023"><i class="fa-solid fa-circle-xmark"></i> Não</span>')+'</td>'
       +'<td>'+pc+'</td>'
       +'<td style="font-size:12px;color:#8a8578">'+timeAgo(u.created_at)+'</td>'
+      +'<td>'+(isAdmin?'<span style="font-size:10.5px;color:#9aa0a6">/</span>':'<div class="actions"><button class="act red" title="Eliminar user" onclick="delUser(\''+esc(String(u.email))+'\')"><i class="fa-solid fa-user-xmark"></i></button></div>')+'</td>'
       +'</tr>';
   }
   html+='</tbody></table></div></div>';
@@ -1315,6 +1316,15 @@ function delAdmin(email){
   API.deleteAdmin(email).then(function(d){
     if(d&&d.ok){toast('Admin removido');loadAll();}
     else toast((d&&d.error)||'Não foi possível remover','err');
+  }).catch(function(){toast('Erro no servidor','err')});
+}
+function delUser(email){
+  var u=users.filter(function(x){return String(x.email).toLowerCase()===String(email).toLowerCase()})[0];
+  if(!email)return;
+  if(!confirm('Eliminar o utilizador '+(u&&u.name?u.name:email)+' ('+email+')? Também apaga os seus produtos, chats e carrinho. Esta ação é definitiva.'))return;
+  req('/api/admin/user/'+encodeURIComponent(email),'DELETE').then(function(d){
+    if(d&&d.ok){toast('Utilizador eliminado','ok');loadAll();}
+    else toast((d&&d.error)||'Falha ao eliminar','err');
   }).catch(function(){toast('Erro no servidor','err')});
 }
 
