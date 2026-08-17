@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="legacy.css">
 <script>!function(){try{var d=document.documentElement;d.style.setProperty("--vh",(window.innerHeight*.01)+"px");window.addEventListener("resize",function(){d.style.setProperty("--vh",(window.innerHeight*.01)+"px")})}catch(e){}}()</script>
 <script src="api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -379,6 +380,8 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
         <div class="space-y-2 pt-1 actions-bar">
           <button type="button" id="payMCXBtn" onclick="payWithMCX()" class="w-full h-[39px] rounded-[12px] bg-[#0F3D2E] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#0C3226] transition shadow-[0_8px_20px_rgba(15,61,46,0.25)]"><i class="fa-solid fa-mobile-screen-button"></i> Pagar com Multicaixa Express</button>
 
+          <button type="button" id="payQRBtn" onclick="payWithQR()" class="w-full h-[39px] rounded-[12px] bg-[#111317] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-black transition shadow-[0_8px_20px_rgba(17,19,23,0.2)]"><i class="fa-solid fa-qrcode text-[15px]"></i> Pagar com QR code</button>
+
           <button type="submit" id="btnZap" class="w-full h-[39px] rounded-[12px] bg-[#FF5F1F] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#E8541B] transition shadow-[0_8px_20px_rgba(255,95,31,0.25)]"><i class="fa-brands fa-whatsapp text-[16px]"></i> Encomendar e enviar comprovativo</button>
 
           <div class="flex items-center justify-center gap-3 pt-0.5">
@@ -390,6 +393,34 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
 
         <div id="payStatus" class="hidden p-2.5 rounded-[12px] text-[12px] text-center font-medium"></div>
       </form>
+    </div>
+  </div>
+</div>
+
+<div id="qrModal" class="modal hidden">
+  <div class="modal-panel max-w-[420px]">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-full bg-[#111317] flex items-center justify-center text-white text-[13px]"><i class="fa-solid fa-qrcode"></i></div>
+        <div class="leading-tight">
+          <p class="text-[14px] font-bold">Paga com QR code</p>
+          <p class="text-[10px] text-[#6B7280]">Escaneia com o app do teu banco</p>
+        </div>
+      </div>
+      <button onclick="closeQrModal()" class="text-gray-400 hover:text-orange text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="flex flex-col items-center gap-3 py-3">
+      <div id="qrStatus" class="hidden text-[12px] text-[#6B7280] font-medium"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i>A criar a encomenda...</div>
+      <div id="qrWrap2" class="hidden p-3 rounded-[16px] bg-white border border-[#F0F0ED] shadow-sm"><canvas id="qrCanvas2" class="w-[220px] h-[220px] block" width="440" height="440"></canvas></div>
+      <div id="qrDetails" class="hidden w-full rounded-[14px] bg-[#FBFBF9] border border-[#F0F0ED] p-3.5 space-y-2 text-[12.5px]">
+        <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">Nº da fatura</span><b id="qrFatura">–</b></div>
+        <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">IBAN</span><b id="qrIban" class="font-mono text-[11px]">–</b></div>
+        <div class="flex justify-between items-center gap-2"><span class="text-[#6B7280]">Valor</span><b id="qrValor" class="text-[#FF5F1F]">–</b></div>
+      </div>
+    </div>
+    <div class="space-y-2">
+      <a id="qrDoneBtn" href="#" onclick="qrAfterPay()" class="hidden w-full h-11 rounded-[12px] bg-[#FF5F1F] text-white text-[13px] font-semibold flex items-center justify-center gap-2"><i class="fa-solid fa-paper-plane"></i> Já paguei — enviar comprovativo</a>
+      <button onclick="closeQrModal()" class="w-full h-11 rounded-[12px] bg-[#F3F4F6] border border-[#E5E7EB] text-[#111317] text-[13px] font-bold">Fechar</button>
     </div>
   </div>
 </div>
@@ -623,6 +654,7 @@ function bindAll(){
 el=byId("chatModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("chatModal")};
   el=byId("productModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("productModal")};
   el=byId("checkoutModal");if(el)el.onclick=function(e){if(e.target===this)closeCheckoutModal()};
+  el=byId("qrModal");if(el)el.onclick=function(e){if(e.target===this)closeQrModal()};
     el=byId("logoutBtn");if(el)el.onclick=function(){try{localStorage.removeItem(cartKey())}catch(e){};try{localStorage.removeItem("yabisno_user")}catch(e){};try{localStorage.removeItem("yabisno_token")}catch(e){};window.location.href="index.html"};
     el=byId("modalBuyBtn");if(el)el.onclick=function(){var id=parseInt(this.dataset.productId);if(id){addCart(id);closeModal("productModal")}};
     el=byId("modalChatBtn");if(el)el.onclick=function(){var id=parseInt(this.dataset.productId);if(id){closeModal("productModal");openChat(id)}};
@@ -1046,6 +1078,65 @@ function payWithMCX(){
 
 function stopPayPoll(){
   if(payTimer){clearInterval(payTimer);payTimer=null}
+}
+
+var qrRef=null;
+function payWithQR(){
+  try{
+    var province=byId("chkProvince").value.trim(),municipality=byId("chkMunicipality").value.trim(),neighborhood=byId("chkNeighborhood").value.trim(),street=byId("chkStreet").value.trim(),reference=byId("chkReference").value.trim();
+    if(!province||!municipality||!neighborhood||!street){toast("Preenche todos os campos obrigatórios");return}
+    var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
+    if(!u){toast("Faz login primeiro");return}
+    var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
+    if(t<=0){toast("Cesto vazio");return}
+    API.saveAddress(u.email,province,municipality,neighborhood,street,reference);
+    var items=cart.map(function(c){return {id:c.id,name:c.name,qty:c.qty,price:c.price}});
+    var amount=Math.round(t*1.05);
+    var delivery={province:province,municipality:municipality,neighborhood:neighborhood,street:street,reference:reference};
+    var qs=byId("qrStatus"),qw=byId("qrWrap2"),qd=byId("qrDetails"),qb=byId("qrDoneBtn");
+    closeModal("checkoutModal");
+    openModal("qrModal");document.body.classList.add("checkout-open");
+    if(qs)qs.classList.remove("hidden");
+    if(qw)qw.classList.add("hidden");
+    if(qd)qd.classList.add("hidden");
+    if(qb)qb.classList.add("hidden");
+    if(typeof API.recordWhatsappOrder!=="function"){toast("Versão desatualizada — recarrega com Ctrl+F5");closeQrModal();return}
+    API.recordWhatsappOrder({mobile:u.phone||"",amount:amount,items:items,delivery:delivery}).then(function(r){
+      if(!(r&&r.ok&&r.ref)){if(qs)qs.classList.add("hidden");toast("Não foi possível criar a encomenda. Tenta de novo.");return}
+      qrRef=r.ref;
+      API.clearCart(u.email).catch(function(){});
+      cart=[];syncLocal();updateCart();
+      API.getSettings().then(function(s){
+        var iban=((s&&s.settings&&s.settings.pagamento_iban)||'AO06000000000000000000000').replace(/\s+/g,'').toUpperCase();
+        var fatura=(r.fatura||r.ref||'');
+        if(qs)qs.classList.add("hidden");
+        byId("qrFatura").textContent=fatura;
+        byId("qrIban").textContent=iban;
+        byId("qrValor").textContent=fmt(amount);
+        var ql='YA O BISNO\nFATURA: '+fatura+'\nIBAN: '+iban+'\nVALOR: '+Number(amount).toFixed(2)+' KZ';
+        try{
+          QRCode.toCanvas(byId("qrCanvas2"),ql,{width:440,margin:1,errorCorrectionLevel:'M'},function(err){
+            if(!err){if(qw)qw.classList.remove("hidden");if(qd)qd.classList.remove("hidden");if(qb)qb.classList.remove("hidden")}
+            else{if(qs){qs.textContent='Não foi possível gerar o QR. Tenta de novo.';qs.classList.remove("hidden")}}
+          });
+        }catch(e){if(qs){qs.textContent='Não foi possível gerar o QR.';qs.classList.remove("hidden")}}
+      }).catch(function(){
+        if(qs)qs.classList.add("hidden");
+        toast("Não foi possível carregar os dados de pagamento.");
+      });
+    }).catch(function(){
+      if(qs)qs.classList.add("hidden");
+      toast("Erro de ligação ao criar a encomenda.");
+    });
+  }catch(e){try{console.error("payWithQR:",e)}catch(x){};toast("Erro ao gerar o QR");closeQrModal()}
+}
+function closeQrModal(){
+  stopPayPoll();
+  document.body.classList.remove("checkout-open");
+  closeModal("qrModal");
+}
+function qrAfterPay(){
+  if(qrRef)window.location.href='comprovativo.html?ref='+encodeURIComponent(qrRef);
 }
 
 function showPayStatus(msg,type){
