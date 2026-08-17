@@ -364,6 +364,15 @@ function thumbHTML(p){
 function safeLoc(p){
   var l=p.location;
   if(l==null)return '';
+  if(typeof l==='string'){
+    var s=l.trim();
+    if(s==="[object Object]"||s==="[object Array]"||s==="")return '';
+    if(s.charAt(0)==="{"||s.charAt(0)==="["){
+      try{var o=JSON.parse(s);return safeLoc({location:o})}catch(e){}
+    }
+    if(/href|origin|pathname/.test(s.substring(0,40)))return '';
+    return s;
+  }
   if(typeof l==='object'){
     var parts=[l.city||l.cidade||l.municipality,l.bairro||l.neighborhood||l.provincia].filter(Boolean);
     return parts.join(' • ');

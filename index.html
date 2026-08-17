@@ -553,7 +553,15 @@ function handleLogin(e){
 function fmt(v){return Number(v).toLocaleString("pt-PT")+" Kz"}
 function safeLocal(loc){
   if(loc==null||loc==="")return "Luanda";
-  if(typeof loc==="string")return loc;
+  if(typeof loc==="string"){
+    var s=loc.trim();
+    if(s==="[object Object]"||s==="[object Array]")return "Luanda";
+    if(s.charAt(0)==="{"||s.charAt(0)==="["){
+      try{var o=JSON.parse(s);if(typeof o==="object")return safeLocal(o)}catch(e){}
+    }
+    if(s.indexOf("<")>=0||/href|origin|pathname/.test(s.substring(0,40)))return "Luanda";
+    return s;
+  }
   if(typeof loc==="object"){
     var a=(loc.city||loc.cidade||loc.municipality||""),b=(loc.bairro||loc.neighborhood||loc.provincia||"");
     return (a+" • "+b).replace(/^• | • $/g,"").trim()||"Luanda";
