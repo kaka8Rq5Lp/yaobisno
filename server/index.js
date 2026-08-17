@@ -563,7 +563,7 @@ app.post('/api/products', authRequired, async (req, res) => {
       [name, price, strLoc(location), category || 'Outros', JSON.stringify(images || []), isNew ? 1 : 0, negotiable ? 1 : 0, req.auth.email, owner_name || req.auth.name]
     );
     res.json({ ok: true, id: r.insertId });
-  } catch (e) { res.status(500).json({ ok: false }); }
+  } catch (e) { console.error('[products:insert]', e && (e.code || e.message)); res.status(500).json({ ok: false }); }
 });
 
 app.put('/api/products/:id', authRequired, async (req, res) => {
