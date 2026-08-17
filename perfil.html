@@ -176,7 +176,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div><label class="text-[12px] font-semibold text-black/60">Localização</label><input id="pub-location" type="text" placeholder="Luanda" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" required></div>
         </div>
         <div><label class="text-[12px] font-semibold text-black/60">Categoria</label><select id="pub-category" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" required><option value="">Escolher categoria</option><option value="Moda">Moda</option><option value="Eletronicos">Eletrônicos</option><option value="Casa">Casa</option><option value="Desporto">Desporto</option><option value="Carros">Carros</option><option value="Perfumes e Cosmeticos">Perfumes</option><option value="Imoveis">Imóveis</option><option value="Outros">Outros</option></select></div>
-        <div><label class="text-[12px] font-semibold text-black/60">Fotos</label><input id="pub-image" type="file" accept="image/*" multiple class="mt-1.5 text-sm py-3 bg-[#f6f7f9] rounded-[12px] px-3.5"><div id="pub-image-preview" class="flex gap-2 flex-wrap mt-2"></div></div>
+        <div><label class="text-[12px] font-semibold text-black/60">Fotos (até 3)</label><input id="pub-image" type="file" accept="image/*" multiple class="mt-1.5 text-sm py-3 bg-[#f6f7f9] rounded-[12px] px-3.5"><div id="pub-image-preview" class="flex gap-2 flex-wrap mt-2"></div></div>
         <div class="flex items-center gap-6">
           <label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-new" type="checkbox" class="w-4 h-4 accent-[#FF6B00]"><span>Produto novo</span></label>
           <label class="flex items-center gap-2 cursor-pointer text-sm"><input id="pub-neg" type="checkbox" class="w-4 h-4 accent-[#FF6B00]"><span>Aceito negociação</span></label>
@@ -320,7 +320,8 @@ function bindAll(){
     el=byId("publishForm");if(el)el.onsubmit=handlePublish;
     el=byId("pub-image");if(el)el.onchange=function(){
       var p=byId("pub-image-preview");if(!p)return;p.innerHTML="";
-      for(var i=0;i<Math.min(this.files.length,10);i++)(function(f){
+      if(this.files.length>3)toast("Podes adicionar até 3 fotos. Serão usadas as primeiras 3.");
+      for(var i=0;i<Math.min(this.files.length,3);i++)(function(f){
         var r=new FileReader();r.onload=function(e){
           var d=document.createElement("div");d.className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shrink-0";
           d.innerHTML='<img src="'+e.target.result+'" class="w-full h-full object-cover">';p.appendChild(d)
@@ -545,7 +546,18 @@ function saveEdit(){
   renderProducts();closeModal("editModal");toast("Alterações guardadas")
 }
 
-function del(id){if(!confirm("Apagar este produto?"))return;products=products.filter(function(p){return p.id!==id});try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}renderStats();renderProducts();toast("Apagado!")}
+function del(id){
+  if(!confirm("Apagar este produto?"))return;
+  var srv = String(id).length <= 9;
+  if(srv){
+    API.deleteProduct(id).then(function(r){
+      if(!r||!r.ok){toast("Não foi possível apagar do servidor")}
+    });
+  }
+  products=products.filter(function(p){return p.id!==id});
+  try{localStorage.setItem("yabisno_products",JSON.stringify(products))}catch(e){}
+  renderStats();renderProducts();toast("Apagado!")
+}
 
 function handlePublish(e){
   if(e)e.preventDefault();
@@ -586,7 +598,7 @@ function handlePublish(e){
     else{handler([imgPH(name)])}
   }
   if(files&&files.length>0){
-    var loaded=[],toLoad=Math.min(files.length,10),cnt=0;
+    var loaded=[],toLoad=Math.min(files.length,3),cnt=0;
     function doneOne(){
       cnt++;
       if(cnt>=toLoad){
