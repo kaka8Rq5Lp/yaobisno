@@ -336,7 +336,7 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
         <h2 class="text-[13px] font-bold">Morada de entrega</h2>
       </div>
 
-      <form id="checkoutForm" onsubmit="return handleCheckout(event)" class="space-y-2">
+      <form id="checkoutForm" onsubmit="return false" class="space-y-2">
         <div>
           <label class="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] mb-1">Província</label>
           <select id="chkProvince" required class="w-full h-[35px] rounded-[12px] border border-[#E5E7EB] bg-white px-3 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" style="-webkit-appearance:none;appearance:none">
@@ -409,8 +409,6 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
           <button type="button" id="payMCXBtn" onclick="payWithMCX()" class="w-full h-[39px] rounded-[12px] bg-[#0F3D2E] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#0C3226] transition shadow-[0_8px_20px_rgba(15,61,46,0.25)]"><i class="fa-solid fa-mobile-screen-button"></i> <span id="payMCXLabel">Pagar com Multicaixa Express</span></button>
 
           <button type="button" id="payQRBtn" onclick="payWithQR()" class="w-full h-[39px] rounded-[12px] bg-[#111317] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-black transition shadow-[0_8px_20px_rgba(17,19,23,0.2)]"><i class="fa-solid fa-qrcode text-[15px]"></i> Pagar com QR code</button>
-
-          <button type="submit" id="btnZap" class="w-full h-[39px] rounded-[12px] bg-[#FF5F1F] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#E8541B] transition shadow-[0_8px_20px_rgba(255,95,31,0.25)]"><i class="fa-brands fa-whatsapp text-[16px]"></i> Encomendar e enviar comprovativo</button>
 
           <div class="flex items-center justify-center gap-3 pt-0.5">
             <span class="text-[10px] text-[#9CA3AF]"><i class="fa-solid fa-shield-halved mr-1"></i>Pagamento 100% seguro</span>
@@ -1021,61 +1019,6 @@ function checkout(){
   fitCheckout();
   setTimeout(function(){fitCheckout()},50);
   setTimeout(function(){fitCheckout()},250);
-}
-
-function handleCheckout(e){
-  e.preventDefault();
-  var province=byId("chkProvince").value.trim(),municipality=byId("chkMunicipality").value.trim(),neighborhood=byId("chkNeighborhood").value.trim(),street=byId("chkStreet").value.trim(),reference=byId("chkReference").value.trim();
-  if(!province||!municipality||!neighborhood||!street){toast("Preenche todos os campos obrigatórios");return false}
-  var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
-  if(!u){toast("Faz login primeiro");return false}
-  API.saveAddress(u.email,province,municipality,neighborhood,street,reference);
-  var t=0;for(var i=0;i<cart.length;i++)t+=cart[i].price*cart[i].qty;
-  var tx="";for(var i=0;i<cart.length;i++)tx+=cart[i].qty+"x "+cart[i].name+" ("+fmt(cart[i].price*cart[i].qty)+"), ";
-  var endereco="Província: "+province+"\nMunicípio: "+municipality+"\nBairro: "+neighborhood+"\nRua: "+street+(reference?"\nReferência: "+reference:"");
-  var msg="Olá! Quero finalizar a compra no Ya o bisno.\n\n—— ITENS ——\n"+tx+"\nSubtotal: "+fmt(t)+"\nProteção (5%): "+fmt(Math.round(t*0.05))+"\n**TOTAL A PAGAR: "+fmt(Math.round(t*1.05))+"**\n\n—— MORADA DE ENTREGA ——\n"+endereco+"\n\n—— COMPRADOR ——\nNome: "+u.name+"\nTel: "+u.phone+"\nEmail: "+u.email;
-  var items=cart.map(function(c){return {id:c.id,name:c.name,qty:c.qty,price:c.price}});
-  var amount=Math.round(t*1.05);
-  var delivery={province:province,municipality:municipality,neighborhood:neighborhood,street:street,reference:reference};
-  var btnZ=byId("btnZap");
-  if(btnZ)btnZ.disabled=true;
-  function openWa(){
-    closeModal("checkoutModal");
-    try{window.open("https://wa.me/"+LOJA_WHATSAPP+"?text="+encodeURIComponent(msg),"_blank")}catch(ex){toast("Abre o WhatsApp para finalizar")}
-  }
-  function openComprovativo(ref){
-    closeModal("checkoutModal");
-    var url="comprovativo.html?ref="+encodeURIComponent(ref);
-    var w=null;
-    try{w=window.open(url,"_blank")}catch(ex){w=null}
-    if(!w)try{w=window.open(url,"_self")}catch(ex){}
-    if(!w)toast("Abre o link: "+url);
-  }
-  function clearCartNow(){
-    cart=[];syncLocal();updateCart();
-    return API.clearCart(u.email).catch(function(){return null});
-  }
-  function done(){if(btnZ)btnZ.disabled=false}
-  if(typeof API.recordWhatsappOrder==="function"){
-    API.recordWhatsappOrder({mobile:u.phone||"",amount:amount,items:items,delivery:delivery}).then(function(r){
-      if(r&&r.ok&&r.ref){
-        msg+="\n\n—— REFERÊNCIA DO PAGAMENTO ——\nReferência (nº da fatura): "+r.ref+"\nUsa esta referência ao fazeres o pagamento e anexa o comprovativo no link.";
-        clearCartNow().then(function(){
-          openWa();
-          openComprovativo(r.ref);
-          done();
-        });
-      }
-      else{openWa();toast("Encomenda enviada no WhatsApp, mas não foi gravada no servidor. Tenta de novo.");done();}
-    }).catch(function(){
-      openWa();
-      toast("Erro ao gravar a encomenda no servidor — encomenda enviada no WhatsApp");
-      done();
-    });
-  }else{
-    clearCartNow().then(function(){openWa();done();});
-  }
-  return false;
 }
 
 var payTimer=null;
