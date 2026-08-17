@@ -44,8 +44,24 @@
     });
   }
 
-  function checker() {
-    return 'background-color:#fff;background-image:linear-gradient(45deg,#e5e7eb 25%,transparent 25%),linear-gradient(-45deg,#e5e7eb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e5e7eb 75%),linear-gradient(-45deg,transparent 75%,#e5e7eb 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;';
+  function flattenWhite(blob) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var c = document.createElement('canvas');
+          c.width = img.naturalWidth || img.width;
+          c.height = img.naturalHeight || img.height;
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.drawImage(img, 0, 0);
+          c.toBlob(function (b) { resolve(b); }, 'image/png');
+        } catch (e) { reject(e); }
+      };
+      img.onerror = function () { reject(new Error('Falha a converter para fundo branco')); };
+      img.src = URL.createObjectURL(blob);
+    });
   }
 
   function appendThumb(dataUrl) {
@@ -150,8 +166,10 @@
         }
       });
     }).then(function (outBlob) {
+      return flattenWhite(outBlob);
+    }).then(function (finalBlob) {
       state.busy = false;
-      var url = URL.createObjectURL(outBlob);
+      var url = URL.createObjectURL(finalBlob);
       var si = q('bgR_noBg');
       if (si) si.src = url;
       q('bgR_zone').style.display = 'none';
@@ -159,7 +177,7 @@
       q('bgR_err').style.display = 'none';
       q('bgR_result').style.display = 'block';
       q('bgR_use').setAttribute('data-ready', '1');
-      window.__pendingRemovedBlob = outBlob;
+      window.__pendingRemovedBlob = finalBlob;
     }).catch(function (e) {
       state.busy = false;
       q('bgR_zone').style.display = 'none';
@@ -235,7 +253,7 @@
             '</div>' +
             '<div>' +
               '<div style="background:#FF6B00;border-radius:16px 16px 0 0;padding:7px;text-align:center;font-size:11px;font-weight:700;color:#fff;letter-spacing:.3px;">SEM FUNDO</div>' +
-              '<div style="border:1px solid #FFE7D4;border-top:none;border-radius:0 0 16px 16px;overflow:hidden;height:190px;display:flex;align-items:center;justify-content:center;'+checker()+'">' +
+              '<div style="border:1px solid #FFE7D4;border-top:none;border-radius:0 0 16px 16px;overflow:hidden;height:190px;display:flex;align-items:center;justify-content:center;background:#ffffff;">' +
                 '<img id="bgR_noBg" style="max-width:100%;max-height:100%;object-fit:contain;display:block;">' +
               '</div>' +
             '</div>' +
