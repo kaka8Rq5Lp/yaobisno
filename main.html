@@ -619,6 +619,7 @@ function bindAll(){
     el=byId("cartOverlay");if(el)el.onclick=toggleCart;
     el=byId("checkoutBtn");if(el)el.onclick=checkout;
   window.addEventListener("resize",function(){if(!byId("checkoutModal").classList.contains("hidden"))fitCheckout()});
+  try{window.addEventListener("pageshow",function(e){try{loadLocal();updateCart();updateBadge()}catch(_){}if(e.persisted){var _u;try{_u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(_e){_u=null}if(_u&&_u.email)API.getCart(_u.email).then(function(server){if(server&&server.length>0){cart=server;try{localStorage.setItem(cartKey(),JSON.stringify(server))}catch(_e){};updateCart()}}).catch(function(){})}})}catch(e){}
 el=byId("chatModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("chatModal")};
   el=byId("productModal");if(el)el.onclick=function(e){if(e.target===this)closeModal("productModal")};
   el=byId("checkoutModal");if(el)el.onclick=function(e){if(e.target===this)closeCheckoutModal()};
@@ -965,26 +966,28 @@ function handleCheckout(e){
     if(!w)toast("Abre o link: "+url);
   }
   function clearCartNow(){
-    cart=[];syncLocal();updateCart();API.clearCart(u.email);
+    cart=[];syncLocal();updateCart();
+    return API.clearCart(u.email).catch(function(){return null});
   }
   function done(){if(btnZ)btnZ.disabled=false}
   if(typeof API.recordWhatsappOrder==="function"){
     API.recordWhatsappOrder({mobile:u.phone||"",amount:amount,items:items,delivery:delivery}).then(function(r){
       if(r&&r.ok&&r.ref){
-        clearCartNow();
         msg+="\n\n—— REFERÊNCIA DO PAGAMENTO ——\nReferência (nº da fatura): "+r.ref+"\nUsa esta referência ao fazeres o pagamento e anexa o comprovativo no link.";
-        openWa();
-        openComprovativo(r.ref);
+        clearCartNow().then(function(){
+          openWa();
+          openComprovativo(r.ref);
+          done();
+        });
       }
-      else{openWa();toast("Encomenda enviada no WhatsApp, mas não foi gravada no servidor. Tenta de novo.");}
-      done();
+      else{openWa();toast("Encomenda enviada no WhatsApp, mas não foi gravada no servidor. Tenta de novo.");done();}
     }).catch(function(){
       openWa();
       toast("Erro ao gravar a encomenda no servidor — encomenda enviada no WhatsApp");
       done();
     });
   }else{
-    openWa();clearCartNow();done();
+    clearCartNow().then(function(){openWa();done();});
   }
   return false;
 }
