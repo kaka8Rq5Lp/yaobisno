@@ -513,7 +513,7 @@ function salesTotal(list){
   var t=0;list.forEach(function(s){t+=Number(s.amount)||0});return t;
 }
 function saleStatusBadge(st){
-  var map={accepted:['Finalizado','active'],finalizado:['Finalizado','active'],vendido:['Vendido','active'],concluido:['Concluído','active'],pago:['Pago','paid']};
+  var map={creating:['A criar','warn'],pending:['A aguardar','warn'],accepted:['Finalizado','active'],rejected:['Recusado','inactive'],finalizado:['Finalizado','active'],vendido:['Vendido','active'],concluido:['Concluído','active'],pago:['Pago','paid']};
   var it=map[String(st||'')]||['Finalizado','active'];
   return '<span class="badge '+it[1]+'"><i class="fa-solid fa-circle-check"></i>'+it[0]+'</span>';
 }
@@ -536,17 +536,18 @@ function fmtMorada(d){
 function renderSales(){
   var all=(activeTab==='sales')?filterSales(sales):sales;
   var list=all.filter(function(s){var st=String(s.status||'');return st==='accepted'||st==='finalizado'||st==='vendido'||st==='concluido'});
-  var pend=all.filter(function(s){var st=String(s.status||'');return st==='pendente'||st==='pago'});
+  var pend=all.filter(function(s){var st=String(s.status||'');return st==='creating'||st==='pending'||st==='rejected'||st==='pendente'||st==='pago'});
   var f=(activeTab==='sales')&&(sf.from||sf.to||sf.status||sfSeller);
   var html='';
-  html+='<div style="margin-top:22px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Vendas a aguardar (WhatsApp)</h2>'+(f?'<span class="badge" style="background:#fff1e0;color:#FF6B00">filtrado</span>':'')+'</div>';
+  html+='<div style="margin-top:22px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Pagamentos pendentes</h2>'+(f?'<span class="badge" style="background:#fff1e0;color:#FF6B00">filtrado</span>':'')+'</div>';
   if(!pend.length){
-    html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem vendas pendentes</p><small>Encomendas fechadas no WhatsApp a aguardar comprovativo/confirmação aparecem aqui</small></div></div>';
+    html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem pagamentos pendentes</p><small>Pagamentos Multicaixa e encomendas WhatsApp em processamento aparecem aqui</small></div></div>';
   }else{
     html+='<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Valor</th><th>Morada</th><th>Comprovativo</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
     for(var i=0;i<pend.length;i++){
       var s=pend[i];
       var isPaid=String(s.status||'')==='pago';
+      var isMCX=String(s.method||'').toLowerCase()==='mcx';
       var comp=(s.comprovativo&&s.comprovativo.image)?s.comprovativo.image:null;
       var hasComp=!!comp;
       html+='<tr>'
@@ -554,11 +555,13 @@ function renderSales(){
         +'<td style="font-size:12px;color:#8a8578">'+esc(s.mobile||'—')+'</td>'
         +'<td><span class="t-price">'+fmt(s.amount)+'</span></td>'
         +'<td style="font-size:12px;color:#8a8578">'+esc(fmtMorada(s.delivery)||'—')+'</td>'
-        +'<td>'+(comp
+        +'<td>'+(isMCX
+            ?saleStatusBadge(s.status)
+            :(comp
             ?'<span class="badge '+(isPaid?'paid':'warn')+'" style="margin-right:6px">'+(isPaid?'Pago':'Comprovativo')+'</span><button class="btn second" style="padding:3px 10px;font-size:10.5px" onclick="viewReceipt(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-image"></i> Ver</button>'
-            :(isPaid?'<span class="badge paid">Pago</span>':'<span class="badge warn"><i class="fa-solid fa-clock"></i>A aguardar anexo</span>'))+'</td>'
+            :(isPaid?'<span class="badge paid">Pago</span>':'<span class="badge warn"><i class="fa-solid fa-clock"></i>A aguardar anexo</span>')))+'</td>'
         +'<td style="font-size:12px;color:#8a8578">'+saleDate(s.created_at)+'</td>'
-+'<td>'+(hasComp
++'<td>'+(!isMCX&&hasComp
             ?'<button class="btn" style="margin-right:6px" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>'+(isPaid?'Revalidar':'Validar')+'</button>'
             :'<span style="font-size:10.5px;color:#9aa0a6">/</span>')
           +'<button class="btn second" style="margin-right:6px" onclick="exportSalePdf(\''+esc(String(s.ref))+'\')" title="Fatura PDF"><i class="fa-solid fa-file-pdf"></i></button>'
@@ -598,7 +601,7 @@ function renderSales(){
   return html;
 }
 function renderSalesTab(){
-  var pend=sales.filter(function(s){var st=String(s.status||'');return st==='pendente'||st==='pago'});
+  var pend=sales.filter(function(s){var st=String(s.status||'');return st==='creating'||st==='pending'||st==='rejected'||st==='pendente'||st==='pago'});
   var list=finalizedSales();
   var sellers={};
   (pend.concat(list)).forEach(function(k){var v=k.seller||k.seller_email||'—';sellers[v]=1});
@@ -607,6 +610,9 @@ function renderSalesTab(){
   selS+='</select>';
   var selSt='<select id="sfStatus" onchange="sfSeller=\'\';sf.status=this.value;renderSalesTab()"><option value="">Todos os estados</option>'
     +'<option value="pendente"'+(sf.status==='pendente'?' selected':'')+'>Pendente</option>'
+    +'<option value="pending"'+(sf.status==='pending'?' selected':'')+'>Multicaixa pendente</option>'
+    +'<option value="rejected"'+(sf.status==='rejected'?' selected':'')+'>Recusado</option>'
+    +'<option value="accepted"'+(sf.status==='accepted'?' selected':'')+'>Confirmado</option>'
     +'<option value="pago"'+(sf.status==='pago'?' selected':'')+'>Pago (comp. recebido)</option>'
     +'<option value="finalizado"'+(sf.status==='finalizado'?' selected':'')+'>Finalizado</option>'
     +'</select>';
