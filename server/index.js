@@ -854,13 +854,15 @@ app.get('/api/settings', async (req, res) => {
     const [rows] = await db.query('SELECT skey,svalue FROM settings');
     const out = {};
     for (const r of rows) out[r.skey] = r.svalue;
+    if (!out['loja_whatsapp']) out['loja_whatsapp'] = '351920488724';
+    if (!out['loja_email']) out['loja_email'] = process.env.ADMIN_EMAIL || '';
     res.json({ ok: true, settings: out });
   } catch (e) { res.status(500).json({ ok: false, settings: {} }); }
 });
 
 app.put('/api/admin/settings', authAdmin, async (req, res) => {
   try {
-    const allowed = ['pagamento_detalhes', 'pagamento_iban'];
+    const allowed = ['pagamento_detalhes', 'pagamento_iban', 'loja_whatsapp', 'loja_email'];
     for (const k of allowed) {
       if (req.body[k] !== undefined) {
         const v = typeof req.body[k] === 'string' ? req.body[k].slice(0, 4000) : '';
@@ -1094,7 +1096,7 @@ app.post('/api/admin/import', authAdmin, async (req, res) => {
         } catch (e) { errs++; }
       }
     } else if (kind === 'settings') {
-      const whitelist = ['pagamento_detalhes', 'pagamento_iban', 'fatura_seq'];
+      const whitelist = ['pagamento_detalhes', 'pagamento_iban', 'fatura_seq', 'loja_whatsapp', 'loja_email'];
       for (const raw of list) {
         const key = String(raw.key || raw.skey || '').trim();
         if (!whitelist.includes(key)) { continue; }

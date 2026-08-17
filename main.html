@@ -527,7 +527,7 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
       <div>
         <h5 class="neo-f-title">Contato</h5>
         <div class="neo-f-links">
-          <a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>
+          <a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="neo-f-link" id="waFooterLink"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>
           <a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-instagram"></i>Instagram</a>
           <a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-facebook"></i>Facebook</a>
         </div>
@@ -544,6 +544,7 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
 
 <script>
 var products=[],cart=[],chats={},currentFilter="",searchQuery="",activeChatProductId=null,editingProductId=null;
+var LOJA_WHATSAPP='351920488724', LOJA_EMAIL='';
 
 (function(){
   try{
@@ -553,9 +554,20 @@ var products=[],cart=[],chats={},currentFilter="",searchQuery="",activeChatProdu
   loadFromApi();
 })();
 
+function loadLojaSettings(){
+  API.getSettings().then(function(r){
+    var s=(r&&r.settings)||{};
+    LOJA_WHATSAPP=(s.loja_whatsapp||'351920488724').replace(/[^0-9]/g,'');
+    LOJA_EMAIL=s.loja_email||'';
+    var f=byId("waFooterLink");
+    if(f)f.href="https://wa.me/"+LOJA_WHATSAPP;
+  }).catch(function(){});
+}
+
 function loadFromApi(){
   loadLocal();
   bindAll();renderUser();renderProducts();updateCart();
+  loadLojaSettings();
   API.getProducts().then(function(server){
     var merged=mergeProducts(server);
     products=merged;
@@ -987,7 +999,7 @@ function handleCheckout(e){
   if(btnZ)btnZ.disabled=true;
   function openWa(){
     closeModal("checkoutModal");
-    try{window.open("https://wa.me/351920488724?text="+encodeURIComponent(msg),"_blank")}catch(ex){toast("Abre o WhatsApp para finalizar")}
+    try{window.open("https://wa.me/"+LOJA_WHATSAPP+"?text="+encodeURIComponent(msg),"_blank")}catch(ex){toast("Abre o WhatsApp para finalizar")}
   }
   function openComprovativo(ref){
     closeModal("checkoutModal");

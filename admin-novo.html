@@ -167,7 +167,7 @@ button.btn.second:hover{background:#e6e4db}
 /* modal */
 .modal-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,15,16,.5);display:none;align-items:center;justify-content:center;z-index:70;padding:20px}
 .modal-mask.open{display:flex}
-.modal{width:100%;max-width:430px;background:#fff;border-radius:22px;padding:30px 28px;box-shadow:0 24px 80px rgba(0,0,0,.2)}
+.modal{width:100%;max-width:430px;max-height:92vh;max-height:92dvh;background:#fff;border-radius:22px;padding:30px 28px;box-shadow:0 24px 80px rgba(0,0,0,.2);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal h3{font-size:18px;font-weight:800;display:flex;align-items:center;gap:10px}
 .modal p{font-size:13.5px;color:#6a6a72;margin-top:8px;line-height:1.6}
 .modal input{width:100%;padding:13px 16px;border:2px solid #eeece5;border-radius:12px;font-size:14px;margin-top:14px}
@@ -295,12 +295,19 @@ button.btn.second:hover{background:#e6e4db}
 
 <div class="modal-mask" id="payModal">
   <div class="modal">
-    <h3><i class="fa-solid fa-building-columns" style="color:#0a9e4e"></i>Conta para pagamento (comprovativo)</h3>
+    <h3><i class="fa-solid fa-building-columns" style="color:#0a9e4e"></i>Dados da loja (pagamento + contactos)</h3>
     <p>O IBAN aparece ao cliente na página do comprovativo, auto-preenchido e validado pelo sistema.</p>
     <label style="display:block;font-size:11.5px;color:#6b7280;font-weight:600;margin:10px 0 4px">IBAN da loja (AO + 23 dígitos)</label>
     <input id="payIban" placeholder="AO06000600008585965830114" maxlength="25" style="width:100%;height:42px;border:1px solid #e5e7eb;border-radius:12px;padding:0 12px;font-size:13px;font-family:monospace;text-transform:uppercase">
     <label style="display:block;font-size:11.5px;color:#6b7280;font-weight:600;margin:12px 0 4px">Informações adicionais (título da conta, etc.)</label>
     <textarea id="payText" placeholder="Ex: Banco BAI — Titular: ...&#10;Carteira 91 000 0000" style="width:100%;height:120px;border:1px solid #e5e7eb;border-radius:12px;padding:12px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
+    <div style="height:1px;background:#eef0f3;margin:14px 0"></div>
+    <h3 style="font-size:13.5px;color:#111827"><i class="fa-solid fa-phone" style="color:#0a9e4e"></i>Contactos da loja</h3>
+    <p style="font-size:11.5px;color:#6b7280;line-height:1.6">Usados nos links de WhatsApp e no email de contacto que os clientes veem.</p>
+    <label style="display:block;font-size:11.5px;color:#6b7280;font-weight:600;margin:10px 0 4px">WhatsApp da loja (com código do país, ex: 351920488724)</label>
+    <input id="payWhatsapp" placeholder="351920488724" style="width:100%;height:42px;border:1px solid #e5e7eb;border-radius:12px;padding:0 12px;font-size:13px;font-family:monospace">
+    <label style="display:block;font-size:11.5px;color:#6b7280;font-weight:600;margin:12px 0 4px">Email da loja</label>
+    <input id="payEmail" type="email" placeholder="admin@yaobisno.com" style="width:100%;height:42px;border:1px solid #e5e7eb;border-radius:12px;padding:0 12px;font-size:13px;font-family:monospace">
     <div class="err" id="payErr"></div>
     <div class="row"><button class="btn" style="background:#0a9e4e" onclick="savePayDetails()">Guardar</button><button class="btn second" onclick="closePayModal()">Cancelar</button></div>
   </div>
@@ -707,8 +714,12 @@ function deleteSale(ref){
 function openPayModal(){
   var cur=settings['pagamento_detalhes']||'';
   var curIban=settings['pagamento_iban']||'';
+  var curWa=settings['loja_whatsapp']||'351920488724';
+  var curMail=settings['loja_email']||'';
   byId('payText').value=cur;
   byId('payIban').value=curIban;
+  byId('payWhatsapp').value=curWa;
+  byId('payEmail').value=curMail;
   byId('payErr').textContent='';
   byId('payModal').classList.add('open');
 }
@@ -717,9 +728,13 @@ function savePayDetails(){
   var v=byId('payText').value.trim();
   var iban=byId('payIban').value.trim().replace(/\s+/g,'').toUpperCase();
   if(iban&&!/^AO\d{23}$/.test(iban)){byId('payErr').textContent='IBAN inválido (AO + 23 dígitos)';return}
-  req('/api/admin/settings','PUT',{pagamento_detalhes:v,pagamento_iban:iban}).then(function(d){
+  var wa=byId('payWhatsapp').value.trim().replace(/[^0-9]/g,'');
+  if(wa&&wa.length<8){byId('payErr').textContent='WhatsApp inválido (número com código do país)';return}
+  var mail=byId('payEmail').value.trim();
+  if(mail&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){byId('payErr').textContent='Email inválido';return}
+  req('/api/admin/settings','PUT',{pagamento_detalhes:v,pagamento_iban:iban,loja_whatsapp:wa,loja_email:mail}).then(function(d){
     closePayModal();
-    if(d&&d.ok){settings['pagamento_detalhes']=v;settings['pagamento_iban']=iban;toast('Detalhes de pagamento guardados','ok')}
+    if(d&&d.ok){settings['pagamento_detalhes']=v;settings['pagamento_iban']=iban;settings['loja_whatsapp']=wa;settings['loja_email']=mail;toast('Dados da loja guardados','ok')}
     else toast('Falha a guardar','err');
   }).catch(function(){toast('Erro a guardar','err')});
 }
@@ -745,7 +760,7 @@ function renderImport(){
       +'<b>Exemplo JSON:</b> <code>[{"name":"Tshirt Ya","price":"10000","category":"Roupa","status":"active"}]</code>';
   }else{
     info='<b>Formato:</b> JSON ou CSV. Colunas: <code>key, value</code>.<br>'
-      +'Chaves aceites (Config): <code>pagamento_detalhes</code> (conta/pedido de pagamento), <code>pagamento_iban</code> (IBAN da loja), <code>fatura_seq</code> (contador de faturas).<br>'
+      +'Chaves aceites (Config): <code>pagamento_detalhes</code> (conta/pedido de pagamento), <code>pagamento_iban</code> (IBAN da loja), <code>fatura_seq</code> (contador de faturas), <code>loja_whatsapp</code> (WhatsApp da loja), <code>loja_email</code> (email da loja).<br>'
       +'<b>Exemplo JSON:</b> <code>[{"key":"pagamento_iban","value":"AO06000600008585965830114"}]</code>';
   }
   sel+=info?'<div class="info" style="background:#eef6ff;border:1px solid #cfe4ff;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.7;margin-bottom:14px;color:#1b4a7a">'+info+(importTip?importTip:'')+'</div>':'';

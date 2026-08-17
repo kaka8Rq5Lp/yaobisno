@@ -274,7 +274,7 @@ header{padding-top:0}
       <div>
         <h5 class="neo-f-title">Contato</h5>
         <div class="neo-f-links">
-          <a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>
+          <a href="https://wa.me/351920488724" target="_blank" rel="noopener" class="neo-f-link" id="waFooterLink"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>
           <a href="https://instagram.com/yaobisno" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-instagram"></i>Instagram</a>
           <a href="https://facebook.com/yaobisno" target="_blank" rel="noopener" class="neo-f-link"><i class="fa-brands fa-facebook"></i>Facebook</a>
         </div>
@@ -307,6 +307,12 @@ function initPage(){
   loadProducts();
   bindUI();
   renderProducts();
+  API.getSettings().then(function(r){
+    var s=(r&&r.settings)||{};
+    var wa=(s.loja_whatsapp||'351920488724').replace(/[^0-9]/g,'');
+    var f=byId("waFooterLink");
+    if(f)f.href="https://wa.me/"+wa;
+  }).catch(function(){});
 }
 
 function loadProducts(){

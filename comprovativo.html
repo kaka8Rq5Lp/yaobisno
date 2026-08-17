@@ -181,6 +181,7 @@ function qp(k){
 }
 
 var SALE=null, STATUS='', receiptImage=null, timer=null;
+var LOJA_WHATSAPP='351920488724', LOJA_EMAIL='';
 
 function showView(){
   byId("loading").style.display='none';
@@ -290,7 +291,7 @@ function waUrl(){
   var d=SALE.delivery||{};
   var endereco="Província: "+d.province+"\nMunicípio: "+d.municipality+"\nBairro: "+d.neighborhood+"\nRua: "+d.street+(d.reference?"\nReferência: "+d.reference:"");
   var msg="✅ PAGAMENTO COMPROVADO ✓\n\nOlá! Comprei no Ya o bisno e o pagamento já foi validado pela loja.\n\nReferência (nº da fatura): "+(SALE.fatura||SALE.ref||"")+"\n\n—— ITENS ——\n"+tx+"\nTotal (produtos): "+fmt(sum)+"\nProteção (5%): "+fmt(Math.round(sum*0.05))+"\n**TOTAL PAGO: "+fmt(SALE.amount)+"** (já com 5% proteção)\n\n—— MORADA DE ENTREGA ——\n"+endereco+"\n\n—— COMPRADOR ——\nNome: "+(u?u.name:'')+"\nTel: "+(u?u.phone:'')+"\nEmail: "+(u?u.email:'');
-  return "https://wa.me/351920488724?text="+encodeURIComponent(msg);
+  return "https://wa.me/"+LOJA_WHATSAPP+"?text="+encodeURIComponent(msg);
 }
 function openWhatsApp(){
   try{window.open(waUrl(),"_blank")}catch(e){toast("Abre o WhatsApp para finalizar")}
@@ -444,8 +445,11 @@ function sendReceipt(){
 
 function loadAccountDetails(){
   API.getSettings().then(function(r){
+    var s=(r&&r.settings)||{};
+    var v=s.pagamento_detalhes||'';
+    LOJA_WHATSAPP=(s.loja_whatsapp||'351920488724').replace(/[^0-9]/g,'');
+    LOJA_EMAIL=s.loja_email||'';
     var body=byId("accountBody");
-    var v=(r&&r.settings&&r.settings.pagamento_detalhes)||'';
     body.textContent=v&&String(v).trim() ? v : '';
   }).catch(function(){});
 }
