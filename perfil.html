@@ -170,10 +170,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="p-6">
       <div class="flex items-center justify-between mb-5"><div><div class="text-[11px] font-bold tracking-widest text-[#FF6B00]">PUBLICAR</div><h3 class="mt-1 text-[18px] font-bold tracking-tight">Publicar produto</h3></div><button id="closePublish" class="w-8 h-8 rounded-full bg-[#f6f7f9] flex items-center justify-center hover:bg-black/5 transition"><i class="fa-solid fa-xmark"></i></button></div>
       <form id="publishForm" class="space-y-4">
-        <div><label class="text-[12px] font-semibold text-black/60">Nome do produto</label><input id="pub-name" type="text" placeholder="Ex: iPhone 14 Pro Max" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" required></div>
+        <div><label class="text-[12px] font-semibold text-black/60">Nome do produto</label><input id="pub-name" type="text" placeholder="Ex: iPhone 14 Pro Max" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" oninput="this.value=titleCase(this.value)" required></div>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="text-[12px] font-semibold text-black/60">Preço (Kz)</label><input id="pub-price" type="number" placeholder="0" class="mt-1.5 h-11 px-3.5 bg-white font-bold" required></div>
-          <div><label class="text-[12px] font-semibold text-black/60">Localização</label><input id="pub-location" type="text" placeholder="Luanda" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" required></div>
+          <div><label class="text-[12px] font-semibold text-black/60">Localização</label><input id="pub-location" type="text" placeholder="Luanda" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" oninput="this.value=titleCase(this.value)" required></div>
         </div>
         <div><label class="text-[12px] font-semibold text-black/60">Categoria</label><select id="pub-category" class="mt-1.5 h-11 px-3.5 bg-[#f6f7f9]" required><option value="">Escolher categoria</option><option value="Moda">Moda</option><option value="Eletronicos">Eletrônicos</option><option value="Casa">Casa</option><option value="Desporto">Desporto</option><option value="Carros">Carros</option><option value="Perfumes e Cosmeticos">Perfumes</option><option value="Imoveis">Imóveis</option><option value="Outros">Outros</option></select></div>
         <div><label class="text-[12px] font-semibold text-black/60">Fotos (até 3)</label><input id="pub-image" type="file" accept="image/*" multiple class="mt-1.5 text-sm py-3 bg-[#f6f7f9] rounded-[12px] px-3.5"><div id="pub-image-preview" class="flex gap-2 flex-wrap mt-2"></div></div>
@@ -564,8 +564,8 @@ function handlePublish(e){
   try{
   var pn=byId("pub-name"),pp=byId("pub-price"),pl=byId("pub-location"),pc=byId("pub-category"),pnew=byId("pub-new"),pneg=byId("pub-neg"),pi=byId("pub-image");
   if(!pn||!pp||!pl||!pc){toast("Erro no formulário");return}
-  var name=pn.value.trim(),price=parseFloat(pp.value)||0;
-  var loc=(pl.value.trim()).slice(0,500),cat=pc.value||"Outros";
+  var name=titleCase(pn.value.trim()),price=parseFloat(pp.value)||0;
+  var loc=titleCase(pl.value.trim()).slice(0,500),cat=pc.value||"Outros";
   var inew=pnew?pnew.checked:false,neg=pneg?pneg.checked:false;
   if(!name||!price||!loc){toast("Preenche os campos");return}
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
@@ -742,6 +742,9 @@ function sair(){
 function imgFallback(el){try{var c=el.closest('.card');var n=c.querySelector('h3');if(n)el.src=imgPH(n.textContent)}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"']/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]})}
 function fmt(v){return Number(v).toLocaleString("pt-PT")+" Kz"}
+function titleCase(s){
+  return String(s||"").replace(/\S+/g,function(w){return w.charAt(0).toUpperCase()+w.slice(1)})
+}
 function imgPH(n){var c=['#FF6B00','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f6f7f9"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}
 function openModal(id){var el=byId(id);if(el)el.classList.remove("hidden")}
 function closeModal(id){var el=byId(id);if(el)el.classList.add("hidden")}

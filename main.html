@@ -510,9 +510,10 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
       <button id="closePublish" class="text-gray-400 hover:text-orange text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <form id="publishForm" class="space-y-4">
-      <input id="pub-name" type="text" placeholder="Nome do produto" required>
+      <input id="pub-name" type="text" placeholder="Nome do produto" oninput="this.value=titleCase(this.value)" required>
       <input id="pub-price" type="number" placeholder="Preço (Kz)" required>
-      <input id="pub-location" type="text" placeholder="Localização (ex: Luanda, Benguela)" required>
+      <input id="pub-location" type="text" placeholder="Localização (ex: Luanda, Benguela)" oninput="this.value=titleCase(this.value)" required>
+      <label for="pub-image" class="text-sm font-medium">Fotos (até 3)</label>
       <input id="pub-image" type="file" accept="image/*" multiple class="text-sm py-3">
       <div id="pub-image-preview" class="flex gap-2 flex-wrap"></div>
       <select id="pub-category" required><option value="">Categoria</option><option value="Moda">Moda</option><option value="Eletronicos">Eletrônicos</option><option value="Casa">Casa</option><option value="Desporto">Desporto</option><option value="Carros">Carros</option><option value="Perfumes e Cosmeticos">Perfumes</option><option value="Imoveis">Imóveis</option></select>
@@ -678,7 +679,8 @@ function bindAll(){
     el=byId("publishForm");if(el)el.onsubmit=handlePublish;
     el=byId("pub-image");if(el)el.onchange=function(){
       var p=byId("pub-image-preview");if(!p)return;p.innerHTML="";
-      for(var i=0;i<Math.min(this.files.length,10);i++)(function(f){
+      if(this.files.length>3)toast("Podes adicionar até 3 fotos. Serão usadas as primeiras 3.");
+      for(var i=0;i<Math.min(this.files.length,3);i++)(function(f){
         var r=new FileReader();r.onload=function(e){
           var d=document.createElement("div");d.className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shrink-0";
           d.innerHTML='<img src="'+e.target.result+'" class="w-full h-full object-cover">';p.appendChild(d)
@@ -933,8 +935,8 @@ function handlePublish(e){
   try{
   var elN=byId("pub-name"),elP=byId("pub-price"),elL=byId("pub-location"),elC=byId("pub-category"),elNew=byId("pub-new"),elNeg=byId("pub-neg");
   if(!elN||!elP||!elL||!elC)return;
-  var name=elN.value.trim(),price=parseFloat(elP.value)||0;
-  var loc=(elL.value.trim()).slice(0,500),cat=elC.value||"Outros";
+  var name=titleCase(elN.value.trim()),price=parseFloat(elP.value)||0;
+  var loc=titleCase(elL.value.trim()).slice(0,500),cat=elC.value||"Outros";
   var inew=elNew?elNew.checked:false,neg=elNeg?elNeg.checked:false;
   if(!name||!price||!loc){toast("Preenche os campos");return}
   var u;try{u=JSON.parse(localStorage.getItem("yabisno_user"))}catch(e){}
@@ -967,7 +969,7 @@ function handlePublish(e){
     else{handler([imgPH(name)])}
   }
   if(files&&files.length>0){
-    var loaded=[],toLoad=Math.min(files.length,10),cnt=0;
+    var loaded=[],toLoad=Math.min(files.length,3),cnt=0;
     function doneOne(){
       cnt++;
       if(cnt>=toLoad){
@@ -1249,6 +1251,9 @@ function catLabel(c){
   return m[norm(c)]||(c||"Outros");
 }
 function imgPH(n){var c=['#FF5F1F','#3B82F6','#10B981','#8B5CF6','#EC4899','#F59E0B','#14B8A6','#EF4444'][(n||'?').length%8];var l=encodeURIComponent((n||'?').charAt(0).toUpperCase());return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f8f8f8"/><text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Inter,sans-serif" font-size="64" font-weight="700" fill="'+c+'" opacity=".3">'+l+'</text></svg>')}
+function titleCase(s){
+  return String(s||"").replace(/\S+/g,function(w){return w.charAt(0).toUpperCase()+w.slice(1)})
+}
 function openModal(id){var el=byId(id);if(!el)return;closeCart();el.classList.remove("hidden");lockScroll()}
 function closeModal(id){var el=byId(id);if(el)el.classList.add("hidden");unlockScroll()}
 function toast(m){
