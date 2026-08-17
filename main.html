@@ -415,7 +415,7 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
         <div class="space-y-2 pt-1 actions-bar">
           <button type="button" id="payMCXBtn" onclick="payWithMCX()" class="w-full h-[39px] rounded-[12px] bg-[#0F3D2E] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#0C3226] transition shadow-[0_8px_20px_rgba(15,61,46,0.25)]"><i class="fa-solid fa-mobile-screen-button"></i> <span id="payMCXLabel">Pagar com Express</span></button>
 
-          <button type="button" id="payQRBtn" onclick="payWithQR()" class="w-full h-[39px] rounded-[12px] bg-[#111317] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-black transition shadow-[0_8px_20px_rgba(17,19,23,0.2)]"><i class="fa-solid fa-qrcode text-[15px]"></i> Pagar com QR Code</button>
+          <button type="button" id="payQRBtn" onclick="payWithQR()" class="hidden w-full h-[39px] rounded-[12px] bg-[#111317] text-white text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-black transition shadow-[0_8px_20px_rgba(17,19,23,0.2)]"><i class="fa-solid fa-qrcode text-[15px]"></i> Pagar com QR Code</button>
 
           <div class="flex items-center justify-center gap-3 pt-0.5">
             <span class="text-[10px] text-[#9CA3AF]"><i class="fa-solid fa-shield-halved mr-1"></i>Pagamento 100% seguro</span>
@@ -1090,11 +1090,14 @@ function stopPayPoll(){
 function switchPayTab(which){
   var telBtn=byId("exprTabTel"),qrBtn=byId("exprTabQr");
   var telView=byId("exprViewTel"),qrView=byId("exprViewQr");
+  var payMCX=byId("payMCXBtn"),payQR=byId("payQRBtn");
   var tel=which==="tel",qr=which==="qr";
   if(telBtn)telBtn.classList.toggle("active",tel);
   if(qrBtn)qrBtn.classList.toggle("active",qr);
   if(telView)telView.classList.toggle("hidden",!tel);
   if(qrView)qrView.classList.toggle("hidden",!qr);
+  if(payMCX)payMCX.classList.toggle("hidden",!tel);
+  if(payQR)payQR.classList.toggle("hidden",!qr);
   setTimeout(function(){fitCheckout()},50);
 }
 
