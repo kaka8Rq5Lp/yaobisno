@@ -721,10 +721,24 @@ app.delete('/api/cart/all/:email', authRequired, async (req, res) => {
 
 app.post('/api/payment/create', authRequired, async (req, res) => {
   try {
-    const { mobile } = req.body;
+    const { mobile, name, delivery: rawDelivery } = req.body;
     const digits = String(mobile || '').replace(/[^\d]/g, '');
     if (!/^9\d{8}$/.test(digits))
       return res.json({ ok: false, error: 'Nº de telemóvel inválido (9 dígitos, começa por 9)' });
+    const holder = String(name || '').trim().slice(0, 120);
+    if (holder.length < 3)
+      return res.json({ ok: false, error: 'Introduz o nome do titular' });
+    const sourceDelivery = rawDelivery && typeof rawDelivery === 'object' ? rawDelivery : {};
+    const delivery = {
+      province: String(sourceDelivery.province || '').trim().slice(0, 80),
+      municipality: String(sourceDelivery.municipality || '').trim().slice(0, 120),
+      neighborhood: String(sourceDelivery.neighborhood || '').trim().slice(0, 120),
+      street: String(sourceDelivery.street || '').trim().slice(0, 180),
+      reference: String(sourceDelivery.reference || '').trim().slice(0, 180)
+    };
+    if (!delivery.province || !delivery.municipality || !delivery.neighborhood || !delivery.street) {
+      return res.status(400).json({ ok: false, error: 'Morada de entrega incompleta' });
+    }
     // O total nunca vem do browser. É recalculado a partir do carrinho do utilizador.
     const [items] = await db.query(
       'SELECT c.product_id AS id,c.qty,p.name,p.price FROM cart_items c JOIN products p ON p.id=c.product_id WHERE c.user_email=?',
@@ -733,19 +747,24 @@ app.post('/api/payment/create', authRequired, async (req, res) => {
     const val = items.reduce((sum, item) => sum + Number(item.price) * Number(item.qty), 0);
     if (!val || val <= 0) return res.json({ ok: false, error: 'Montante inválido' });
     if (!pay.configured()) return res.json({ ok: false, error: 'Pagamento ainda não configurado no servidor' });
+    // Primeiro guardamos a encomenda: mesmo uma falha do gateway fica auditável no admin.
+    const ref = 'YA' + Date.now().toString(36).toUpperCase() + crypto.randomInt(100, 999);
+    await db.query(
+      'INSERT INTO payments (ref,buyer_email,mobile,amount,items,status,method,delivery,titular) VALUES (?,?,?,?,?,?,?,?,?)',
+      [ref, req.auth.email, digits, val, JSON.stringify(items), 'creating', 'mcx', JSON.stringify(delivery), holder]
+    );
     const base = process.env.PAY_CALLBACK_BASE || (req.protocol + '://' + req.get('host'));
     const r = await pay.createPayment({
       mobile: digits,
       amount: val.toFixed(2),
       callbackUrl: base + '/api/payments/webhook'
     });
-    if (!r.ok) return res.json(r);
-    // O gateway confirma o dinheiro; a base guarda o histórico para o painel admin.
-    const ref = 'YA' + Date.now().toString(36).toUpperCase() + crypto.randomInt(100, 999);
-    await db.query(
-      'INSERT INTO payments (ref,provider_id,buyer_email,mobile,amount,items,status,method) VALUES (?,?,?,?,?,?,?,?)',
-      [ref, r.providerId, req.auth.email, r.mobile || digits, val, JSON.stringify(items), 'pending', 'mcx']
-    );
+    if (!r.ok) {
+      await db.query("UPDATE payments SET status='rejected', status_reason=? WHERE ref=?", [r.error || 'Falha ao criar pagamento', ref]);
+      return res.json(r);
+    }
+    await db.query('UPDATE payments SET provider_id=?, mobile=?, status=?, status_reason=NULL WHERE ref=?',
+      [r.providerId, r.mobile || digits, 'pending', ref]);
     res.json({ ok: true, ref, providerId: r.providerId, amount: val });
   } catch (e) { console.error('[payment create] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
@@ -1359,6 +1378,10 @@ async function initDB() {
     }
     if (!payCols.includes('comprovativo')) {
       await db.query(`ALTER TABLE payments ADD COLUMN comprovativo LONGTEXT`);
+    }
+    if (!payCols.includes('titular')) {
+      await db.query(`ALTER TABLE payments ADD COLUMN titular VARCHAR(120) DEFAULT ''`);
+      console.log('[migracao] payments.titular adicionada');
     }
     const payItemsType = await db.query(`SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments' AND COLUMN_NAME = 'items'`);
     if (payItemsType[0].length && payItemsType[0][0].DATA_TYPE !== 'longtext') {

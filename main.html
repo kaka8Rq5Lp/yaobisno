@@ -390,6 +390,13 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
 
           <div id="exprViewTel">
             <div class="flex items-center gap-2">
+              <label class="text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] shrink-0">Nome do titular</label>
+              <div class="relative flex-1">
+                <div class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#F3F4F6] flex items-center justify-center text-[#6B7280] text-[12px]"><i class="fa-solid fa-user"></i></div>
+                <input id="chkName" type="text" autocomplete="name" class="w-full h-[39px] rounded-[12px] border border-[#E5E7EB] pl-[46px] pr-3 text-[14px] font-semibold tracking-wide focus:outline-none focus:ring-2 focus:ring-[#FF5F1F]/20 focus:border-[#FF5F1F]" placeholder="Ex: Ana Manuel">
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mt-2">
               <label class="text-[10px] font-semibold uppercase tracking-widest text-[#6B7280] shrink-0">Nº MCX</label>
               <div class="relative flex-1">
                 <div class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#F3F4F6] flex items-center justify-center text-[#6B7280] text-[12px]"><i class="fa-solid fa-mobile-screen-button"></i></div>
@@ -1045,11 +1052,14 @@ function payWithMCX(){
   if(!u){toast("Faz login primeiro");return}
   var phone=byId("chkPhone").value.replace(/[^\d]/g,"");
   if(!/^9\d{8}$/.test(phone)){toast("Introduz um nº de Multicaixa Express válido (9 dígitos)");return}
+  var name=byId("chkName").value.trim();
+  if(name.length<3){toast("Introduz o nome do titular");return}
   API.saveAddress(u.email,province,municipality,neighborhood,street,reference);
   var btn=byId("payMCXBtn");
   if(btn){btn.disabled=true;btn.textContent="A processar..."}
   // O servidor calcula o total pelo carrinho autenticado; valores do browser não são confiáveis.
-  API.createPayment({mobile:phone}).then(function(r){
+  var delivery={province:province,municipality:municipality,neighborhood:neighborhood,street:street,reference:reference};
+  API.createPayment({mobile:phone,name:name,delivery:delivery}).then(function(r){
     if(!r.ok){showPayStatus(r.error||"Erro ao iniciar o pagamento","erro");toast(r.error||"Erro ao iniciar o pagamento");if(btn){btn.disabled=false;btn.textContent="Pagar com Multicaixa Express"}return}
     showPayStatus("Confirma o pagamento no app Multicaixa Express. Aguardando...","aguarda");
     var start=Date.now();
