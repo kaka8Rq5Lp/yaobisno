@@ -1107,7 +1107,7 @@ function payWithQR(){
       API.clearCart(u.email).catch(function(){});
       cart=[];syncLocal();updateCart();
       API.getSettings().then(function(s){
-        var iban=((s&&s.settings&&s.settings.pagamento_iban)||'AO06000000000000000000000').replace(/\s+/g,'').toUpperCase();
+        var iban=((s&&s.settings&&s.settings.pagamento_iban)||'AO06000600008585965830114').replace(/\s+/g,'').toUpperCase();
         var fatura=(r.fatura||r.ref||'');
         if(qs)qs.classList.add("hidden");
         byId("qrFatura").textContent=fatura;

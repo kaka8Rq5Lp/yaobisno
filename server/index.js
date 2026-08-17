@@ -800,7 +800,7 @@ app.get('/api/sale/:ref', authRequired, async (req, res) => {
     if (String(p.buyer_email).toLowerCase() !== String(req.auth.email).toLowerCase())
       return res.status(403).json({ ok: false, error: 'Acesso negado' });
     const [sR] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
-    const storeIban = ((sR.length && sR[0].svalue) || 'AO06000000000000000000000').replace(/\s+/g, '').toUpperCase();
+    const storeIban = ((sR.length && sR[0].svalue) || 'AO06000600008585965830114').replace(/\s+/g, '').toUpperCase();
     let items = [];
     try { items = JSON.parse(p.items || '[]'); } catch (_) { items = []; }
     let delivery = {};
@@ -941,7 +941,7 @@ app.get('/api/admin/sales', authAdmin, async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM payments WHERE status IN ('accepted','finalizado','vendido','concluido','pendente','pago') ORDER BY id DESC");
     const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
-    const storeIban = (keep.length && keep[0].svalue) || 'AO06000000000000000000000';
+    const storeIban = (keep.length && keep[0].svalue) || 'AO06000600008585965830114';
     const out = [];
     for (const p of rows) {
       let items = [];
@@ -985,7 +985,7 @@ app.post('/api/admin/sales/:ref/confirm', authAdmin, async (req, res) => {
     if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
     const p = rows[0];
     const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
-    const vendaIban = (keep.length && keep[0].svalue) || 'AO06000000000000000000000';
+    const vendaIban = (keep.length && keep[0].svalue) || 'AO06000600008585965830114';
     const comp = (function(){ try { return p.comprovativo ? JSON.parse(p.comprovativo) : null; } catch (_) { return null; } })();
     if (!comp || !comp.image) {
       return res.json({
