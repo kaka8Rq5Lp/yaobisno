@@ -71,10 +71,15 @@ input[type="file"]{border-radius:12px;width:100%;font-size:.9rem;transition:all 
         <div class="w-12 h-12 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center text-[20px]"><i class="fa-solid fa-cloud-arrow-up"></i></div>
         <p class="text-[13px] font-semibold">Arrasta a foto aqui ou toca para escolher</p>
         <p class="text-[11px] text-[#9CA3AF]">Foto do comprovativo de pagamento (recebido do banco/carteira)</p>
-        <input id="fileInput" type="file" accept="image/*,application/pdf,.pdf" class="hidden">
+        <input id="fileInput" type="file" accept="image/*,.pdf" class="hidden">
       </label>
       <div id="previewBox" class="hidden mt-3">
         <img id="previewImg" class="w-full max-h-[300px] object-contain rounded-[14px] border border-[#F0F0ED] bg-white">
+        <div id="previewPdf" class="hidden flex-col items-center gap-2 rounded-[14px] border border-[#F0F0ED] bg-white py-6">
+          <i class="fa-solid fa-file-pdf text-[40px] text-red-500"></i>
+          <p class="text-[12.5px] font-semibold" id="previewPdfName">Documento PDF</p>
+          <p class="text-[11px] text-[#9CA3AF]">Comprovativo em PDF selecionado</p>
+        </div>
       </div>
       <button id="sendBtn" class="hidden mt-3 w-full h-11 rounded-[14px] bg-[#FF6B00] text-white text-[13.5px] font-bold flex items-center justify-center gap-2 hover:bg-[#e65f00] active:scale-[0.98] transition"><i class="fa-solid fa-paper-plane"></i> Enviar comprovativo</button>
 
@@ -157,6 +162,21 @@ function stopPoll(){if(timer){clearInterval(timer);timer=null;}}
 
 function pickFile(f){
   if(!f)return;
+  byId("previewPdf").style.display='none';
+  byId("previewImg").style.display='none';
+  var pdf=/\.pdf$/i.test(f.name||'')||f.type==='application/pdf';
+  if(pdf){
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      receiptImage=ev.target.result;
+      byId("previewPdfName").textContent=f.name;
+      byId("previewPdf").style.display='flex';
+      byId("previewBox").style.display='block';
+      byId("sendBtn").style.display='flex';
+    };
+    reader.readAsDataURL(f);
+    return;
+  }
   if(!f.type||f.type.indexOf("image")!==-1){
     var r2=new FileReader();
     r2.onload=function(ev){
@@ -171,7 +191,7 @@ function pickFile(f){
     };
     r2.onerror=function(){toast("Não foi possível ler a imagem. Tenta outra.")};
     r2.readAsDataURL(f);
-  }else toast("Escolhe uma imagem");
+  }else toast("Escolhe uma imagem ou PDF");
 }
 function downscale(file,cb){
   var reader=new FileReader();
