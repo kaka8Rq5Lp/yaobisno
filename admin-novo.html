@@ -663,16 +663,8 @@ function confirmVenda(ref){
   if(!s){toast('Venda não encontrada','err');return;}
   req('/api/admin/sales/'+encodeURIComponent(ref)+'/confirm','POST').then(function(d){
     if(d&&d.validated){
-      toast('Pagamento validado! Fatura, IBAN e valor correspondem.','ok');loadAll();
+      toast('Pagamento validado!','ok');loadAll();
     }else{
-      var c=(d&&d.checks)?d.checks:null;
-      var msg='PAGAMENTO NÃO VALIDADO';
-      if(c){
-        msg+='\n\nFatura: '+(c.fatura?'✓ corresponde':'✕ diferente')
-           +'\nIBAN: '+(c.iban?'✓ corresponde':'✕ diferente')
-           +'\nValor: '+(c.valor?'✓ corresponde':'✕ diferente');
-      }
-      alert(msg);
       toast((d&&d.error)||'Pagamento não validado','err');
     }
   }).catch(function(err){

@@ -1020,28 +1020,12 @@ app.post('/api/admin/sales/:ref/confirm', authAdmin, async (req, res) => {
     const [rows] = await db.query('SELECT id,fatura,amount,status,comprovativo FROM payments WHERE ref=? AND method=?', [req.params.ref, 'whatsapp']);
     if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
     const p = rows[0];
-    const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
-    const vendaIban = (keep.length && keep[0].svalue) || 'AO06000600008585965830114';
     const comp = (function(){ try { return p.comprovativo ? JSON.parse(p.comprovativo) : null; } catch (_) { return null; } })();
     if (!comp || !comp.image) {
-      return res.json({
-        ok: false,
-        validated: false,
-        error: 'Esta venda ainda não tem comprovativo.',
-        checks: { fatura: false, iban: false, valor: false }
-      });
+      return res.json({ ok: false, validated: false, error: 'Esta venda ainda não tem comprovativo.' });
     }
-    const r = validarComprovativoBackend(comp, p.fatura, vendaIban, Number(p.amount));
-    if (!r.validated) {
-      return res.json({
-        ok: false,
-        validated: false,
-        error: 'Os dados do comprovativo não correspondem aos dados da venda.',
-        checks: r.checks
-      });
-    }
-    await db.query("UPDATE payments SET status='pago', status_reason='comprovativo validado (fatura, IBAN e valor conferem)' WHERE id=?", [p.id]);
-    res.json({ ok: true, validated: true, checks: r.checks });
+    await db.query("UPDATE payments SET status='pago', status_reason='comprovativo validado pela loja' WHERE id=?", [p.id]);
+    res.json({ ok: true, validated: true });
   } catch (e) { console.error('[admin confirm] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
