@@ -1020,13 +1020,34 @@ app.post('/api/admin/sales/:ref/confirm', authAdmin, async (req, res) => {
     const [rows] = await db.query('SELECT id,fatura,amount,status,comprovativo FROM payments WHERE ref=? AND method=?', [req.params.ref, 'whatsapp']);
     if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
     const p = rows[0];
+    const [keep] = await db.query('SELECT skey,svalue FROM settings WHERE skey=?', ['pagamento_iban']);
+    const vendaIban = (keep.length && keep[0].svalue) || 'AO06000600008585965830114';
     const comp = (function(){ try { return p.comprovativo ? JSON.parse(p.comprovativo) : null; } catch (_) { return null; } })();
     if (!comp || !comp.image) {
-      return res.json({ ok: false, validated: false, error: 'Esta venda ainda não tem comprovativo.' });
+      return res.json({ ok: false, validated: false, error: 'Esta venda ainda não tem comprovativo.', checks: { fatura: false, iban: false, valor: false } });
     }
-    await db.query("UPDATE payments SET status='pago', status_reason='comprovativo validado pela loja' WHERE id=?", [p.id]);
-    res.json({ ok: true, validated: true });
+    const r = validarComprovativoBackend(comp, p.fatura, vendaIban, Number(p.amount));
+    if (r.validated) {
+      await db.query("UPDATE payments SET status='pago', status_reason='comprovativo validado (fatura, IBAN e valor conferem)' WHERE id=?", [p.id]);
+      res.json({ ok: true, validated: true, checks: r.checks });
+    } else if (!comp.fatura && !comp.iban && !comp.valor) {
+      res.json({ ok: false, validated: false, error: 'OCR não conseguiu ler os dados. Valida manualmente.', checks: r.checks, needsManual: true });
+    } else {
+      res.json({ ok: false, validated: false, error: 'Os dados do comprovativo não correspondem à encomenda.', checks: r.checks });
+    }
   } catch (e) { console.error('[admin confirm] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
+});
+
+app.post('/api/admin/sales/:ref/force', authAdmin, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT id,comprovativo FROM payments WHERE ref=? AND method=?', [req.params.ref, 'whatsapp']);
+    if (rows.length === 0) return res.json({ ok: false, error: 'Venda não encontrada' });
+    const p = rows[0];
+    const comp = (function(){ try { return p.comprovativo ? JSON.parse(p.comprovativo) : null; } catch (_) { return null; } })();
+    if (!comp || !comp.image) return res.json({ ok: false, error: 'Sem comprovativo' });
+    await db.query("UPDATE payments SET status='pago', status_reason='validado manualmente pela loja' WHERE id=?", [p.id]);
+    res.json({ ok: true });
+  } catch (e) { console.error('[admin force] erro:', e.message); res.status(500).json({ ok: false, error: 'Erro no servidor' }); }
 });
 
 app.delete('/api/admin/sales/:ref', authAdmin, async (req, res) => {

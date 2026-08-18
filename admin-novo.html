@@ -663,9 +663,28 @@ function confirmVenda(ref){
   if(!s){toast('Venda não encontrada','err');return;}
   req('/api/admin/sales/'+encodeURIComponent(ref)+'/confirm','POST').then(function(d){
     if(d&&d.validated){
-      toast('Pagamento validado!','ok');loadAll();
+      toast('Pagamento validado! Fatura, IBAN e valor conferem.','ok');loadAll();
+    }else if(d&&d.needsManual){
+      if(confirm('O OCR não leu os dados. Quer validar manualmente?')){
+        req('/api/admin/sales/'+encodeURIComponent(ref)+'/force','POST').then(function(d2){
+          if(d2&&d2.ok){toast('Pagamento validado.','ok');loadAll();}
+          else{toast((d2&&d2.error)||'Falhou','err');}
+        });
+      }
     }else{
-      toast((d&&d.error)||'Pagamento não validado','err');
+      var c=(d&&d.checks)?d.checks:null;
+      var msg='PAGAMENTO NÃO VALIDADO';
+      if(c){
+        msg+='\n\nFatura: '+(c.fatura?'✓ corresponde':'✕ diferente')
+           +'\nIBAN: '+(c.iban?'✓ corresponde':'✕ diferente')
+           +'\nValor: '+(c.valor?'✓ corresponde':'✕ diferente');
+      }
+      if(confirm(msg+'\n\nForçar validação mesmo assim?')){
+        req('/api/admin/sales/'+encodeURIComponent(ref)+'/force','POST').then(function(d2){
+          if(d2&&d2.ok){toast('Pagamento forçado.','ok');loadAll();}
+          else{toast((d2&&d2.error)||'Falhou','err');}
+        });
+      }
     }
   }).catch(function(err){
     console.error(err);
