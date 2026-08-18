@@ -216,7 +216,7 @@ function sendReceipt(){
   if(!receiptImage){toast("Anexa primeiro a foto do comprovativo");return}
   var btn=byId("sendBtn"), sendingEl=byId("sending");
   btn.style.display='none'; sendingEl.style.display='flex';
-  API.sendComprovativo(SALE.ref,receiptImage,{}).then(function(r){
+  API.sendComprovativo(SALE.ref,receiptImage,{fatura:SALE.fatura||'',iban:SALE.iban||'',valor:String(SALE.amount||'')}).then(function(r){
     sendingEl.style.display='none';
     if(r&&r.ok){
       SALE.has_comprovativo=true;SALE.status=r.status||'pendente';
