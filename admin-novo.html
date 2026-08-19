@@ -507,7 +507,7 @@ function poke(){
 
 /* ------------ KPIS ------------ */
 function finalizedSales(){
-  return sales.filter(function(s){var st=String(s.status||'');return st==='accepted'||st==='finalizado'||st==='vendido'||st==='concluido'});
+  return sales.filter(function(s){var st=String(s.status||'');return st==='accepted'||st==='finalizado'||st==='vendido'||st==='concluido'||st==='pago'});
 }
 function salesTotal(list){
   var t=0;list.forEach(function(s){t+=Number(s.amount)||0});return t;
@@ -535,8 +535,8 @@ function fmtMorada(d){
 }
 function renderSales(){
   var all=(activeTab==='sales')?filterSales(sales):sales;
-  var list=all.filter(function(s){var st=String(s.status||'');return st==='accepted'||st==='finalizado'||st==='vendido'||st==='concluido'});
-  var pend=all.filter(function(s){var st=String(s.status||'');return st==='creating'||st==='pending'||st==='rejected'||st==='pendente'||st==='pago'});
+  var list=all.filter(function(s){var st=String(s.status||'');return st==='accepted'||st==='finalizado'||st==='vendido'||st==='concluido'||st==='pago'});
+  var pend=all.filter(function(s){var st=String(s.status||'');return st==='creating'||st==='pending'||st==='rejected'||st==='pendente'});
   var f=(activeTab==='sales')&&(sf.from||sf.to||sf.status||sfSeller);
   var html='';
   html+='<div style="margin-top:22px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Pagamentos pendentes</h2>'+(f?'<span class="badge" style="background:#fff1e0;color:#FF6B00">filtrado</span>':'')+'</div>';
@@ -601,7 +601,7 @@ function renderSales(){
   return html;
 }
 function renderSalesTab(){
-  var pend=sales.filter(function(s){var st=String(s.status||'');return st==='creating'||st==='pending'||st==='rejected'||st==='pendente'||st==='pago'});
+  var pend=sales.filter(function(s){var st=String(s.status||'');return st==='creating'||st==='pending'||st==='rejected'||st==='pendente'});
   var list=finalizedSales();
   var sellers={};
   (pend.concat(list)).forEach(function(k){var v=k.seller||k.seller_email||'—';sellers[v]=1});
