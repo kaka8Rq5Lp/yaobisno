@@ -265,7 +265,9 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
           if(b2)b2.style.display='block';
           var bp=document.getElementById('pagamentoBanner');
           var timer=setInterval(function(){
-            fetch('/api/sale/'+encodeURIComponent(aguardaRef)).then(function(r){return r.json()}).then(function(d){
+            var tok='';
+            try{tok=localStorage.getItem('yabisno_token')||''}catch(e){}
+            fetch('/api/sale/'+encodeURIComponent(aguardaRef),{headers:tok?{'Authorization':'Bearer '+tok}:{}}).then(function(r){return r.json()}).then(function(d){
               if(d&&d.ok&&(d.status==='pago'||d.status==='finalizado'||d.status==='accepted')){
                 clearInterval(timer);
                 try{localStorage.removeItem('yabisno_pending_ref')}catch(e){}
