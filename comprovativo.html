@@ -149,6 +149,7 @@ function applyStatus(){
   if(st==='pago'||st==='finalizado'||st==='accepted'){
     stopPoll();upload.style.display='none';
     stIc.className='fa-solid fa-circle-check';stT.textContent='Pagamento confirmado';stS.textContent='A loja já validou o teu comprovativo.';
+    setTimeout(function(){window.location.href='main.html?pagamento=ok'},1500);
   }else if(st==='pendente'){
     if(SALE.has_comprovativo){upload.style.display='none';byId("waitingBox").style.display='block';stIc.className='fa-solid fa-hourglass-half';stT.textContent='A aguardar validação da loja';stS.textContent='O comprovativo foi enviado. A loja vai validar em breve.';}
     else{upload.style.display='block';stIc.className='fa-solid fa-clock';stT.textContent='A aguardar o comprovativo';stS.textContent='Encomenda registada. Faz o pagamento e anexa aqui o comprovativo.';}
