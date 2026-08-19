@@ -522,10 +522,10 @@ function saleDate(iso){
   try{var d=new Date(iso);return d.toLocaleDateString('pt-PT')+' '+d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})}catch(e){return '—'}
 }
 function methodBadge(m){
-  var wa=String(m||'').toLowerCase()==='whatsapp';
-  return wa
-    ?'<span class="badge" style="background:#fff1e0;color:#FF6B00"><i class="fa-brands fa-whatsapp"></i>WhatsApp</span>'
-    :'<span class="badge" style="background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-mobile-screen-button"></i>Multicaixa</span>';
+  var s=String(m||'').toLowerCase();
+  if(s==='mcx')return'<span class="badge" style="background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-mobile-screen-button"></i>Multicaixa</span>';
+  if(s==='whatsapp')return'<span class="badge" style="background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-comment"></i>WhatsApp</span>';
+  return'<span class="badge" style="background:#f3f4f6;color:#6b7280">'+esc(m||'—')+'</span>';
 }
 function fmtMorada(d){
   d=d||{};
@@ -541,13 +541,12 @@ function renderSales(){
   var html='';
   html+='<div style="margin-top:22px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-clock" style="color:#FF6B00;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Pagamentos pendentes</h2>'+(f?'<span class="badge" style="background:#fff1e0;color:#FF6B00">filtrado</span>':'')+'</div>';
   if(!pend.length){
-    html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem pagamentos pendentes</p><small>Pagamentos Multicaixa e encomendas WhatsApp em processamento aparecem aqui</small></div></div>';
+    html+='<div class="table-card"><div class="empty"><i class="fa-solid fa-check"></i><p>Sem pagamentos pendentes</p><small>Encomendas com comprovativo pendente de validação aparecem aqui</small></div></div>';
   }else{
     html+='<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Valor</th><th>Morada</th><th>Comprovativo</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
     for(var i=0;i<pend.length;i++){
       var s=pend[i];
       var isPaid=String(s.status||'')==='pago';
-      var isMCX=String(s.method||'').toLowerCase()==='mcx';
       var comp=(s.comprovativo&&s.comprovativo.image)?s.comprovativo.image:null;
       var hasComp=!!comp;
       html+='<tr>'
@@ -555,15 +554,13 @@ function renderSales(){
         +'<td style="font-size:12px;color:#8a8578">'+esc(s.mobile||'—')+'</td>'
         +'<td><span class="t-price">'+fmt(s.amount)+'</span></td>'
         +'<td style="font-size:12px;color:#8a8578">'+esc(fmtMorada(s.delivery)||'—')+'</td>'
-        +'<td>'+(isMCX
-            ?saleStatusBadge(s.status)
-            :(comp
+        +'<td>'+(comp
             ?'<span class="badge '+(isPaid?'paid':'warn')+'" style="margin-right:6px">'+(isPaid?'Pago':'Comprovativo')+'</span><button class="btn second" style="padding:3px 10px;font-size:10.5px" onclick="viewReceipt(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-image"></i> Ver</button>'
-            :(isPaid?'<span class="badge paid">Pago</span>':'<span class="badge warn"><i class="fa-solid fa-clock"></i>A aguardar anexo</span>')))+'</td>'
+            :(isPaid?'<span class="badge paid">Pago</span>':'<span class="badge warn"><i class="fa-solid fa-clock"></i>A aguardar anexo</span>'))+'</td>'
         +'<td style="font-size:12px;color:#8a8578">'+saleDate(s.created_at)+'</td>'
-+'<td>'+(!isMCX&&hasComp
-            ?'<button class="btn" style="margin-right:6px" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>'+(isPaid?'Revalidar':'Validar')+'</button>'
-            :'<span style="font-size:10.5px;color:#9aa0a6">/</span>')
+        +'<td>'+(!isPaid&&hasComp
+            ?'<button class="btn" style="margin-right:6px" onclick="confirmVenda(\''+esc(String(s.ref))+'\')"><i class="fa-solid fa-circle-check"></i>Validar</button>'
+            :(isPaid?'<span class="badge paid">Pago</span>':'<span style="font-size:10.5px;color:#9aa0a6">/</span>'))
           +'<button class="btn second" style="margin-right:6px" onclick="exportSalePdf(\''+esc(String(s.ref))+'\')" title="Fatura PDF"><i class="fa-solid fa-file-pdf"></i></button>'
           +'<button class="btn second" style="background:#fde8e8;color:#dc2626;border-color:#f5c2c2" onclick="deleteSale(\''+esc(String(s.ref))+'\')" title="Remover venda"><i class="fa-solid fa-trash"></i></button>'
           +'</td>'
@@ -574,9 +571,9 @@ function renderSales(){
   html+='</div>';
   // Vendas finalizadas
   html+='<div style="margin-top:28px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="fa-solid fa-circle-check" style="color:#0a9e4e;font-size:15px"></i><h2 style="font-size:16px;font-weight:800">Lista de Vendas Finalizadas</h2></div>'
-    +'<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Produto</th><th>Comprador</th><th>Vendedor</th><th>Valor</th><th>Método</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead><tbody>';
+    +'<div class="table-card"><div style="overflow-x:hidden"><table><thead><tr><th>Produto</th><th>Comprador</th><th>Vendedor</th><th>Valor</th><th>Método</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead><tbody>';
   if(!list.length){
-    html+='<tr><td colspan="8"><div class="empty"><i class="fa-solid fa-circle-check"></i><p>Sem vendas finalizadas</p><small>Pagamentos Multicaixa confirmados e vendas WhatsApp confirmadas vão aparecer aqui</small></div></td></tr>';
+    html+='<tr><td colspan="8"><div class="empty"><i class="fa-solid fa-circle-check"></i><p>Sem vendas finalizadas</p><small>Vendas pagas e confirmadas vão aparecer aqui</small></div></td></tr>';
   }
   for(var j=0;j<list.length;j++){
     var k=list[j];
@@ -1015,7 +1012,7 @@ function renderKpis(){
     +'<div class="kpi"><div class="tl">Produtos</div><div class="val">'+products.length+(pend>0?'<span class="dot"></span>':'')+'</div><div class="tb">'+(pend>0?pend+' pendente'+(pend>1?'s':'')+' de aprovação':'Todos ativos')+'</div><div class="icn" style="background:#fff1e0;color:#FF6B00"><i class="fa-solid fa-box-open"></i></div></div>'
     +'<div class="kpi"><div class="tl">Chats</div><div class="val">'+chats.length+'</div><div class="tb">Mensagens na plataforma</div><div class="icn" style="background:#efeafe;color:#6d28d9"><i class="fa-solid fa-comment-dots"></i></div></div>'
     +'<div class="kpi"><div class="tl">Carrinho</div><div class="val">'+cart.length+'</div><div class="tb">Itens no carrinho</div><div class="icn" style="background:#e6f1fb;color:#0b6b8f"><i class="fa-solid fa-cart-shopping"></i></div></div>'
-    +'<div class="kpi"><div class="tl">Vendas Finalizadas</div><div class="val">'+fs.length+'</div><div class="tb">Multicaixa e WhatsApp concluídos</div><div class="icn" style="background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-circle-check"></i></div></div>'
+    +'<div class="kpi"><div class="tl">Vendas Finalizadas</div><div class="val">'+fs.length+'</div><div class="tb">Vendas pagas e confirmadas</div><div class="icn" style="background:#e8f7ee;color:#0a9e4e"><i class="fa-solid fa-circle-check"></i></div></div>'
     +'<div class="kpi"><div class="tl">Total Faturado</div><div class="val">'+fmt(totalFat)+'</div><div class="tb">Receitas de vendas concluídas</div><div class="icn" style="background:#fff1e0;color:#FF6B00"><i class="fa-solid fa-coins"></i></div></div>'
     +'</div>'
     +'<div class="toolbar"><button class="btn" onclick="setTab(\'products\')"><i class="fa-solid fa-box-open"></i>Rever produtos</button><button class="btn" onclick="setTab(\'chats\')"><i class="fa-solid fa-comment-dots"></i>Chats</button><button class="btn" onclick="setTab(\'users\')"><i class="fa-solid fa-users"></i>Users</button></div>'
