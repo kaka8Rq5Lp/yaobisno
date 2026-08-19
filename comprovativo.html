@@ -283,7 +283,8 @@ function sendReceipt(){
     if(r&&r.ok){
       SALE.has_comprovativo=true;SALE.status=r.status||'pendente';
       toast("Comprovativo enviado!");
-      setTimeout(function(){window.location.href='main.html?aguarda=1'},1000);
+      try{localStorage.setItem("yabisno_pending_ref",SALE.ref||'')}catch(e){}
+      setTimeout(function(){window.location.href='main.html?aguarda='+encodeURIComponent(SALE.ref||'')},1000);
     }else{
       btn.style.display='flex';
       toast((r&&r.error)||'Falha ao enviar comprovativo');

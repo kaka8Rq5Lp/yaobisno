@@ -258,14 +258,27 @@ body{background:var(--bg);font-family:"Inter",sans-serif}
     (function(){
       try{
         var p=new URLSearchParams(window.location.search);
+        var aguardaRef=p.get('aguarda')||'';
+        if(!aguardaRef){try{aguardaRef=localStorage.getItem('yabisno_pending_ref')||''}catch(e){}}
+        if(aguardaRef){
+          var b2=document.getElementById('aguardaBanner');
+          if(b2)b2.style.display='block';
+          var bp=document.getElementById('pagamentoBanner');
+          var timer=setInterval(function(){
+            fetch('/api/sale/'+encodeURIComponent(aguardaRef)).then(function(r){return r.json()}).then(function(d){
+              if(d&&d.ok&&(d.status==='pago'||d.status==='finalizado'||d.status==='accepted')){
+                clearInterval(timer);
+                try{localStorage.removeItem('yabisno_pending_ref')}catch(e){}
+                if(b2)b2.style.display='none';
+                if(bp)bp.style.display='block';
+                history.replaceState(null,'',window.location.pathname);
+              }
+            }).catch(function(){});
+          },4000);
+        }
         if(p.get('pagamento')==='ok'){
           var b=document.getElementById('pagamentoBanner');
           if(b)b.style.display='block';
-          history.replaceState(null,'',window.location.pathname);
-        }
-        if(p.get('aguarda')==='1'){
-          var b2=document.getElementById('aguardaBanner');
-          if(b2)b2.style.display='block';
           history.replaceState(null,'',window.location.pathname);
         }
       }catch(e){}
